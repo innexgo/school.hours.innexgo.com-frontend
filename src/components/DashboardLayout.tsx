@@ -91,16 +91,14 @@ const DashboardLayout: React.FunctionComponent<React.PropsWithChildren<Dashboard
       <DashboardLayoutContext.Provider value={collapsed}>
         <div>
           <nav className="bg-dark text-light" style={sidebarStyle}>
-            <div>
-              <button type="button" className="btn btn-lg text-light float-right" onClick={_ => setCollapsed(!collapsed)}>
-                <Menu style={iconStyle} />
-              </button>
+            <div className="nav-item nav-link">
+            <Menu style={iconStyle} onClick={_ => setCollapsed(!collapsed)} />
             </div>
             {
               collapsed
                 ? ""
                 : <div className="nav-item nav-link mx-auto my-3">
-                  <h6>{props.name}</h6>
+                  <h6>Welcome, {props.name}</h6>
                 </div>
             }
             {sidebarChildren}

@@ -69,32 +69,6 @@ function LoginForm(props: LoginProps) {
     }
   }
 
-  const returnHomePhrase = (x: UserKind | undefined) => {
-    switch (x) {
-      case undefined: {
-        return <div />
-      }
-      case "STUDENT": {
-        return <>
-          <br />
-          <Form.Text>
-            <a href="/">Teacher Login</a>
-          </Form.Text>
-        </>
-
-      }
-      case "ADMIN":
-      case "USER": {
-        return <>
-          <br />
-          <Form.Text>
-            <a href="/">Student Login</a>
-          </Form.Text>
-        </>
-      }
-    }
-  }
-
   return <>
     <Formik<LoginValue>
       onSubmit={onSubmit}
@@ -140,7 +114,6 @@ function LoginForm(props: LoginProps) {
           <Form.Text>
             <a href="/forgot_password">Forgot Password?</a>
           </Form.Text>
-          {returnHomePhrase(props.userKind)}
         </Form>
       )}
     </Formik>
@@ -150,18 +123,22 @@ function LoginForm(props: LoginProps) {
 function Login(props: LoginProps) {
 
   const LoginPhrase = (x: UserKind | undefined) => {
+    const linkStyle= {
+        fontWeight: "normal" as const,
+        fontSize:"0.875rem"
+    }
     switch (x) {
       case undefined: {
-        return "Login:"
+        return <span>Login</span>
       }
       case "STUDENT": {
-        return "Student Login:"
+        return <>Student Login <a style={linkStyle} href="/">(Go To Teacher Login)</a></>
       }
       case "USER": {
-        return "Teacher Login:"
+        return <>Teacher Login <a style={linkStyle} href="/">(Go To Student Login)</a></>
       }
       case "ADMIN": {
-        return "Admin Login:"
+        return <>Admin Login   <a style={linkStyle} href="/">(Go To Student Login)</a></>
       }
     }
   }
@@ -170,7 +147,8 @@ function Login(props: LoginProps) {
     <div className="h-100 w-100 d-flex">
       <Card className="mx-auto my-auto">
         <Card.Body>
-          <Card.Title>{LoginPhrase(props.userKind)} <SchoolName /></Card.Title>
+          <Card.Title>{LoginPhrase(props.userKind)}</Card.Title>
+          <Card.Subtitle className="text-muted"><SchoolName/></Card.Subtitle>
           <LoginForm {...props} />
         </Card.Body>
       </Card>
