@@ -8,6 +8,7 @@ import SchoolName from '../components/SchoolName';
 
 interface LoginProps {
   setApiKey: (data: ApiKey | null) => void
+  userKind?: UserKind,
 }
 
 function LoginForm(props: LoginProps) {
@@ -68,6 +69,32 @@ function LoginForm(props: LoginProps) {
     }
   }
 
+  const returnHomePhrase = (x: UserKind | undefined) => {
+    switch (x) {
+      case undefined: {
+        return <div />
+      }
+      case "STUDENT": {
+        return <>
+          <br />
+          <Form.Text>
+            <a href="/">Teacher Login</a>
+          </Form.Text>
+        </>
+
+      }
+      case "ADMIN":
+      case "USER": {
+        return <>
+          <br />
+          <Form.Text>
+            <a href="/">Student Login</a>
+          </Form.Text>
+        </>
+      }
+    }
+  }
+
   return <>
     <Formik<LoginValue>
       onSubmit={onSubmit}
@@ -77,21 +104,21 @@ function LoginForm(props: LoginProps) {
         password: "",
       }}
     >
-      {(props) => (
+      {(fprops) => (
         <Form
           noValidate
-          onSubmit={props.handleSubmit} >
+          onSubmit={fprops.handleSubmit} >
           <Form.Group >
             <Form.Label >Email</Form.Label>
             <Form.Control
               name="email"
               type="email"
               placeholder="Email"
-              value={props.values.email}
-              onChange={props.handleChange}
-              isInvalid={!!props.errors.email}
+              value={fprops.values.email}
+              onChange={fprops.handleChange}
+              isInvalid={!!fprops.errors.email}
             />
-            <Form.Control.Feedback type="invalid"> {props.errors.email} </Form.Control.Feedback>
+            <Form.Control.Feedback type="invalid"> {fprops.errors.email} </Form.Control.Feedback>
           </Form.Group>
           <Form.Group >
             <Form.Label>Password</Form.Label>
@@ -99,20 +126,21 @@ function LoginForm(props: LoginProps) {
               name="password"
               type="password"
               placeholder="Password"
-              value={props.values.password}
-              onChange={props.handleChange}
-              isInvalid={!!props.errors.password}
+              value={fprops.values.password}
+              onChange={fprops.handleChange}
+              isInvalid={!!fprops.errors.password}
             />
-            <Form.Control.Feedback type="invalid">{props.errors.password}</Form.Control.Feedback>
+            <Form.Control.Feedback type="invalid">{fprops.errors.password}</Form.Control.Feedback>
           </Form.Group>
           <br />
           <Button type="submit">Login</Button>
           <br />
-          <Form.Text className="text-danger">{props.status}</Form.Text>
+          <Form.Text className="text-danger">{fprops.status}</Form.Text>
           <br />
-          <Form.Text className="text-muted">
+          <Form.Text>
             <a href="/forgot_password">Forgot Password?</a>
           </Form.Text>
+          {returnHomePhrase(props.userKind)}
         </Form>
       )}
     </Formik>
@@ -120,18 +148,34 @@ function LoginForm(props: LoginProps) {
 }
 
 function Login(props: LoginProps) {
-  return (
-    <SimpleLayout>
-      <div className="h-100 w-100 d-flex">
-        <Card className="mx-auto my-auto">
-          <Card.Body>
-            <Card.Title>Login to <SchoolName /></Card.Title>
-            <LoginForm {...props} />
-          </Card.Body>
-        </Card>
-      </div>
-    </SimpleLayout>
-  );
+
+  const LoginPhrase = (x: UserKind | undefined) => {
+    switch (x) {
+      case undefined: {
+        return "Login:"
+      }
+      case "STUDENT": {
+        return "Student Login:"
+      }
+      case "USER": {
+        return "Teacher Login:"
+      }
+      case "ADMIN": {
+        return "Admin Login:"
+      }
+    }
+  }
+
+  return <SimpleLayout>
+    <div className="h-100 w-100 d-flex">
+      <Card className="mx-auto my-auto">
+        <Card.Body>
+          <Card.Title>{LoginPhrase(props.userKind)} <SchoolName /></Card.Title>
+          <LoginForm {...props} />
+        </Card.Body>
+      </Card>
+    </div>
+  </SimpleLayout>
 }
 
 export default Login;

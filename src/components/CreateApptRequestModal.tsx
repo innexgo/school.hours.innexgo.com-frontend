@@ -21,7 +21,17 @@ function CreateApptRequestModal(props: CreateApptRequestModalProps) {
   }
 
   const onSubmit = async (values: CreateApptRequestValue,
-    { setStatus, setErrors }: FormikHelpers<CreateApptRequestValue>) => {
+    { setStatus }: FormikHelpers<CreateApptRequestValue>) => {
+
+    if (values.userId == null) {
+      setStatus({
+        userId: "Please select a a student.",
+        message: "",
+        result: "",
+      });
+      return;
+    }
+
     const maybeApptRequest = await newApptRequest({
       targetId: values.userId!,
       attending: true,
@@ -34,21 +44,35 @@ function CreateApptRequestModal(props: CreateApptRequestModalProps) {
     if (isApiErrorCode(maybeApptRequest)) {
       switch (maybeApptRequest) {
         case "APIKEY_NONEXISTENT": {
-          setStatus("You have been automatically logged out. Please relogin.");
+          setStatus({
+            message: "",
+            userId: "",
+            result: "You have been automatically logged out. Please relogin."
+          });
           break;
         }
         case "USER_NONEXISTENT": {
-          setErrors({
-            userId: "This teacher does not exist."
+          setStatus({
+            message: "",
+            userId: "This teacher does not exist.",
+            result: "",
           });
           break;
         }
         case "NEGATIVE_DURATION": {
-          setStatus("The duration you have selected is not valid.");
+          setStatus({
+            message: "",
+            userId: "",
+            result: "The duration you have selected is not valid.",
+          });
           break;
         }
         default: {
-          setStatus("An unknown or network error has occurred.");
+          setStatus({
+            message: "",
+            userId: "",
+            result: "An unknown or network error has occurred."
+          });
           break;
         }
       }
@@ -78,31 +102,37 @@ function CreateApptRequestModal(props: CreateApptRequestModalProps) {
           message: "",
           userId: null
         }}
-        initialStatus=""
+        initialStatus={{
+          message: "",
+          userId: "",
+          result: ""
+        }}
       >
         {(fprops) => (
           <Form
             noValidate
             onSubmit={fprops.handleSubmit} >
-            <Form.Group as={Row} controlId="startTime">
+            <Form.Group as={Row}>
               <Form.Label column sm={2}>Start Time</Form.Label>
               <Col>
                 <span>{format(props.start, "MMM do, hh:mm a")} </span>
               </Col>
             </Form.Group>
-            <Form.Group as={Row} controlId="endTime">
+            <Form.Group as={Row}>
               <Form.Label column sm={2}>End Time</Form.Label>
               <Col>
                 <span>{format(props.start + props.duration, "MMM do, hh:mm a")} </span>
               </Col>
             </Form.Group>
-            <Form.Group as={Row} controlId="userId">
-              <Form.Label column sm={2}>Teacher ID</Form.Label>
+            <Form.Group as={Row}>
+              <Form.Label column sm={2}>Teacher Name</Form.Label>
               <Col>
                 <SearchUserDropdown
-                  invalid={!!fprops.errors.userId}
+                  name="userId"
+                  isInvalid={fprops.status.userId !== ""}
                   apiKey={props.apiKey}
                   userKind={"USER"} setFn={e => fprops.setFieldValue("userId", e)} />
+                <Form.Text className="text-danger">{fprops.status.userId}</Form.Text>
               </Col>
             </Form.Group>
             <Form.Group as={Row}>
@@ -115,14 +145,14 @@ function CreateApptRequestModal(props: CreateApptRequestModalProps) {
                   as="textarea"
                   rows={3}
                   onChange={fprops.handleChange}
-                  isInvalid={!!fprops.errors.message}
+                  isInvalid={fprops.status.message !== ""}
                 />
-                <Form.Control.Feedback type="invalid">{fprops.errors.message}</Form.Control.Feedback>
+                <Form.Text className="text-danger">{fprops.status.message}</Form.Text>
               </Col>
             </Form.Group>
             <Button type="submit"> Submit </Button>
             <br />
-            <Form.Text className="text-danger">{fprops.status}</Form.Text>
+            <Form.Text className="text-danger">{fprops.status.result}</Form.Text>
           </Form>
         )}
       </Formik>

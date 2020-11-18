@@ -4,7 +4,8 @@ import AsyncSelect from 'react-select/async';
 import { viewUser, isApiErrorCode } from '../utils/utils';
 
 interface SearchUserDropdownProps {
-  invalid: boolean,
+  isInvalid: boolean,
+  name: string,
   apiKey: ApiKey,
   userKind: "STUDENT" | "USER" | "ADMIN",
   setFn: (id: number | null) => void
@@ -47,7 +48,8 @@ export default function SearchUserDropdown(props: SearchUserDropdownProps) {
     isClearable={true}
     onChange={onChange}
     cacheOptions={true}
-    isInvalid={props.invalid}
+    name={props.name}
+    components={{ DropdownIndicator: () => null, IndicatorSeparator: () => null }}
     noOptionsMessage={() => null}
     loadOptions={promiseOptions} />
 }

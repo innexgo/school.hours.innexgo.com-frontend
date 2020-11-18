@@ -25,7 +25,7 @@ function AuthenticatedRoute({
     <Route {...rest} >
       {isAuthenticated
         ? <AuthenticatedComponent apiKey={apiKey!} setApiKey={setApiKey} />
-        : <Login setApiKey={setApiKey} />}
+        : <Login setApiKey={setApiKey} userKind="USER" />}
     </Route>
   );
 }

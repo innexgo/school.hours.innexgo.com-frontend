@@ -25,7 +25,7 @@ function StudentRoute({
     <Route {...rest} >
       {isAuthenticated
         ? <StudentComponent apiKey={apiKey!} setApiKey={setApiKey} />
-        : <Login setApiKey={setApiKey} />}
+        : <Login setApiKey={setApiKey} userKind="STUDENT" />}
     </Route>
   );
 }

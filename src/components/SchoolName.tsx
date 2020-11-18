@@ -13,13 +13,11 @@ const SchoolName = () => {
   }
   return <Async promise={getSchoolInfo()}>
     <Async.Pending>
-      Innexgo Hours
     </Async.Pending>
     <Async.Rejected>
-      Innexgo Hours
     </Async.Rejected>
     <Async.Fulfilled<SchoolInfo>>
-      {schoolInfo => `Innexgo Hours: ${schoolInfo.name}`}
+      {schoolInfo => `${schoolInfo.name}`}
     </Async.Fulfilled>
   </Async>
 }

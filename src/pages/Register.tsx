@@ -200,6 +200,7 @@ function RegisterForm() {
           <Form.Check>
             <Form.Check.Input
               name="terms"
+              checked={props.values.terms}
               onChange={props.handleChange}
               isInvalid={!!props.errors.terms}
             />

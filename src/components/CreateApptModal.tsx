@@ -21,7 +21,17 @@ function CreateApptModal(props: CreateApptModalProps) {
     studentId: number | null,
   }
 
-  const onSubmit = async (values: CreateApptValue, { setStatus, setErrors }: FormikHelpers<CreateApptValue>) => {
+  const onSubmit = async (values: CreateApptValue, { setStatus }: FormikHelpers<CreateApptValue>) => {
+
+    if (values.studentId == null) {
+      setStatus({
+        studentId: "Please select a a student.",
+        message: "",
+        result: "",
+      });
+      return;
+    }
+
     const maybeApptRequest = await newApptRequest({
       targetId: values.studentId!,
       attending: false,
@@ -34,12 +44,18 @@ function CreateApptModal(props: CreateApptModalProps) {
     if (isApiErrorCode(maybeApptRequest)) {
       switch (maybeApptRequest) {
         case "APIKEY_NONEXISTENT": {
-          setStatus("You have been automatically logged out. Please relogin.");
+          setStatus({
+            studentId: "",
+            message: "",
+            result: "You have been automatically logged out. Please relogin.",
+          });
           break;
         }
         case "USER_NONEXISTENT": {
-          setErrors({
-            studentId: "This student does not exist."
+          setStatus({
+            studentId: "This student does not exist.",
+            message: "",
+            result: "",
           });
           break;
         }
@@ -48,7 +64,11 @@ function CreateApptModal(props: CreateApptModalProps) {
           break;
         }
         default: {
-          setStatus("An unknown or network error has occurred.");
+          setStatus({
+            studentId: "",
+            message: "",
+            result: "An unknown error has occurred",
+          });
           break;
         }
       }
@@ -66,19 +86,35 @@ function CreateApptModal(props: CreateApptModalProps) {
     if (isApiErrorCode(maybeAppt)) {
       switch (maybeAppt) {
         case "APIKEY_NONEXISTENT": {
-          setStatus("You have been automatically logged out. Please relogin.");
+          setStatus({
+            studentId: "",
+            message: "",
+            result: "You have been automatically logged out. Please relogin.",
+          });
           break;
         }
         case "APIKEY_UNAUTHORIZED": {
-          setStatus("You are not currently authorized to perform this action.");
+          setStatus({
+            studentId: "",
+            message: "",
+            result: "You are not currently authorized to perform this action.",
+          });
           break;
         }
         case "APPT_EXISTENT": {
-          setStatus("This appointment already exists.");
+          setStatus({
+            studentId: "",
+            message: "",
+            result: "This appointment already exists.",
+          });
           break;
         }
         default: {
-          setStatus("An unknown or network error has occurred.");
+          setStatus({
+            studentId: "",
+            message: "",
+            result: "An unknown error has occurred",
+          });
           break;
         }
       }
@@ -87,6 +123,7 @@ function CreateApptModal(props: CreateApptModalProps) {
       props.setShow(false);
     }
   }
+
 
   return <Modal
     className="CreateApptModal"
@@ -106,7 +143,11 @@ function CreateApptModal(props: CreateApptModalProps) {
           message: "",
           studentId: null
         }}
-        initialStatus=""
+        initialStatus={{
+          message: "",
+          studentId: "",
+          result: "",
+        }}
       >
         {(fprops) => (
           <Form
@@ -125,12 +166,15 @@ function CreateApptModal(props: CreateApptModalProps) {
               </Col>
             </Form.Group>
             <Form.Group as={Row}>
-              <Form.Label column sm={2}>Student ID</Form.Label>
+              <Form.Label column sm={2}>Student Name</Form.Label>
               <Col>
                 <SearchUserDropdown
-                  invalid={!!fprops.errors.studentId}
+                  name="studentId"
                   apiKey={props.apiKey}
-                  userKind={"STUDENT"} setFn={e => fprops.setFieldValue("studentId", e)} />
+                  isInvalid={fprops.status.studentId !== ""}
+                  userKind="STUDENT"
+                  setFn={e => fprops.setFieldValue("studentId", e)} />
+                <Form.Text className="text-danger">{fprops.status.studentId}</Form.Text>
               </Col>
             </Form.Group>
             <Form.Group as={Row}>
@@ -142,16 +186,18 @@ function CreateApptModal(props: CreateApptModalProps) {
                   placeholder="Message"
                   as="textarea"
                   rows={3}
+                  value={fprops.values.message}
                   onChange={fprops.handleChange}
-                  isInvalid={!!fprops.errors.message}
+                  isInvalid={fprops.status.message !== ""}
                 />
-                <Form.Control.Feedback type="invalid">{fprops.errors.message}</Form.Control.Feedback>
+                <Form.Text className="text-danger">{fprops.status.message}</Form.Text>
               </Col>
             </Form.Group>
             <Button type="submit"> Submit </Button>
             <br />
-            <Form.Text className="text-danger">{fprops.status}</Form.Text>
-          </Form>)}
+            <Form.Text className="text-danger">{fprops.status.result}</Form.Text>
+          </Form>
+        )}
       </Formik>
     </Modal.Body>
   </Modal>
