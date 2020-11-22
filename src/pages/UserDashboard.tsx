@@ -5,7 +5,7 @@ import interactionPlugin from '@fullcalendar/interaction'
 import UserDashboardLayout from '../components/UserDashboardLayout';
 import UserCalendarCard from '../components/UserCalendarCard';
 
-import { Popover, Container, CardDeck } from 'react-bootstrap';
+import { Form, Popover, Container, CardDeck } from 'react-bootstrap';
 import { viewApptRequest, viewAttendance, viewAppt, isApiErrorCode } from '../utils/utils';
 import UtilityWrapper from '../components/UtilityWrapper';
 
@@ -14,7 +14,7 @@ import ReviewApptRequestModal from '../components/ReviewApptRequestModal';
 import ApptTakeAttendanceModal from '../components/ApptTakeAttendanceModal';
 import ViewAttendanceModal from '../components/ViewAttendanceModal';
 
-function EventCalendar(props: AuthenticatedComponentProps) {
+function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: boolean }) {
 
   const apptRequestToEvent = (x: ApptRequest): EventInput => ({
     id: `${x.apptRequestId}`,
@@ -124,9 +124,16 @@ function EventCalendar(props: AuthenticatedComponentProps) {
     }
   }
 
+  const showAllHoursProps = props.showAllHours ? {} : {
+    slotMinTime: "08:00",
+    slotMaxTime: "18:00",
+    weekends: false
+  }
+
   return (
     <div>
       <FullCalendar
+        {...showAllHoursProps}
         ref={calendarRef}
         plugins={[timeGridPlugin, interactionPlugin]}
         headerToolbar={{
@@ -144,9 +151,6 @@ function EventCalendar(props: AuthenticatedComponentProps) {
         events={eventSource}
         eventContent={UserCalendarCard}
         unselectCancel=".CreateApptModal"
-        slotMinTime="08:00"
-        slotMaxTime="18:00"
-        weekends={false}
         eventClick={clickHandler}
         expandRows={true}
         businessHours={{
@@ -212,6 +216,7 @@ function EventCalendar(props: AuthenticatedComponentProps) {
 }
 
 function UserDashboard(props: AuthenticatedComponentProps) {
+  const [showAllHours, setShowAllHours] = React.useState(false);
   return (
     <UserDashboardLayout {...props} >
       <Container fluid className="py-3 px-3">
@@ -222,7 +227,14 @@ function UserDashboard(props: AuthenticatedComponentProps) {
               You can click any date to add an appointment on that date,
               or click an existing appointment to delete it.
            </Popover>
-            <EventCalendar {...props} />
+            <div>
+              <Form.Check
+                checked={showAllHours}
+                onChange={_ => setShowAllHours(!showAllHours)}
+                label="Show All Hours"
+              />
+              <EventCalendar {...props} showAllHours={showAllHours} />
+            </div>
           </UtilityWrapper>
         </CardDeck>
       </Container>

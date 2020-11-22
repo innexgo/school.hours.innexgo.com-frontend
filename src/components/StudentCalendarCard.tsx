@@ -1,64 +1,45 @@
 import React from "react";
 import { EventContentArg } from "@fullcalendar/react"
-import format from 'date-fns/format';
 
-function ApptRequestCard(props: { apptRequest: ApptRequest, apiKey: ApiKey }) {
+function ApptRequestCard(props: { apptRequest: ApptRequest }) {
   const apptRequest = props.apptRequest;
   return (
-    <div className="px-1 py-1 h-100 w-100 bg-danger text-dark overflow-auto" >
-      <span>
-        {format(apptRequest.startTime, "h:mm a")} - {format(apptRequest.startTime + apptRequest.duration, "h:mm a")}
-      </span>
+    <div className="px-1 py-1 h-100 w-100 bg-danger text-light overflow-hidden" >
+      To: {apptRequest.host.name}
       <br />
-      <span>
-        Request To: {apptRequest.host.name}
-      </span>
-      <br />
-      <span>
-        Msg: {apptRequest.message}
-      </span>
+      Msg: {apptRequest.message}
     </div>
   )
 }
 
-function ApptCard(props: { appt: Appt, apiKey: ApiKey }) {
+function ApptCard(props: { appt: Appt }) {
   const appt = props.appt;
-  return <div className="px-1 py-1 h-100 w-100 bg-warning text-dark overflow-auto">
-    <span>
-      {format(appt.startTime, "h:mm a")} - {format(appt.startTime + appt.duration, "h:mm a")}
-    </span>
+  return <div className="px-1 py-1 h-100 w-100 bg-warning text-dark overflow-hidden">
+    To: {appt.apptRequest.host.name}
     <br />
-    <span>
-      Appt: {appt.apptRequest.host.name}
-    </span>
-    <br />
-    <span>
-      Msg: {appt.message}
-    </span>
+    Msg: {appt.message}
   </div>
 }
 
-function AttendanceCard(props: { attendance: Attendance, apiKey: ApiKey }) {
+function AttendanceCard(props: { attendance: Attendance }) {
   const attendance = props.attendance;
-  return <div className="px-1 py-1 h-100 w-100 bg-success text-light overflow-auto">
+  return <div className="px-1 py-1 h-100 w-100 bg-success text-light overflow-hidden">
     Teacher: {attendance.appt.apptRequest.host.name}
     <br />
     {attendance.kind}
-    <br />
-    {format(attendance.appt.startTime, "h:mm a")} - {format(attendance.appt.startTime + attendance.appt.duration, "h:mm a")}
   </div>
 }
 
 
-function StudentCalendarCard(eventInfo: EventContentArg) { /**?? */
+function StudentCalendarCard(eventInfo: EventContentArg) {
   const props = eventInfo.event.extendedProps;
   switch (props.kind) {
     case "ApptRequest":
-      return <ApptRequestCard apptRequest={props.apptRequest} apiKey={props.apiKey} />
+      return <ApptRequestCard apptRequest={props.apptRequest} />
     case "Appt":
-      return <ApptCard appt={props.appt} apiKey={props.apiKey} />
+      return <ApptCard appt={props.appt} />
     case "Attendance":
-      return <AttendanceCard attendance={props.attendance} apiKey={props.apiKey} />
+      return <AttendanceCard attendance={props.attendance} />
   }
 }
 

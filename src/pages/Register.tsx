@@ -30,7 +30,7 @@ function RegisterForm() {
       errors.lastName = "Please enter your last name";
       hasError = true;
     }
-    if (values.email === "") {
+    if (values.email.includes('@')) {
       errors.email = "Please enter your email";
       hasError = true;
     }

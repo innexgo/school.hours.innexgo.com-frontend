@@ -5,7 +5,7 @@ import interactionPlugin from '@fullcalendar/interaction'
 import StudentDashboardLayout from '../components/StudentDashboardLayout';
 import StudentCalendarCard from '../components/StudentCalendarCard';
 
-import { Popover, Container, CardDeck } from 'react-bootstrap';
+import { Form, Popover, Container, CardDeck } from 'react-bootstrap';
 import { viewApptRequest, viewAttendance, viewAppt, isApiErrorCode } from '../utils/utils';
 import UtilityWrapper from '../components/UtilityWrapper';
 
@@ -14,7 +14,7 @@ import ViewApptRequestModal from '../components/ViewApptRequestModal';
 import ViewApptModal from '../components/ViewApptModal';
 import ViewAttendanceModal from '../components/ViewAttendanceModal';
 
-function StudentEventCalendar(props: StudentComponentProps) {
+function StudentEventCalendar(props: StudentComponentProps & { showAllHours: boolean }) {
 
   const apptRequestToEvent = (x: ApptRequest): EventInput => ({
     id: `${x.apptRequestId}`,
@@ -124,9 +124,16 @@ function StudentEventCalendar(props: StudentComponentProps) {
     }
   }
 
+  const showAllHoursProps = props.showAllHours ? {} : {
+    slotMinTime: "08:00",
+    slotMaxTime: "18:00",
+    weekends: false
+  }
+
   return (
     <div>
       <FullCalendar
+        {...showAllHoursProps}
         ref={calendarRef}
         plugins={[timeGridPlugin, interactionPlugin]}
         headerToolbar={{
@@ -144,9 +151,6 @@ function StudentEventCalendar(props: StudentComponentProps) {
         events={eventSource}
         eventContent={StudentCalendarCard}
         unselectCancel=".CreateApptRequestModal"
-        slotMinTime="08:00"
-        slotMaxTime="18:00"
-        weekends={false}
         eventClick={clickHandler}
         expandRows={true}
         businessHours={{
@@ -210,6 +214,8 @@ function StudentEventCalendar(props: StudentComponentProps) {
 }
 
 function StudentDashboard(props: StudentComponentProps) {
+  const [showAllHours, setShowAllHours] = React.useState(false);
+
   return (
     <StudentDashboardLayout {...props} >
       <Container fluid className="py-3 px-3">
@@ -220,7 +226,14 @@ function StudentDashboard(props: StudentComponentProps) {
               You can click any appointment to learn more about it,
               or drag your mouse to select a new one.
            </Popover>
-            <StudentEventCalendar {...props} />
+            <div>
+              <Form.Check
+                checked={showAllHours}
+                onChange={_ => setShowAllHours(!showAllHours)}
+                label="Show All Hours"
+              />
+              <StudentEventCalendar {...props} showAllHours={showAllHours} />
+            </div>
           </UtilityWrapper>
         </CardDeck>
       </Container>

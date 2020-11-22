@@ -1,6 +1,6 @@
 import React from 'react'
-import { Row, Col, Modal, Form } from 'react-bootstrap';
-import format from 'date-fns/format';
+import { Modal } from 'react-bootstrap';
+import ViewAppt from '../components/ViewAppt';
 
 type ViewApptModalProps = {
   show: boolean;
@@ -21,38 +21,7 @@ function ViewApptModal(props: ViewApptModalProps) {
       <Modal.Title id="modal-title">View Appt Request</Modal.Title>
     </Modal.Header>
     <Modal.Body>
-      <Form>
-        <Form.Group as={Row}>
-          <Form.Label column sm={2}>Start Time</Form.Label>
-          <Col>
-            <span>{format(props.appt.startTime, "MMM do, hh:mm a")} </span>
-          </Col>
-        </Form.Group>
-        <Form.Group as={Row}>
-          <Form.Label column sm={2}>End Time</Form.Label>
-          <Col>
-            <span>{format(props.appt.startTime + props.appt.startTime, "MMM do, hh:mm a")} </span>
-          </Col>
-        </Form.Group>
-        <Form.Group as={Row} >
-          <Form.Label column sm={2}>Attendee</Form.Label>
-          <Col>
-            <span>{props.appt.apptRequest.attendee.name}</span>
-          </Col>
-        </Form.Group>
-        <Form.Group as={Row} >
-          <Form.Label column sm={2}>Host</Form.Label>
-          <Col>
-            <span>{props.appt.apptRequest.host.name}</span>
-          </Col>
-        </Form.Group>
-        <Form.Group as={Row} >
-          <Form.Label column sm={2}>Message</Form.Label>
-          <Col>
-            <span>{props.appt.message}</span>
-          </Col>
-        </Form.Group>
-      </Form>
+      <ViewAppt appt={props.appt} />
     </Modal.Body>
   </Modal>
 }

@@ -1,10 +1,10 @@
 import React from 'react'
 
-import { Row, Col, Modal, Button, Form } from 'react-bootstrap';
+import { Card, Row, Col, Modal, Button, Form } from 'react-bootstrap';
 import ToggleButton from "react-bootstrap/ToggleButton";
 import { newAttendance, isApiErrorCode } from '../utils/utils';
 import { Formik, FormikHelpers } from 'formik';
-import format from 'date-fns/format';
+import ViewAppt from '../components/ViewAppt';
 
 type ApptTakeAttendanceModalProps = {
   show: boolean;
@@ -69,28 +69,17 @@ function ApptTakeAttendanceModal(props: ApptTakeAttendanceModalProps) {
         }}
         initialStatus=""
       >
-        {(fprops) => (
+        {(fprops) => <div>
+          <Card>
+            <Card.Body>
+              <Card.Title>Appointment</Card.Title>
+              <ViewAppt appt={props.appt} />
+            </Card.Body>
+          </Card>
+          <br />
           <Form
             noValidate
             onSubmit={fprops.handleSubmit} >
-            <Form.Group as={Row} controlId="startTime">
-              <Form.Label column sm={2}>Start Time</Form.Label>
-              <Col>
-                <span>{format(props.appt.startTime, "MMM do, hh:mm a")} </span>
-              </Col>
-            </Form.Group>
-            <Form.Group as={Row} controlId="endTime">
-              <Form.Label column sm={2}>End Time</Form.Label>
-              <Col>
-                <span>{format(props.appt.startTime + props.appt.duration, "MMM do, hh:mm a")}</span>
-              </Col>
-            </Form.Group>
-            <Form.Group as={Row} controlId="student">
-              <Form.Label column sm={2}>Student</Form.Label>
-              <Col>
-                <span>{props.appt.apptRequest.attendee.name}</span>
-              </Col>
-            </Form.Group>
             <Form.Group as={Row} controlId="attendance">
               <Form.Label column sm={2}>Take Attendance</Form.Label>
               <Col>
@@ -136,7 +125,7 @@ function ApptTakeAttendanceModal(props: ApptTakeAttendanceModalProps) {
             <br />
             <Form.Text className="text-danger">{fprops.status}</Form.Text>
           </Form>
-        )}
+        </div>}
       </Formik>
     </Modal.Body>
   </Modal>
