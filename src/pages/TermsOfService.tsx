@@ -12,7 +12,7 @@ function TermsOfService() {
           <p>
             Please read the following terms of service agreement carefully. By accessing or using our sites and our services, you
             hereby agree to be bound by the terms and all terms incorporated herein by reference. It is the responsibility of you, the user,
-            customer, or prospective customer to read the terms and conditions before proceeding to use this site. If you do not i
+            customer, or prospective customer to read the terms and conditions before proceeding to use this site. If you do not I
             expressly agree to all of the terms and conditions, then please do not access or use our website or our services. This terms of
             service agreement is effective as of January 10, 2020.
           </p>
@@ -55,7 +55,7 @@ function TermsOfService() {
           <h5>Content Placed or Made Available for Company Services</h5>
           <ol type="a">
             <li>The content submitted or made available for inclusion on publicly accessible areas of Innexgo&apos;s sites, the license provided to permit to use, distribute, reproduce, modify, adapt, publicly perform and/or publicly display said Content on our
-                network Services is for the sole purpose of providing and promoting the specific area to which this content was placed and/or made available for viewing. This license shall be available so long as you are a member of &apos;s sites, and shall
+                network Services is for the sole purpose of providing and promoting the specific area to which this content was placed and/or made available for viewing. This license shall be available so long as you are a member of Innexgo&apos;s sites, and shall
                 terminate at such time when you elect to discontinue your membership.
         </li><br />
             <li>Photos, audio, video and/or graphics submitted or made available for inclusion on the publicly accessible areas of Innexgo&apos;s sites, the license provided to permit to use, distribute, reproduce, modify, adapt, publicly perform and/or publicly
