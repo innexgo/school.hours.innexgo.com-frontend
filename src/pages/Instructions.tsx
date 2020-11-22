@@ -42,7 +42,7 @@ function Instructions() {
           <p>
             Click on the calendar to create an office hour appointment. A popup will appear
             that allows you to type in a student name and extra details. If not dragged, appointments will
-            automatically be set to the 30minute block of time clicked on the calendar.
+            automatically be set to the 30 minute block of time clicked on the calendar.
           </p>
 
           <hr id="two" style={{ marginTop: '20px', marginBottom: '20px' }} />
@@ -90,7 +90,7 @@ function Instructions() {
           </video>
           <br />
           <p>
-            Use the present, tardy, or late buttons on a past office hour appointment
+            Use the present, tardy, or absent buttons on a past office hour appointment
             to keep track of attendance. (Note: attendance cannot be taken for future
             appointments.) All attendance that is tracked can be obtained in a report.
           </p>
