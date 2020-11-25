@@ -14,56 +14,76 @@ declare global {
     kind: UserKind,
   }
 
-  type ForgotPassword = {
+  type PasswordResetKey = {
     id: number,
     email: string,
     creationTime: number,
-    valid: boolean,
+    used: boolean,
   }
 
   type User = {
     id: number,
+    creationTime: number,
     kind: UserKind,
     name: string,
     email: string,
-    validated: boolean,
   }
 
   type ApiKey = {
     id: number,
+    creator: User,
     creationTime: number,
     duration: number,
+    valid: boolean,
     key: string,
+  }
+
+  type Session = {
+    sessionId: number,
+    creationTime: number,
+    name: string,
+    startTime: number,
+    duration: number,
+    hidden: boolean,
+    creator: User,
+    host: User
+  }
+
+  type SessionRequest = {
+    sessionRequestId: number,
+    creationTime: number,
+    message: string,
+    startTime: number,
+    duration: number,
     creator: User,
     attendee: User,
     host: User,
   }
 
-  type ApptRequest = {
-    apptRequestId: number,
+  type SessionRequestResponse = {
+    creationTime: number,
+    message: string,
+    accepted: boolean,
+    creator: User,
+    sessionRequest: SessionRequest,
+    committment: Committment | null,
+  }
+
+  type Committment = {
+    committmentId: number
+    creationTime: number
+    cancellable: boolean
     creator: User
     attendee: User
-    host: User
-    message: string,
-    creationTime: number,
-    startTime: number
-    duration: number
+    session: Session
   }
 
-  type Appt = {
-    apptRequest: ApptRequest,
-    message: string,
-    creationTime: number,
-    startTime: number,
-    duration: number
-  }
-
-  type AttendanceKind = "PRESENT" | "TARDY" | "ABSENT"
-
-  type Attendance = {
-    appt: Appt,
-    creationTime: number,
-    kind: AttendanceKind,
+  type CommittmentResponseKind = "PRESENT" | "TARDY" | "ABSENT" | "CANCELLED";
+  type CommittmentResponse = {
+    creationTime: number
+    kind: CommittmentResponseKind
+    creator: User
+    committment: Committment
   }
 
   interface AuthenticatedComponentProps {

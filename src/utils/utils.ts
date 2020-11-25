@@ -46,32 +46,40 @@ export async function fetchApi(url: string, data: FormData) {
 
 const ApiErrorCodes = [
   "OK",
+  "NOT_FOUND",
   "NO_CAPABILITY",
-  "APIKEY_UNAUTHORIZED",
+  "API_KEY_UNAUTHORIZED",
   "DATABASE_INITIALIZED",
   "PASSWORD_INCORRECT",
   "PASSWORD_INSECURE",
   "USER_NONEXISTENT",
-  "APIKEY_NONEXISTENT",
+  "API_KEY_NONEXISTENT",
   "USER_EXISTENT",
-  "APPT_REQUEST_NONEXISTENT",
   "USER_NAME_EMPTY",
   "USER_EMAIL_EMPTY",
   "USER_EMAIL_INVALIDATED",
-  "USERKIND_INVALID",
-  "APPT_EXISTENT",
-  "ATTENDANCEKIND_INVALID",
-  "ATTENDANCE_EXISTENT",
+  "USER_KIND_INVALID",
+  "SESSION_NONEXISTENT",
+  "SESSION_CANNOT_CREATE_FOR_OTHERS_STUDENT",
+  "SESSION_REQUEST_RESPONSE_EXISTENT",
+  "SESSION_REQUEST_RESPONSE_CANNOT_CANCEL_STUDENT",
+  "COMMITTMENT_NONEXISTENT",
+  "COMMITTMENT_CANNOT_CREATE_FOR_OTHERS_STUDENT",
+  "COMMITTMENT_CANNOT_CREATE_HIDDEN_STUDENT",
+  "COMMITTMENT_CANNOT_CREATE_UNCANCELLABLE_STUDENT",
+  "COMMITTMENT_RESPONSE_KIND_INVALID",
+  "COMMITTMENT_RESPONSE_EXISTENT",
+  "COMMITTMENT_RESPONSE_UNCANCELLABLE",
+  "COMMITTMENT_RESPONSE_CANNOT_CREATE_FOR_OTHERS_STUDENT",
   "NEGATIVE_DURATION",
-  "VERIFICATIONKEY_NONEXISTENT",
-  "VERIFICATIONKEY_TIMED_OUT",
-  "RESETKEY_NONEXISTENT",
-  "RESETKEY_INVALID",
-  "RESETKEY_TIMED_OUT",
+  "EMAIL_VERIFICATION_CHALLENGE_KEY_NONEXISTENT",
+  "EMAIL_VERIFICATION_CHALLENGE_KEY_TIMED_OUT",
+  "PASSWORD_RESET_KEY_NONEXISTENT",
+  "PASSWORD_RESET_KEY_INVALID",
+  "PASSWORD_RESET_KEY_TIMED_OUT",
   "EMAIL_RATELIMIT",
   "EMAIL_BLACKLISTED",
   "UNKNOWN",
-  "NOT_FOUND",
   "NETWORK"
 ] as const;
 
@@ -81,8 +89,9 @@ export type ApiErrorCode = typeof ApiErrorCodes[number];
 type NewApiKeyProps = {
   userEmail: string,
   userPassword: string,
-  duration: number
-};
+  duration: number,
+}
+
 
 export async function newApiKey(props: NewApiKeyProps): Promise<ApiKey | ApiErrorCode> {
   return await fetchApi("apiKey/new/", getFormData(props));
@@ -107,47 +116,69 @@ export async function newUser(props: NewUserProps): Promise<User | ApiErrorCode>
   return await fetchApi("user/new/", getFormData(props));
 }
 
-type NewForgotPasswordProps = {
+type NewResetPasswordKeyProps = {
   userEmail: string,
 };
 
-export async function newForgotPassword(props: NewForgotPasswordProps): Promise<ForgotPassword | ApiErrorCode> {
-  return await fetchApi("forgotPassword/new/", getFormData(props));
+export async function newPasswordResetKey(props: NewResetPasswordKeyProps): Promise<PasswordResetKey | ApiErrorCode> {
+  return await fetchApi("passwordResetKey/new/", getFormData(props));
 }
 
-type NewApptRequestProps = {
-  targetId: number,
-  attending: boolean,
+type NewSessionProps = {
+  name: string
+  hostId: number
+  startTime: number
+  duration: number
+  apiKey: string
+}
+
+export async function newSession(props: NewSessionProps): Promise<Session | ApiErrorCode> {
+  return await fetchApi("session/new/", getFormData(props));
+}
+
+type NewSessionRequestProps = {
+  attendeeId: number,
+  hostId: number,
   message: string,
   startTime: number,
   duration: number,
   apiKey: string,
-};
-
-export async function newApptRequest(props: NewApptRequestProps): Promise<ApptRequest | ApiErrorCode> {
-  return await fetchApi("apptRequest/new/", getFormData(props));
 }
 
-type NewApptProps = {
-  apptRequestId: number,
+export async function newSessionRequest(props: NewSessionRequestProps): Promise<SessionRequest | ApiErrorCode> {
+  return await fetchApi("sessionRequest/new/", getFormData(props));
+}
+
+type NewSessionRequestResponseProps = {
+  sessionRequestId: number,
   message: string,
-  startTime: number,
-  duration: number,
+  accepted: boolean,
+  committmentId?: number,
   apiKey: string,
-};
-
-export async function newAppt(props: NewApptProps): Promise<Appt | ApiErrorCode> {
-  return await fetchApi("appt/new/", getFormData(props));
 }
 
-type NewAttendanceProps = {
-  apptId: number,
-  attendanceKind: AttendanceKind,
-  apiKey: string,
-};
+export async function newSessionRequestResponse(props: NewSessionRequestResponseProps): Promise<SessionRequestResponse | ApiErrorCode> {
+  return await fetchApi("sessionRequestResponse/new/", getFormData(props));
+}
 
-export async function newAttendance(props: NewAttendanceProps): Promise<Attendance | ApiErrorCode> {
-  return await fetchApi("attendance/new/", getFormData(props));
+type NewCommittmentProps = {
+  attendeeId: number,
+  sessionId: number,
+  cancellable: boolean,
+  apiKey: string,
+}
+
+export async function newCommittment(props: NewCommittmentProps): Promise<Committment | ApiErrorCode> {
+  return await fetchApi("committment/new/", getFormData(props));
+}
+
+type NewCommittmentResponseProps = {
+  committmentId: number,
+  committmentResponseKind: CommittmentResponseKind,
+  apiKey: string,
+}
+export async function newCommittmentResponse(props: NewCommittmentResponseProps): Promise<CommittmentResponse | ApiErrorCode> {
+  return await fetchApi("committmentResponse/new/", getFormData(props));
 }
 
 type ViewUserProps = {
@@ -165,8 +196,32 @@ export async function viewUser(props: ViewUserProps): Promise<User[] | ApiErrorC
   return await fetchApi("user/", getFormData(props));
 }
 
-type ViewApptRequestProps = {
-  apptRequestId?: number,
+type ViewSessionProps = {
+  sessionId?: number,
+  creatorId?: number,
+  creationTime?: number,
+  minCreationTime?: number,
+  maxCreationTime?: number,
+  name?: string,
+  hostId?: number,
+  startTime?: number,
+  minStartTime?: number,
+  maxStartTime?: number,
+  duration?: number,
+  minDuration?: number,
+  maxDuration?: number,
+  hidden?: Boolean,
+  offset?: number,
+  count?: number,
+  apiKey: string,
+}
+
+export async function viewSession(props: ViewSessionProps): Promise<Session[] | ApiErrorCode> {
+  return await fetchApi("session/", getFormData(props));
+}
+
+type ViewSessionRequestProps = {
+  sessionRequestId?: number,
   creatorId?: number,
   attendeeId?: number,
   hostId?: number,
@@ -180,63 +235,83 @@ type ViewApptRequestProps = {
   duration?: number,
   minDuration?: number,
   maxDuration?: number,
-  confirmed?: boolean,
+  responded?: Boolean,
   offset?: number,
   count?: number,
   apiKey: string
-};
-
-export async function viewApptRequest(props: ViewApptRequestProps): Promise<ApptRequest[] | ApiErrorCode> {
-  return await fetchApi("apptRequest/", getFormData(props));
 }
 
+export async function viewSessionRequest(props: ViewSessionRequestProps): Promise<SessionRequest[] | ApiErrorCode> {
+  return await fetchApi("sessionRequest/", getFormData(props));
+}
 
-type ViewApptProps = {
-  apptRequestId?: number,
+type ViewSessionRequestResponseProps = {
+  sessionRequestId?: number,
   creatorId?: number,
-  attendeeId?: number,
-  hostId?: number,
-  message?: string,
   creationTime?: number,
   minCreationTime?: number,
   maxCreationTime?: number,
+  message?: string,
+  accepted?: Boolean,
+  committmentId?: number,
+  offset?: number,
+  count?: number,
+  apiKey: string,
+}
+
+export async function viewSessionRequestResponse(props: ViewSessionRequestResponseProps): Promise<SessionRequestResponse[] | ApiErrorCode> {
+  return await fetchApi("sessionRequestResponse/", getFormData(props));
+}
+
+type ViewCommittmentProps = {
+  committmentId?: number,
+  creatorId?: number,
+  creationTime?: number,
+  minCreationTime?: number,
+  maxCreationTime?: number,
+  attendeeId?: number,
+  sessionId?: number,
+  cancellable?: Boolean,
+  hostId?: number,
   startTime?: number,
   minStartTime?: number,
   maxStartTime?: number,
   duration?: number,
   minDuration?: number,
   maxDuration?: number,
-  attended?: boolean,
+  responded?: Boolean,
   offset?: number,
   count?: number,
   apiKey: string
 }
 
-
-export async function viewAppt(props: ViewApptProps): Promise<Appt[] | ApiErrorCode> {
-  return await fetchApi("appt/", getFormData(props));
+export async function viewCommittment(props: ViewCommittmentProps): Promise<Committment[] | ApiErrorCode> {
+  return await fetchApi("committment/", getFormData(props));
 }
 
-type ViewAttendanceProps = {
-  apptId?: number,
-  attendeeId?: number,
-  hostId?: number,
+type ViewCommittmentResponseProps = {
+  committmentId?: number,
+  creatorId?: number,
   creationTime?: number,
   minCreationTime?: number,
   maxCreationTime?: number,
+  committmentResponseKind?: CommittmentResponseKind,
+  attendeeId?: number,
+  hostId?: number,
   startTime?: number,
   minStartTime?: number,
   maxStartTime?: number,
-  kind?: AttendanceKind,
+  duration?: number,
+  minDuration?: number,
+  maxDuration?: number,
   offset?: number,
   count?: number,
-  apiKey: string
+  apiKey: string,
 }
 
-export async function viewAttendance(props: ViewAttendanceProps): Promise<Attendance[] | ApiErrorCode> {
-  return await fetchApi("attendance/", getFormData(props));
+export async function viewCommittmentResponse(props: ViewCommittmentResponseProps): Promise<CommittmentResponse[] | ApiErrorCode> {
+  return await fetchApi("committmentResponse/", getFormData(props));
 }
-
 
 type UpdatePasswordProps = {
   userId: number,
@@ -254,12 +329,12 @@ export async function schoolInfo(): Promise<SchoolInfo | ApiErrorCode> {
 }
 
 type ResetPasswordProps = {
-  resetKey: String,
-  newPassword: String,
+  resetKey: string,
+  newPassword: string,
 }
 
-export async function resetPassword(props: ResetPasswordProps): Promise<ApiErrorCode> {
-  return await fetchApi("misc/resetPassword/", getFormData(props));
+export async function usePasswordReset(props: ResetPasswordProps): Promise<ApiErrorCode> {
+  return await fetchApi("misc/usePasswordReset/", getFormData(props));
 }
 
 export function isApiErrorCode(maybeApiErrorCode: any): maybeApiErrorCode is ApiErrorCode {
