@@ -6,7 +6,7 @@ import UserDashboardLayout from '../components/UserDashboardLayout';
 import UserCalendarCard from '../components/UserCalendarCard';
 
 import { Form, Popover, Container, CardDeck } from 'react-bootstrap';
-import { viewApptRequest, viewAttendance, viewAppt, isApiErrorCode } from '../utils/utils';
+import { viewSession, viewSessionRequest, isApiErrorCode } from '../utils/utils';
 import UtilityWrapper from '../components/UtilityWrapper';
 
 import CreateApptModal from '../components/CreateApptModal';
@@ -16,45 +16,33 @@ import ViewAttendanceModal from '../components/ViewAttendanceModal';
 
 function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: boolean }) {
 
-  const apptRequestToEvent = (x: ApptRequest): EventInput => ({
-    id: `${x.apptRequestId}`,
+  const sessionToEvent = (x: Session): EventInput => ({
+    id: `Session:${x.sessionId}`,
     start: new Date(x.startTime),
     end: new Date(x.startTime + x.duration),
     color: "#00000000",
-    kind: "ApptRequest",
-    apptRequest: x
+    kind: "Session",
+    session: x
   })
 
-  const apptToEvent = (x: Appt): EventInput => ({
-    id: `${x.apptRequest.apptRequestId}`,
+  const sessionRequestToEvent = (x: SessionRequest): EventInput => ({
+    id: `SessionRequest:${x.sessionRequestId}`,
     start: new Date(x.startTime),
     end: new Date(x.startTime + x.duration),
     color: "#00000000",
-    kind: "Appt",
-    appt: x
-  })
-
-  const attendanceToEvent = (x: Attendance): EventInput => ({
-    id: `${x.appt.apptRequest.apptRequestId}`,
-    start: new Date(x.appt.startTime),
-    end: new Date(x.appt.startTime + x.appt.duration),
-    color: "#00000000",
-    kind: "Attendance",
-    attendance: x
+    kind: "SessionRequest",
+    session: x
   })
 
   const [start, setStart] = React.useState(0);
   const [duration, setDuration] = React.useState(0);
 
-  const [showCreateApptModal, setShowCreateApptModal] = React.useState(false);
-  const [showReviewApptRequestModal, setShowReviewApptRequestModal] = React.useState(false);
-  const [showTakeAttendanceApptModal, setShowTakeAttendanceApptModal] = React.useState(false);
-  const [showViewAttendanceModal, setShowViewAttendanceModal] = React.useState(false);
+  const [showCreateSessionModal, setShowCreateSessionModal] = React.useState(false);
+  const [showReviewSessionRequestModal, setShowReviewSessionRequestModal] = React.useState(false);
+  const [showViewSessionModal, setShowViewSessionModal] = React.useState(false);
 
-
-  const [appt, setAppt] = React.useState<Appt | null>(null);
-  const [attendance, setAttendance] = React.useState<Attendance | null>(null);
-  const [apptRequest, setApptRequest] = React.useState<ApptRequest | null>(null);
+  const [selectedSession, setSelectedSession] = React.useState<Session | null>(null);
+  const [selectedSessionRequest, setSelectedSessionRequest] = React.useState<SessionRequest | null>(null);
 
   const calendarRef = React.useRef<FullCalendar | null>(null);
 
@@ -67,58 +55,44 @@ function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: bool
       timeZone: string;
     }) => {
 
-    const maybeApptRequests = await viewApptRequest({
+    const maybeSessions = await viewSession({
       hostId: props.apiKey.creator.id,
       minStartTime: args.start.valueOf(),
       maxStartTime: args.end.valueOf(),
-      confirmed: false,
       apiKey: props.apiKey.key
     });
 
-    const maybeAppts = await viewAppt({
+    const maybeSessionRequests = await viewSessionRequest({
       hostId: props.apiKey.creator.id,
       minStartTime: args.start.valueOf(),
       maxStartTime: args.end.valueOf(),
-      attended: false,
-      apiKey: props.apiKey.key
-    });
-
-    const maybeAttendances = await viewAttendance({
-      hostId: props.apiKey.creator.id,
-      minStartTime: args.start.valueOf(),
-      maxStartTime: args.end.valueOf(),
+      responded: false,
       apiKey: props.apiKey.key
     });
 
     return [
-      ...isApiErrorCode(maybeApptRequests) ? [] : maybeApptRequests.map(apptRequestToEvent),
-      ...isApiErrorCode(maybeAppts) ? [] : maybeAppts.map(apptToEvent),
-      ...isApiErrorCode(maybeAttendances) ? [] : maybeAttendances.map(attendanceToEvent),
+      ...isApiErrorCode(maybeSessionRequests) ? [] : maybeSessionRequests.map(sessionRequestToEvent),
+      ...isApiErrorCode(maybeSessions) ? [] : maybeSessions.map(sessionToEvent),
     ];
   }
 
   const clickHandler = (eca: EventClickArg) => {
     const props = eca.event.extendedProps;
     switch (props.kind) {
-      case "ApptRequest": {
-        setApptRequest(props.apptRequest);
-        setShowReviewApptRequestModal(true);
-        setShowTakeAttendanceApptModal(false);
-        setShowViewAttendanceModal(false);
+      case "Session": {
+        setSelectedSession(props.session);
+        setSelectedSessionRequest(null);
+        setShowCreateSessionModal(false);
+        setShowReviewSessionRequestModal(false);
+        setShowViewSessionModal(true);
         break;
       }
-      case "Appt": {
-        setAppt(props.appt);
-        setShowTakeAttendanceApptModal(true);
-        setShowReviewApptRequestModal(false);
-        setShowViewAttendanceModal(false);
-        break;
-      }
-      case "Attendance": {
-        setAttendance(props.attendance);
-        setShowViewAttendanceModal(true);
-        setShowReviewApptRequestModal(false);
-        setShowTakeAttendanceApptModal(false);
+      case "SessionRequest": {
+        setSelectedSession(null);
+        setSelectedSessionRequest(props.appt);
+        setShowCreateSessionModal(false);
+        setShowReviewSessionRequestModal(true);
+        setShowViewSessionModal(false);
         break;
       }
     }
@@ -165,7 +139,7 @@ function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: bool
           if (dsa.start.valueOf() > Date.now()) {
             setStart(dsa.start.valueOf());
             setDuration(dsa.end.valueOf() - dsa.start.valueOf());
-            setShowCreateApptModal(true);
+            setShowCreateSessionModal(true);
           } else {
             if (calendarRef.current != null) {
               calendarRef.current.getApi().unselect();
@@ -173,7 +147,7 @@ function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: bool
           }
         }}
         unselect={() => {
-          setShowCreateApptModal(false);
+          setShowCreateSessionModal(false);
         }}
       />
       <CreateApptModal
@@ -188,7 +162,7 @@ function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: bool
         start={start}
         duration={duration}
       />
-      {apptRequest == null ? <> </> :
+      {selectedSession == null ? <> </> :
         <ReviewApptRequestModal
           show={showReviewApptRequestModal}
           setShow={setShowReviewApptRequestModal}

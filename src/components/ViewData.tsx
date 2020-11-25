@@ -188,5 +188,3 @@ export const ViewCommittmentResponse = (props: {
     </tbody>
   </Table>
 )
-
-

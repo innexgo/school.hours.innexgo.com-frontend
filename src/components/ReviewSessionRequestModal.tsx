@@ -5,42 +5,42 @@ import timeGridPlugin from '@fullcalendar/timegrid'
 import { Card, Row, Col, Modal, Button, Form } from 'react-bootstrap';
 import { Formik, FormikHelpers } from 'formik';
 
-import ViewApptRequest from '../components/ViewApptRequest';
-import { newAppt, isApiErrorCode } from '../utils/utils';
+import { ViewSessionRequest } from '../components/ViewData';
+import { newSessionRequestResponse, newSession, isApiErrorCode } from '../utils/utils';
 
-type ReviewApptRequestModalProps = {
+type ReviewSessionRequestModalProps = {
   show: boolean;
   setShow: (show: boolean) => void;
-  apptRequest: ApptRequest;
+  sessionRequest: SessionRequest;
   apiKey: ApiKey;
 }
 
-function ReviewApptRequestModal(props: ReviewApptRequestModalProps) {
-  type ReviewApptRequestValues = {
+function ReviewSessionRequestModal(props: ReviewSessionRequestModalProps) {
+  type ReviewSessionRequestValues = {
     message: string,
   }
 
-  const [duration, setDuration] = React.useState(props.apptRequest.duration);
-  const [startTime, setStartTime] = React.useState(props.apptRequest.startTime);
+  const [duration, setDuration] = React.useState(props.sessionRequest.duration);
+  const [startTime, setStartTime] = React.useState(props.sessionRequest.startTime);
 
-  const onSubmit = async (values: ReviewApptRequestValues,
-    { setStatus }: FormikHelpers<ReviewApptRequestValues>) => {
+  const onSubmit = async (values: ReviewSessionRequestValues,
+    { setStatus }: FormikHelpers<ReviewSessionRequestValues>) => {
 
-    const maybeAppt = await newAppt({
-      apptRequestId: props.apptRequest.apptRequestId,
+    const maybeSessionRequestResponse = await newSessionRequestResponse({
+      sessionRequestId: props.sessionRequest.sessionRequestId,
       message: values.message,
       startTime: startTime,
       duration: duration,
       apiKey: props.apiKey.key
     });
 
-    if (isApiErrorCode(maybeAppt)) {
-      switch (maybeAppt) {
-        case "APIKEY_NONEXISTENT": {
+    if (isApiErrorCode(maybeSessionRequestResponse )) {
+      switch (maybeSessionRequestResponse) {
+        case "API_KEY_NONEXISTENT": {
           setStatus("You have been automatically logged out. Please relogin.");
           break;
         }
-        case "APIKEY_UNAUTHORIZED": {
+        case "API_KEY_UNAUTHORIZED": {
           setStatus("You are not currently authorized to perform this action.");
           break;
         }
@@ -67,7 +67,7 @@ function ReviewApptRequestModal(props: ReviewApptRequestModalProps) {
   }
 
   return <Modal
-    className="ReviewApptRequestModal"
+    className="ReviewSessionRequestModal"
     show={props.show}
     onHide={() => props.setShow(false)}
     keyboard={false}
@@ -83,11 +83,11 @@ function ReviewApptRequestModal(props: ReviewApptRequestModalProps) {
           <Card>
             <Card.Body>
               <Card.Title>Appointment Request</Card.Title>
-              <ViewApptRequest apptRequest={props.apptRequest} />
+              <ViewSessionRequest sessionRequest={props.sessionRequest} expanded />
             </Card.Body>
           </Card>
           <br />
-          <Formik<ReviewApptRequestValues>
+          <Formik<ReviewSessionRequestValues>
             onSubmit={onSubmit}
             initialValues={{
               message: ""
@@ -122,7 +122,7 @@ function ReviewApptRequestModal(props: ReviewApptRequestModalProps) {
           <FullCalendar
             plugins={[timeGridPlugin, interactionPlugin]}
             initialView="timeGridDay"
-            unselectCancel=".ReviewApptRequestModal"
+            unselectCancel=".ReviewSessionRequestModal"
             headerToolbar={false}
             allDaySlot={false}
             slotMinTime="08:00"
@@ -130,11 +130,11 @@ function ReviewApptRequestModal(props: ReviewApptRequestModalProps) {
             eventChange={eventChangeHandler}
             selectable={true}
             selectMirror={true}
-            initialDate={props.apptRequest.startTime}
+            initialDate={props.sessionRequest.startTime}
             height="auto"
             events={[{
-              start: props.apptRequest.startTime,
-              end: props.apptRequest.startTime + props.apptRequest.duration,
+              start: props.sessionRequest.startTime,
+              end: props.sessionRequest.startTime + props.sessionRequest.duration,
               display: "background"
             }]}
             select={(dsa: DateSelectArg) => {
@@ -142,8 +142,8 @@ function ReviewApptRequestModal(props: ReviewApptRequestModalProps) {
               setDuration(dsa.end.valueOf() - dsa.start.valueOf());
             }}
             unselect={() => {
-              setStartTime(props.apptRequest.startTime);
-              setDuration(props.apptRequest.duration);
+              setStartTime(props.sessionRequest.startTime);
+              setDuration(props.sessionRequest.duration);
             }}
           />
         </Col>
@@ -152,4 +152,4 @@ function ReviewApptRequestModal(props: ReviewApptRequestModalProps) {
   </Modal>
 }
 
-export default ReviewApptRequestModal;
+export default ReviewSessionRequestModal;

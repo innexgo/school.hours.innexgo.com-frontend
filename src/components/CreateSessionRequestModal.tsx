@@ -2,10 +2,10 @@ import React from "react"
 import SearchUserDropdown from "../components/SearchUserDropdown";
 import { Formik, FormikHelpers } from "formik";
 import { Row, Col, Modal, Button, Form } from "react-bootstrap";
-import { newApptRequest, isApiErrorCode } from "../utils/utils";
+import { newSessionRequest, isApiErrorCode } from "../utils/utils";
 import format from "date-fns/format";
 
-type CreateApptRequestModalProps = {
+type CreateSessionRequestModalProps = {
   show: boolean;
   start: number;
   duration: number;
@@ -13,37 +13,37 @@ type CreateApptRequestModalProps = {
   apiKey: ApiKey;
 }
 
-function CreateApptRequestModal(props: CreateApptRequestModalProps) {
+function CreateSessionRequestModal(props: CreateSessionRequestModalProps) {
 
-  type CreateApptRequestValue = {
+  type CreateSessionRequestValue = {
     message: string,
     userId: number | null,
   }
 
-  const onSubmit = async (values: CreateApptRequestValue,
-    { setStatus }: FormikHelpers<CreateApptRequestValue>) => {
+  const onSubmit = async (values: CreateSessionRequestValue,
+    { setStatus }: FormikHelpers<CreateSessionRequestValue>) => {
 
     if (values.userId == null) {
       setStatus({
-        userId: "Please select a a student.",
+        userId: "Please select a teacher.",
         message: "",
         result: "",
       });
       return;
     }
 
-    const maybeApptRequest = await newApptRequest({
-      targetId: values.userId!,
-      attending: true,
+    const maybeSessionRequest = await newSessionRequest({
+      hostId: values.userId,
+      attendeeId: props.apiKey.creator.id,
       message: values.message,
       startTime: props.start,
       duration: props.duration,
       apiKey: props.apiKey.key,
     });
 
-    if (isApiErrorCode(maybeApptRequest)) {
-      switch (maybeApptRequest) {
-        case "APIKEY_NONEXISTENT": {
+    if (isApiErrorCode(maybeSessionRequest)) {
+      switch (maybeSessionRequest) {
+        case "API_KEY_NONEXISTENT": {
           setStatus({
             message: "",
             userId: "",
@@ -85,7 +85,7 @@ function CreateApptRequestModal(props: CreateApptRequestModalProps) {
 
 
   return <Modal
-    className="CreateApptRequestModal"
+    className="CreateSessionRequestModal"
     show={props.show}
     onHide={() => props.setShow(false)}
     keyboard={false}
@@ -96,7 +96,7 @@ function CreateApptRequestModal(props: CreateApptRequestModalProps) {
       <Modal.Title id="modal-title">Request Appointment with Teacher</Modal.Title>
     </Modal.Header>
     <Modal.Body>
-      <Formik<CreateApptRequestValue>
+      <Formik<CreateSessionRequestValue>
         onSubmit={onSubmit}
         initialValues={{
           message: "",
@@ -160,4 +160,4 @@ function CreateApptRequestModal(props: CreateApptRequestModalProps) {
   </Modal>
 }
 
-export default CreateApptRequestModal;
+export default CreateSessionRequestModal;
