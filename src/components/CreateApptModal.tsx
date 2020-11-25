@@ -43,7 +43,7 @@ function CreateApptModal(props: CreateApptModalProps) {
 
     if (isApiErrorCode(maybeApptRequest)) {
       switch (maybeApptRequest) {
-        case "APIKEY_NONEXISTENT": {
+        case "API_KEY_NONEXISTENT": {
           setStatus({
             studentId: "",
             message: "",
@@ -85,7 +85,7 @@ function CreateApptModal(props: CreateApptModalProps) {
 
     if (isApiErrorCode(maybeAppt)) {
       switch (maybeAppt) {
-        case "APIKEY_NONEXISTENT": {
+        case "API_KEY_NONEXISTENT": {
           setStatus({
             studentId: "",
             message: "",
@@ -93,7 +93,7 @@ function CreateApptModal(props: CreateApptModalProps) {
           });
           break;
         }
-        case "APIKEY_UNAUTHORIZED": {
+        case "API_KEY_UNAUTHORIZED": {
           setStatus({
             studentId: "",
             message: "",

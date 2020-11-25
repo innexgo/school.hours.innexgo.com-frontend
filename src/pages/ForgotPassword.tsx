@@ -1,7 +1,7 @@
 import React from 'react';
 import { Formik, FormikHelpers } from 'formik'
 import { Button, Card, Form, } from 'react-bootstrap'
-import { newForgotPassword, isApiErrorCode } from '../utils/utils';
+import { newPasswordResetKey, isApiErrorCode } from '../utils/utils';
 
 import SimpleLayout from '../components/SimpleLayout';
 
@@ -19,12 +19,12 @@ function ForgotPasswordForm() {
     }
 
     // Now send request
-    const maybeForgotPassword = await newForgotPassword({
+    const maybePasswordResetKey = await newPasswordResetKey({
       userEmail: values.email
     });
 
-    if (isApiErrorCode(maybeForgotPassword)) {
-      switch (maybeForgotPassword) {
+    if (isApiErrorCode(maybePasswordResetKey)) {
+      switch (maybePasswordResetKey) {
         case "USER_NONEXISTENT": {
           setErrors({ email: "No such user exists." });
           break;
