@@ -168,7 +168,7 @@ export const ViewSessionRequestResponse = (props: {
             <th>Accepted</th>
             <td>{`${props.sessionRequestResponse.accepted}`}</td>
           </tr>
-          {props.sessionRequestResponse.committment == null ? {} :
+          {props.sessionRequestResponse.committment == null ? <> </> :
             <ViewCommittment committment={props.sessionRequestResponse.committment} expanded />
           }
         </tbody>
@@ -188,6 +188,7 @@ export const ViewCommittment = (props: {
     return <span>
       {format(props.committment.session.startTime, "h:mm a - ")}
       {format(props.committment.session.startTime + props.committment.session.duration, "h:mm a")}
+      <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
     </span>
   } else {
     return <div>

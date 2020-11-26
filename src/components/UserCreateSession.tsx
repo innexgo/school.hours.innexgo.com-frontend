@@ -85,6 +85,8 @@ function CreateSessionModal(props: CreateSessionModalProps) {
         apiKey: props.apiKey.key
       });
 
+      // TODO when creating a committment, check to see if another committment exists before creating
+
       // TODO handle all other error codes that are possible
       if (isApiErrorCode(maybeCommittment)) {
         switch (maybeCommittment) {

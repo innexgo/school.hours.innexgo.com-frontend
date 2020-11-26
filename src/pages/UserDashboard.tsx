@@ -1,5 +1,5 @@
 import React from 'react'
-import FullCalendar, { DateSelectArg, EventInput, EventClickArg } from '@fullcalendar/react'
+import FullCalendar, { DateSelectArg, EventClickArg } from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import UserDashboardLayout from '../components/UserDashboardLayout';
@@ -13,24 +13,9 @@ import UserCreateSession from '../components/UserCreateSession';
 import UserReviewSessionRequest from '../components/UserReviewSessionRequest';
 import UserManageSession from '../components/UserManageSession';
 import DisplayModal from '../components/DisplayModal';
+import {sessionToEvent, sessionRequestToEvent} from '../components/ToCalendar';
 
 function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: boolean }) {
-
-  const sessionToEvent = (x: Session): EventInput => ({
-    id: `Session:${x.sessionId}`,
-    start: new Date(x.startTime),
-    end: new Date(x.startTime + x.duration),
-    color: "#00000000",
-    session: x
-  });
-
-  const sessionRequestToEvent = (x: SessionRequest): EventInput => ({
-    id: `SessionRequest:${x.sessionRequestId}`,
-    start: new Date(x.startTime),
-    end: new Date(x.startTime + x.duration),
-    color: "#00000000",
-    sessionRequest: x
-  });
 
   const [start, setStart] = React.useState(0);
   const [duration, setDuration] = React.useState(0);
@@ -93,7 +78,7 @@ function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: bool
         break;
       }
       case "SessionRequest": {
-        setSelectedSessionRequest(props.session);
+        setSelectedSessionRequest(props.sessionRequest);
 
         setShowCreateSessionModal(false);
         setShowReviewSessionRequestModal(true);
@@ -170,8 +155,8 @@ function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: bool
       {selectedSessionRequest == null ? <> </> :
         <DisplayModal
           title="Review Student Request"
-          show={showCreateSessionModal}
-          setShow={setShowCreateSessionModal}
+          show={showReviewSessionRequestModal}
+          setShow={setShowReviewSessionRequestModal}
         >
           <UserReviewSessionRequest
             sessionRequest={selectedSessionRequest}
