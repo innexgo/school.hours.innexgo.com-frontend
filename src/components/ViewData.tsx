@@ -161,7 +161,7 @@ export const ViewSessionRequestResponse = (props: {
             </td>
           </tr>
           <tr>
-            <th>Request Message</th>
+            <th>Response Message</th>
             <td>{props.sessionRequestResponse.message} </td>
           </tr>
           <tr>

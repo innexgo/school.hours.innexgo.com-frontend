@@ -10,6 +10,81 @@ import { ViewSessionRequest } from '../components/ViewData';
 import { newSessionRequestResponse, newSession, newCommittment, viewSession, isApiErrorCode } from '../utils/utils';
 
 
+type CalendarWidgetProps = {
+  sessionRequest: SessionRequest;
+  apiKey: ApiKey;
+  setFieldValue: (f:string, a: number | null) => void;
+  sessionId: number | null
+}
+
+class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
+
+  render() {
+      const setStartTime= (x:number|null) => this.props.setFieldValue("startTime", x);
+      const setDuration= (x:number|null) => this.props.setFieldValue("duration", x);
+      const setSessionId= (x:number|null) => this.props.setFieldValue("sessionId", x);
+
+    return <>
+      <FullCalendar
+        plugins={[timeGridPlugin, interactionPlugin]}
+        initialView="timeGridDay"
+        unselectCancel=".UserReviewSessionRequest"
+        headerToolbar={false}
+        allDaySlot={false}
+        slotMinTime="08:00"
+        slotMaxTime="18:00"
+        selectable={true}
+        selectMirror={true}
+        initialDate={this.props.sessionRequest.startTime}
+        height="auto"
+        select={(dsa: DateSelectArg) => {
+          setStartTime(dsa.start.valueOf());
+          setDuration(dsa.end.valueOf() - dsa.start.valueOf());
+          setSessionId(null);
+        }}
+        unselect={() => {
+          setStartTime(null);
+          setDuration(null);
+        }}
+        eventClick={(eca: EventClickArg) => {
+          eca.view.calendar.unselect();
+          setSessionId(parseInt(eca.event.id.split(':')[1]));
+        }}
+        eventSources={[
+          async (
+            args: {
+              start: Date;
+              end: Date;
+              startStr: string;
+              endStr: string;
+              timeZone: string;
+            }) => {
+            const maybeSessions = await viewSession({
+              hostId: this.props.apiKey.creator.id,
+              minStartTime: args.start.valueOf(),
+              maxStartTime: args.end.valueOf(),
+              apiKey: this.props.apiKey.key
+            });
+
+            return isApiErrorCode(maybeSessions) ? [] : maybeSessions.map((x: Session): EventInput => ({
+              id: `Session:${x.sessionId}`,
+              title: x.name,
+              color: x.sessionId === this.props.sessionId ? "#3788D8" : "#6C757D",
+              start: new Date(x.startTime),
+              end: new Date(x.startTime + x.duration),
+            }));
+          },
+          [{
+            start: this.props.sessionRequest.startTime,
+            end: this.props.sessionRequest.startTime + this.props.sessionRequest.duration,
+            display: "background"
+          }],
+        ]}
+      />
+    </>
+  }
+}
+
 type UserReviewSessionRequestProps = {
   postSubmit: () => void;
   sessionRequest: SessionRequest;
@@ -27,6 +102,7 @@ function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
     newSessionPublic: boolean
     message: string,
   }
+
 
   const onSubmit = async (values: ReviewSessionRequestValues,
     { setStatus, setErrors, }: FormikHelpers<ReviewSessionRequestValues>) => {
@@ -168,7 +244,6 @@ function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
     props.postSubmit();
   }
 
-  
   return <>
     <Formik<ReviewSessionRequestValues>
       onSubmit={onSubmit}
@@ -238,61 +313,11 @@ function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
             </Form>
           </Col>
           <Col>
-            <FullCalendar
-              plugins={[timeGridPlugin, interactionPlugin]}
-              initialView="timeGridDay"
-              unselectCancel=".UserReviewSessionRequest"
-              headerToolbar={false}
-              allDaySlot={false}
-              slotMinTime="08:00"
-              slotMaxTime="18:00"
-              selectable={true}
-              selectMirror={true}
-              initialDate={props.sessionRequest.startTime}
-              height="auto"
-              select={(dsa: DateSelectArg) => {
-                fprops.setFieldValue("startTime", dsa.start.valueOf());
-                fprops.setFieldValue("duration", dsa.end.valueOf() - dsa.start.valueOf());
-                fprops.setFieldValue("sessionId", null);
-              }}
-              unselect={() => {
-                fprops.setFieldValue("startTime", null);
-                fprops.setFieldValue("duration", null);
-              }}
-              eventClick={(eca: EventClickArg) => {
-                eca.view.calendar.unselect();
-                fprops.setFieldValue("sessionId", parseInt(eca.event.id.split(':')[1]));
-              }}
-              eventSources={[
-                async (
-                  args: {
-                    start: Date;
-                    end: Date;
-                    startStr: string;
-                    endStr: string;
-                    timeZone: string;
-                  }) => {
-                  const maybeSessions = await viewSession({
-                    hostId: props.apiKey.creator.id,
-                    minStartTime: args.start.valueOf(),
-                    maxStartTime: args.end.valueOf(),
-                    apiKey: props.apiKey.key
-                  });
-
-                  return isApiErrorCode(maybeSessions) ? [] : maybeSessions.map((x: Session): EventInput => ({
-                    id: `Session:${x.sessionId}`,
-                    title: x.name,
-                    color: x.sessionId === fprops.values.sessionId ? "#3788D8" : "#6C757D",
-                    start: new Date(x.startTime),
-                    end: new Date(x.startTime + x.duration),
-                  }));
-                },
-                [{
-                  start: props.sessionRequest.startTime,
-                  end: props.sessionRequest.startTime + props.sessionRequest.duration,
-                  display: "background"
-                }],
-              ]}
+            {/*We're gonna use React.memo here because rerendering the calendar is laggy*/}
+            <CalendarWidget
+              {...props}
+              setFieldValue={fprops.setFieldValue}
+              sessionId={fprops.values.sessionId}
             />
             <Form.Text className="text-danger">{fprops.status.sessionSelect}</Form.Text>
             <Form.Check
