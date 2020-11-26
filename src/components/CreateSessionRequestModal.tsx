@@ -1,5 +1,5 @@
 import React from "react"
-import SearchUserDropdown from "../components/SearchUserDropdown";
+import SearchSingleUser from "../components/SearchSingleUser";
 import { Formik, FormikHelpers } from "formik";
 import { Row, Col, Modal, Button, Form } from "react-bootstrap";
 import { newSessionRequest, isApiErrorCode } from "../utils/utils";
@@ -127,7 +127,7 @@ function CreateSessionRequestModal(props: CreateSessionRequestModalProps) {
             <Form.Group as={Row}>
               <Form.Label column sm={2}>Teacher Name</Form.Label>
               <Col>
-                <SearchUserDropdown
+                <SearchSingleUser
                   name="userId"
                   isInvalid={fprops.status.userId !== ""}
                   apiKey={props.apiKey}

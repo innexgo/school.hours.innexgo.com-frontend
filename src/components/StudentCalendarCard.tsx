@@ -1,45 +1,71 @@
 import React from "react";
 import { EventContentArg } from "@fullcalendar/react"
 
-function ApptRequestCard(props: { apptRequest: ApptRequest }) {
-  const apptRequest = props.apptRequest;
+// Pending request
+function SessionRequestCard(props: { sessionRequest: SessionRequest }) {
+  const sessionRequest = props.sessionRequest;
   return (
-    <div className="px-1 py-1 h-100 w-100 bg-danger text-light overflow-hidden" >
-      To: {apptRequest.host.name}
+    <div className="px-1 py-1 h-100 w-100 bg-info text-light overflow-hidden" >
+      To: {sessionRequest.host.name}
       <br />
-      Msg: {apptRequest.message}
+      Msg: {sessionRequest.message}
     </div>
   )
 }
 
-function ApptCard(props: { appt: Appt }) {
-  const appt = props.appt;
-  return <div className="px-1 py-1 h-100 w-100 bg-warning text-dark overflow-hidden">
-    To: {appt.apptRequest.host.name}
-    <br />
-    Msg: {appt.message}
-  </div>
+// Rejected Session Request
+function SessionRequestResponseCard(props: { sessionRequestResponse: SessionRequestResponse }) {
+  const sessionRequestResponse = props.sessionRequestResponse;
+  return (
+    <div className="px-1 py-1 h-100 w-100 bg-light text-dark overflow-hidden" >
+      To: {sessionRequestResponse.sessionRequest.host.name}
+      <br />
+      Response: {sessionRequestResponse.message}
+    </div>
+  )
 }
 
-function AttendanceCard(props: { attendance: Attendance }) {
-  const attendance = props.attendance;
-  return <div className="px-1 py-1 h-100 w-100 bg-success text-light overflow-hidden">
-    Teacher: {attendance.appt.apptRequest.host.name}
-    <br />
-    {attendance.kind}
-  </div>
+// Committment
+function CommittmentCard(props: { committment: Committment }) {
+  const committment = props.committment;
+  return (
+    <div className="px-1 py-1 h-100 w-100 bg-primary text-light overflow-hidden" >
+      Appt: {committment.session.name}
+      <br/>
+      At: {committment.session.host.name}
+    </div>
+  )
 }
 
+function CommittmentResponseCard(props: { committmentResponse: CommittmentResponse }) {
+  const committmentResponse = props.committmentResponse;
+  return (
+    <div className="px-1 py-1 h-100 w-100 bg-success text-light overflow-hidden" >
+      {committmentResponse.kind}
+    </div>
+  )
+}
+
+function SessionCard(props: { session: Session }) {
+  const session = props.session;
+  return <div className="px-1 py-1 h-100 w-100 bg-primary text-dark overflow-hidden">
+    {session.name}
+  </div>
+}
 
 function StudentCalendarCard(eventInfo: EventContentArg) {
   const props = eventInfo.event.extendedProps;
-  switch (props.kind) {
-    case "ApptRequest":
-      return <ApptRequestCard apptRequest={props.apptRequest} />
-    case "Appt":
-      return <ApptCard appt={props.appt} />
-    case "Attendance":
-      return <AttendanceCard attendance={props.attendance} />
+  switch (eventInfo.event.id.split(':')[0]) {
+    case "Session":
+      return <SessionCard session={props.session} />
+    case "SessionRequestResponse":
+      return <SessionRequestResponseCard sessionRequestResponse={props.sessionRequestResponse} />
+    case "SessionRequest":
+      return <SessionRequestCard sessionRequest={props.sessionRequest} />
+    case "CommittmentResponse":
+      return <CommittmentResponseCard committmentResponse={props.committmentResponse} />
+    case "Committment":
+      return <CommittmentCard committment={props.committment} />
   }
 }
 

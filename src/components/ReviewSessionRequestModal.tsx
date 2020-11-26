@@ -2,11 +2,13 @@ import React from "react";
 import FullCalendar, { EventChangeArg, DateSelectArg } from "@fullcalendar/react"
 import interactionPlugin from '@fullcalendar/interaction'
 import timeGridPlugin from '@fullcalendar/timegrid'
-import { Card, Row, Col, Modal, Button, Form } from 'react-bootstrap';
+import { Tab, Tabs, Card, Row, Col, Modal, Button, Form } from 'react-bootstrap';
+import ToggleButton from "react-bootstrap/ToggleButton";
 import { Formik, FormikHelpers } from 'formik';
 
 import { ViewSessionRequest } from '../components/ViewData';
-import { newSessionRequestResponse, newSession, isApiErrorCode } from '../utils/utils';
+import { newSessionRequestResponse, newSession, newCommittment, viewSession, isApiErrorCode } from '../utils/utils';
+
 
 type ReviewSessionRequestModalProps = {
   show: boolean;
@@ -17,24 +19,30 @@ type ReviewSessionRequestModalProps = {
 
 function ReviewSessionRequestModal(props: ReviewSessionRequestModalProps) {
   type ReviewSessionRequestValues = {
+    accepted: boolean | null,
     message: string,
   }
 
-  const [duration, setDuration] = React.useState(props.sessionRequest.duration);
-  const [startTime, setStartTime] = React.useState(props.sessionRequest.startTime);
+  const [sessionId, setSessionId] = React.useState<number | null>(null);
 
   const onSubmit = async (values: ReviewSessionRequestValues,
     { setStatus }: FormikHelpers<ReviewSessionRequestValues>) => {
 
+    if (sessionId == null) {
+      setStatus({
+        sessionSelect: "Please click on a session or create your own"
+      });
+      return;
+    }
+
     const maybeSessionRequestResponse = await newSessionRequestResponse({
       sessionRequestId: props.sessionRequest.sessionRequestId,
       message: values.message,
-      startTime: startTime,
-      duration: duration,
+      accepted:false,
       apiKey: props.apiKey.key
     });
 
-    if (isApiErrorCode(maybeSessionRequestResponse )) {
+    if (isApiErrorCode(maybeSessionRequestResponse)) {
       switch (maybeSessionRequestResponse) {
         case "API_KEY_NONEXISTENT": {
           setStatus("You have been automatically logged out. Please relogin.");
@@ -44,7 +52,7 @@ function ReviewSessionRequestModal(props: ReviewSessionRequestModalProps) {
           setStatus("You are not currently authorized to perform this action.");
           break;
         }
-        case "APPT_EXISTENT": {
+        case "SESSION_REQUEST_RESPONSE_EXISTENT": {
           setStatus("This appointment already exists.");
           break;
         }
@@ -57,13 +65,6 @@ function ReviewSessionRequestModal(props: ReviewSessionRequestModalProps) {
       // On success close window
       props.setShow(false);
     }
-  }
-
-  const eventChangeHandler = (eca: EventChangeArg) => {
-    const start = eca.event.start!.valueOf();
-    const end = eca.event.end!.valueOf();
-    setStartTime(start);
-    setDuration(end - start);
   }
 
   return <Modal
@@ -90,10 +91,13 @@ function ReviewSessionRequestModal(props: ReviewSessionRequestModalProps) {
           <Formik<ReviewSessionRequestValues>
             onSubmit={onSubmit}
             initialValues={{
-              message: ""
+              message: "",
+              accepted: null,
             }}
-            initialStatus=""
-          >
+            initialStatus={{
+              selectSession: "",
+              result: ""
+            }}>
             {(fprops) => (
               <Form
                 noValidate
@@ -111,41 +115,91 @@ function ReviewSessionRequestModal(props: ReviewSessionRequestModalProps) {
                   <Form.Control.Feedback type="invalid">{fprops.errors.message}</Form.Control.Feedback>
                 </Form.Group>
                 <br />
+                <div>
+                  <ToggleButton
+                    key={0}
+                    type="radio"
+                    name="radio"
+                    value="ACCEPT"
+                    checked={fprops.values.accepted === true}
+                    onChange={_ => fprops.setFieldValue("accepted", true)}
+                    className="btn-success"
+                  >
+                    Accept
+                  </ToggleButton>
+                  <ToggleButton
+                    key={1}
+                    type="radio"
+                    name="radio"
+                    value="REJECT"
+                    checked={fprops.values.accepted === false}
+                    onChange={_ => fprops.setFieldValue("accepted", false)}
+                    className="btn-danger"
+                  >
+                    Reject
+                  </ToggleButton>
+                </div>
+                <br />
                 <Button type="submit" > Accept </Button>
-                <Button variant="danger" onClick={() => props.setShow(false)}> Ignore </Button>
                 <br />
                 <Form.Text className="text-danger">{fprops.status}</Form.Text>
               </Form>)}
           </Formik>
         </Col>
         <Col>
-          <FullCalendar
-            plugins={[timeGridPlugin, interactionPlugin]}
-            initialView="timeGridDay"
-            unselectCancel=".ReviewSessionRequestModal"
-            headerToolbar={false}
-            allDaySlot={false}
-            slotMinTime="08:00"
-            slotMaxTime="18:00"
-            eventChange={eventChangeHandler}
-            selectable={true}
-            selectMirror={true}
-            initialDate={props.sessionRequest.startTime}
-            height="auto"
-            events={[{
-              start: props.sessionRequest.startTime,
-              end: props.sessionRequest.startTime + props.sessionRequest.duration,
-              display: "background"
-            }]}
-            select={(dsa: DateSelectArg) => {
-              setStartTime(dsa.start.valueOf());
-              setDuration(dsa.end.valueOf() - dsa.start.valueOf());
-            }}
-            unselect={() => {
-              setStartTime(props.sessionRequest.startTime);
-              setDuration(props.sessionRequest.duration);
-            }}
-          />
+          <Tabs defaultActiveKey="select">
+            <Tab eventKey="select" title="Select Session">
+              <FullCalendar
+                plugins={[timeGridPlugin, interactionPlugin]}
+                initialView="timeGridDay"
+                unselectCancel=".ReviewSessionRequestModal"
+                headerToolbar={false}
+                allDaySlot={false}
+                slotMinTime="08:00"
+                slotMaxTime="18:00"
+                selectable={true}
+                selectMirror={true}
+                initialDate={props.sessionRequest.startTime}
+                height="auto"
+                events={[{
+                  start: props.sessionRequest.startTime,
+                  end: props.sessionRequest.startTime + props.sessionRequest.duration,
+                  display: "background"
+                }]}
+              />
+                {/*
+                select={(dsa: DateSelectArg) => {
+                  setStartTime(dsa.start.valueOf());
+                  setDuration(dsa.end.valueOf() - dsa.start.valueOf());
+                }}
+                unselect={() => {
+                  setStartTime(props.sessionRequest.startTime);
+                  setDuration(props.sessionRequest.duration);
+                }}
+
+                */}
+            </Tab>
+            <Tab eventKey="create" title="Create New Session">
+              <FullCalendar
+                plugins={[timeGridPlugin, interactionPlugin]}
+                initialView="timeGridDay"
+                unselectCancel=".ReviewSessionRequestModal"
+                headerToolbar={false}
+                allDaySlot={false}
+                slotMinTime="08:00"
+                slotMaxTime="18:00"
+                selectable={true}
+                selectMirror={true}
+                initialDate={props.sessionRequest.startTime}
+                height="auto"
+                events={[{
+                  start: props.sessionRequest.startTime,
+                  end: props.sessionRequest.startTime + props.sessionRequest.duration,
+                  display: "background"
+                }]}
+              />
+            </Tab>
+          </Tabs>
         </Col>
       </Row>
     </Modal.Body>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
 import { Card, Button, Form, } from 'react-bootstrap'
-import { resetPassword, isApiErrorCode, isPasswordValid } from '../utils/utils';
+import { doPasswordReset, isApiErrorCode, isPasswordValid } from '../utils/utils';
 
 import SimpleLayout from '../components/SimpleLayout';
 
@@ -10,7 +10,6 @@ interface ResetPasswordProps {
 }
 
 function ResetPasswordForm(props: ResetPasswordProps) {
-
   type ResetPasswordValue = {
     password1: string,
     password2: string,
@@ -33,7 +32,7 @@ function ResetPasswordForm(props: ResetPasswordProps) {
       return;
     }
 
-    const maybeApiKey = await resetPassword({
+    const maybeApiKey = await doPasswordReset({
       resetKey: props.resetKey,
       newPassword: values.password1,
     });
@@ -47,21 +46,21 @@ function ResetPasswordForm(props: ResetPasswordProps) {
     } else {
       // otherwise display errors
       switch (maybeApiKey) {
-        case "RESETKEY_NONEXISTENT": {
+        case "PASSWORD_RESET_KEY_NONEXISTENT": {
           setStatus({
             failureMessage: "Invalid password reset link.",
             successMessage: ""
           });
           break;
         }
-        case "RESETKEY_TIMED_OUT": {
+        case "PASSWORD_RESET_KEY_TIMED_OUT": {
           setStatus({
             failureMessage: "Password reset link timed out.",
             successMessage: ""
           });
           break;
         }
-        case "RESETKEY_INVALID": {
+        case "PASSWORD_RESET_KEY_INVALID": {
           setStatus({
             failureMessage: "Password reset link may only be used once.",
             successMessage: ""

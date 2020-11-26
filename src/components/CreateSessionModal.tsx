@@ -1,12 +1,12 @@
 import React from 'react'
-import SearchUserDropdown from '../components/SearchUserDropdown';
+import SearchMultiUser from '../components/SearchMultiUser';
 import { Formik, FormikHelpers } from 'formik';
 
 import { Row, Col, Modal, Button, Form } from 'react-bootstrap';
-import { newApptRequest, newAppt, isApiErrorCode } from '../utils/utils';
+import { newSession, newCommittment, isApiErrorCode } from '../utils/utils';
 import format from 'date-fns/format';
 
-type CreateApptModalProps = {
+type CreateSessionModalProps = {
   show: boolean;
   start: number;
   duration: number;
@@ -14,59 +14,63 @@ type CreateApptModalProps = {
   apiKey: ApiKey;
 }
 
-function CreateApptModal(props: CreateApptModalProps) {
+function CreateSessionModal(props: CreateSessionModalProps) {
 
-  type CreateApptValue = {
-    message: string,
-    studentId: number | null,
+  type CreateSessionValue = {
+    name: string,
+    makePublic: boolean,
+    studentList: number[],
   }
 
-  const onSubmit = async (values: CreateApptValue, { setStatus }: FormikHelpers<CreateApptValue>) => {
-
-    if (values.studentId == null) {
+  const onSubmit = async (values: CreateSessionValue, { setStatus }: FormikHelpers<CreateSessionValue>) => {
+    if (values.name === "") {
       setStatus({
-        studentId: "Please select a a student.",
-        message: "",
+        name: "Please enter an informative name.",
+        studentList: "",
         result: "",
       });
       return;
     }
 
-    const maybeApptRequest = await newApptRequest({
-      targetId: values.studentId!,
-      attending: false,
-      message: values.message,
+    const maybeSession = await newSession({
+      name: values.name,
+      hostId: props.apiKey.creator.id,
       startTime: props.start,
       duration: props.duration,
+      hidden: !values.makePublic,
       apiKey: props.apiKey.key,
     });
 
-    if (isApiErrorCode(maybeApptRequest)) {
-      switch (maybeApptRequest) {
+    if (isApiErrorCode(maybeSession)) {
+      switch (maybeSession) {
         case "API_KEY_NONEXISTENT": {
           setStatus({
-            studentId: "",
-            message: "",
+            studentList: "",
+            name: "",
             result: "You have been automatically logged out. Please relogin.",
           });
           break;
         }
         case "USER_NONEXISTENT": {
           setStatus({
-            studentId: "This student does not exist.",
-            message: "",
-            result: "",
+            studentList: "",
+            name: "",
+            result: "Host account does not exist.",
           });
           break;
         }
         case "NEGATIVE_DURATION": {
-          setStatus("The duration you have selected is not valid.");
+          setStatus({
+            studentList: "",
+            name: "",
+            result: "The duration you have selected is not valid.",
+          });
           break;
         }
         default: {
           setStatus({
-            studentId: "",
-            message: "",
+            studentList: "",
+            name: "",
             result: "An unknown error has occurred",
           });
           break;
@@ -75,58 +79,60 @@ function CreateApptModal(props: CreateApptModalProps) {
       return;
     }
 
-    const maybeAppt = await newAppt({
-      apptRequestId: maybeApptRequest.apptRequestId,
-      message: values.message,
-      startTime: props.start,
-      duration: props.duration,
-      apiKey: props.apiKey.key
-    });
+    for (const studentId of values.studentList) {
+      const maybeCommittment = await newCommittment({
+        sessionId: maybeSession.sessionId,
+        attendeeId: studentId,
+        cancellable: values.makePublic,
+        apiKey: props.apiKey.key
+      });
 
-    if (isApiErrorCode(maybeAppt)) {
-      switch (maybeAppt) {
-        case "API_KEY_NONEXISTENT": {
-          setStatus({
-            studentId: "",
-            message: "",
-            result: "You have been automatically logged out. Please relogin.",
-          });
-          break;
+      // TODO handle all other error codes that are possible
+      if (isApiErrorCode(maybeCommittment)) {
+        switch (maybeCommittment) {
+          case "API_KEY_NONEXISTENT": {
+            setStatus({
+              studentList: "",
+              name: "",
+              result: "You have been automatically logged out. Please relogin.",
+            });
+            break;
+          }
+          case "API_KEY_UNAUTHORIZED": {
+            setStatus({
+              studentList: "",
+              name: "",
+              result: "You are not currently authorized to perform this action.",
+            });
+            break;
+          }
+          case "USER_NONEXISTENT": {
+            setStatus({
+              studentList: "This user does not exist.",
+              name: "",
+              result: "",
+            });
+            break;
+          }
+          default: {
+            setStatus({
+              studentList: "",
+              name: "",
+              result: "An unknown error has occurred",
+            });
+            break;
+          }
         }
-        case "API_KEY_UNAUTHORIZED": {
-          setStatus({
-            studentId: "",
-            message: "",
-            result: "You are not currently authorized to perform this action.",
-          });
-          break;
-        }
-        case "APPT_EXISTENT": {
-          setStatus({
-            studentId: "",
-            message: "",
-            result: "This appointment already exists.",
-          });
-          break;
-        }
-        default: {
-          setStatus({
-            studentId: "",
-            message: "",
-            result: "An unknown error has occurred",
-          });
-          break;
-        }
+        return;
       }
-    } else {
-      // On success close window
-      props.setShow(false);
     }
+
+    // if we didn't have an error close it
+    props.setShow(false);
   }
 
-
   return <Modal
-    className="CreateApptModal"
+    className="CreateSessionModal"
     show={props.show}
     onHide={() => props.setShow(false)}
     keyboard={false}
@@ -134,18 +140,19 @@ function CreateApptModal(props: CreateApptModalProps) {
     centered
   >
     <Modal.Header closeButton>
-      <Modal.Title id="modal-title">Create Appointment with Student</Modal.Title>
+      <Modal.Title id="modal-title">Create Session</Modal.Title>
     </Modal.Header>
     <Modal.Body>
-      <Formik<CreateApptValue>
+      <Formik<CreateSessionValue>
         onSubmit={onSubmit}
         initialValues={{
-          message: "",
-          studentId: null
+          name: "",
+          studentList: [],
+          makePublic: false
         }}
         initialStatus={{
-          message: "",
-          studentId: "",
+          name: "",
+          studentList: "",
           result: "",
         }}
       >
@@ -166,33 +173,37 @@ function CreateApptModal(props: CreateApptModalProps) {
               </Col>
             </Form.Group>
             <Form.Group as={Row}>
-              <Form.Label column sm={2}>Student Name</Form.Label>
+              <Form.Label column sm={2}>Name</Form.Label>
               <Col>
-                <SearchUserDropdown
-                  name="studentId"
-                  apiKey={props.apiKey}
-                  isInvalid={fprops.status.studentId !== ""}
-                  userKind="STUDENT"
-                  setFn={e => fprops.setFieldValue("studentId", e)} />
-                <Form.Text className="text-danger">{fprops.status.studentId}</Form.Text>
+                <Form.Control
+                  name="name"
+                  type="text"
+                  placeholder="Informative name"
+                  value={fprops.values.name}
+                  onChange={fprops.handleChange}
+                  isInvalid={fprops.status.name !== ""}
+                />
+                <Form.Text className="text-danger">{fprops.status.name}</Form.Text>
               </Col>
             </Form.Group>
             <Form.Group as={Row}>
-              <Form.Label column sm={2}>Message</Form.Label>
+              <Form.Label column sm={2}>Students Invited</Form.Label>
               <Col>
-                <Form.Control
-                  name="message"
-                  type="text"
-                  placeholder="Message"
-                  as="textarea"
-                  rows={3}
-                  value={fprops.values.message}
-                  onChange={fprops.handleChange}
-                  isInvalid={fprops.status.message !== ""}
-                />
-                <Form.Text className="text-danger">{fprops.status.message}</Form.Text>
+                <SearchMultiUser
+                  name="studentList"
+                  apiKey={props.apiKey}
+                  isInvalid={fprops.status.studentList !== ""}
+                  userKind="STUDENT"
+                  setFn={e => fprops.setFieldValue("studentList", e)} />
+                <Form.Text className="text-danger">{fprops.status.studentList}</Form.Text>
               </Col>
             </Form.Group>
+            <Form.Check
+              name="makePublic"
+              checked={fprops.values.makePublic}
+              onChange={fprops.handleChange}
+              label="Visible to all students"
+            />
             <Button type="submit"> Submit </Button>
             <br />
             <Form.Text className="text-danger">{fprops.status.result}</Form.Text>
@@ -203,4 +214,4 @@ function CreateApptModal(props: CreateApptModalProps) {
   </Modal>
 }
 
-export default CreateApptModal;
+export default CreateSessionModal;

@@ -9,10 +9,9 @@ import { Form, Popover, Container, CardDeck } from 'react-bootstrap';
 import { viewSession, viewSessionRequest, isApiErrorCode } from '../utils/utils';
 import UtilityWrapper from '../components/UtilityWrapper';
 
-import CreateApptModal from '../components/CreateApptModal';
-import ReviewApptRequestModal from '../components/ReviewApptRequestModal';
-import ApptTakeAttendanceModal from '../components/ApptTakeAttendanceModal';
-import ViewAttendanceModal from '../components/ViewAttendanceModal';
+import CreateSessionModal from '../components/CreateSessionModal';
+import ReviewSessionRequestModal from '../components/ReviewSessionRequestModal';
+import ManageSessionModal from '../components/ManageSessionModal';
 
 function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: boolean }) {
 
@@ -21,25 +20,23 @@ function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: bool
     start: new Date(x.startTime),
     end: new Date(x.startTime + x.duration),
     color: "#00000000",
-    kind: "Session",
     session: x
-  })
+  });
 
   const sessionRequestToEvent = (x: SessionRequest): EventInput => ({
     id: `SessionRequest:${x.sessionRequestId}`,
     start: new Date(x.startTime),
     end: new Date(x.startTime + x.duration),
     color: "#00000000",
-    kind: "SessionRequest",
-    session: x
-  })
+    sessionRequest: x
+  });
 
   const [start, setStart] = React.useState(0);
   const [duration, setDuration] = React.useState(0);
 
   const [showCreateSessionModal, setShowCreateSessionModal] = React.useState(false);
   const [showReviewSessionRequestModal, setShowReviewSessionRequestModal] = React.useState(false);
-  const [showViewSessionModal, setShowViewSessionModal] = React.useState(false);
+  const [showManageSessionModal, setShowManageSessionModal] = React.useState(false);
 
   const [selectedSession, setSelectedSession] = React.useState<Session | null>(null);
   const [selectedSessionRequest, setSelectedSessionRequest] = React.useState<SessionRequest | null>(null);
@@ -78,21 +75,21 @@ function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: bool
 
   const clickHandler = (eca: EventClickArg) => {
     const props = eca.event.extendedProps;
-    switch (props.kind) {
+    switch (eca.event.id.split(':')[0]) {
       case "Session": {
         setSelectedSession(props.session);
-        setSelectedSessionRequest(null);
+
         setShowCreateSessionModal(false);
         setShowReviewSessionRequestModal(false);
-        setShowViewSessionModal(true);
+        setShowManageSessionModal(true);
         break;
       }
       case "SessionRequest": {
-        setSelectedSession(null);
-        setSelectedSessionRequest(props.appt);
+        setSelectedSessionRequest(props.session);
+
         setShowCreateSessionModal(false);
         setShowReviewSessionRequestModal(true);
-        setShowViewSessionModal(false);
+        setShowManageSessionModal(false);
         break;
       }
     }
@@ -124,7 +121,7 @@ function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: bool
         selectMirror={true}
         events={eventSource}
         eventContent={UserCalendarCard}
-        unselectCancel=".CreateApptModal"
+        unselectCancel=".CreateSessionModal"
         eventClick={clickHandler}
         expandRows={true}
         businessHours={{
@@ -150,11 +147,11 @@ function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: bool
           setShowCreateSessionModal(false);
         }}
       />
-      <CreateApptModal
+      <CreateSessionModal
         apiKey={props.apiKey}
-        show={showCreateApptModal}
+        show={showCreateSessionModal}
         setShow={(a: boolean) => {
-          setShowCreateApptModal(a)
+          setShowCreateSessionModal(a)
           if (!a && calendarRef.current != null) {
             calendarRef.current.getApi().unselect();
           }
@@ -162,27 +159,20 @@ function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: bool
         start={start}
         duration={duration}
       />
+      {selectedSessionRequest == null ? <> </> :
+        <ReviewSessionRequestModal
+          show={showReviewSessionRequestModal}
+          setShow={setShowReviewSessionRequestModal}
+          sessionRequest={selectedSessionRequest}
+          apiKey={props.apiKey}
+        />
+      }
       {selectedSession == null ? <> </> :
-        <ReviewApptRequestModal
-          show={showReviewApptRequestModal}
-          setShow={setShowReviewApptRequestModal}
-          apptRequest={apptRequest}
+        <ManageSessionModal
+          show={showManageSessionModal}
+          setShow={setShowManageSessionModal}
+          session={selectedSession}
           apiKey={props.apiKey}
-        />
-      }
-      {appt == null ? <> </> :
-        <ApptTakeAttendanceModal
-          show={showTakeAttendanceApptModal}
-          setShow={setShowTakeAttendanceApptModal}
-          appt={appt}
-          apiKey={props.apiKey}
-        />
-      }
-      {attendance == null ? <> </> :
-        <ViewAttendanceModal
-          show={showViewAttendanceModal}
-          setShow={setShowViewAttendanceModal}
-          attendance={attendance}
         />
       }
     </div>

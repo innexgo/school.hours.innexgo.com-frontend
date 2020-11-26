@@ -1,45 +1,32 @@
 import React from "react";
 import { EventContentArg } from "@fullcalendar/react"
 
-function ApptRequestCard(props: { apptRequest: ApptRequest }) {
-  const apptRequest = props.apptRequest;
+function SessionRequestCard(props: { sessionRequest: SessionRequest }) {
+  const sessionRequest = props.sessionRequest;
   return (
     <div className="px-1 py-1 h-100 w-100 bg-danger text-light overflow-hidden" >
-      From: {apptRequest.attendee.name}
+      From: {sessionRequest.attendee.name}
       <br />
-        Msg: {apptRequest.message}
+      Msg: {sessionRequest.message}
     </div>
   )
 }
 
-function ApptCard(props: { appt: Appt }) {
-  const appt = props.appt;
-  return <div className="px-1 py-1 h-100 w-100 bg-warning text-dark overflow-hidden">
-    Appt: {appt.apptRequest.attendee.name}
-    <br />
-    Msg: {appt.message}
-  </div>
-}
-
-function AttendanceCard(props: { attendance: Attendance }) {
-  const attendance = props.attendance;
-  return <div className="px-1 py-1 h-100 w-100 bg-success text-light overflow-hidden">
-    Student: {attendance.appt.apptRequest.attendee.name}
-    <br />
-    {attendance.kind}
+function SessionCard(props: { session: Session }) {
+  const session = props.session;
+  return <div className="px-1 py-1 h-100 w-100 bg-primary text-dark overflow-hidden">
+    {session.name}
   </div>
 }
 
 
 function UserCalendarCard(eventInfo: EventContentArg) {
   const props = eventInfo.event.extendedProps;
-  switch (props.kind) {
-    case "ApptRequest":
-      return <ApptRequestCard apptRequest={props.apptRequest} />
-    case "Appt":
-      return <ApptCard appt={props.appt} />
-    case "Attendance":
-      return <AttendanceCard attendance={props.attendance} />
+  switch (eventInfo.event.id.split(':')[0]) {
+    case "SessionRequest":
+      return <SessionRequestCard sessionRequest={props.sessionRequest} />
+    case "Session":
+      return <SessionCard session={props.session} />
   }
 }
 

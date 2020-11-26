@@ -129,6 +129,7 @@ type NewSessionProps = {
   hostId: number
   startTime: number
   duration: number
+  hidden: boolean
   apiKey: string
 }
 
@@ -254,6 +255,14 @@ type ViewSessionRequestResponseProps = {
   message?: string,
   accepted?: Boolean,
   committmentId?: number,
+  attendeeId?: number,
+  hostId?: number,
+  startTime?: number,
+  minStartTime?: number,
+  maxStartTime?: number,
+  duration?: number,
+  minDuration?: number,
+  maxDuration?: number,
   offset?: number,
   count?: number,
   apiKey: string,
@@ -328,12 +337,12 @@ export async function schoolInfo(): Promise<SchoolInfo | ApiErrorCode> {
   return await fetchApi("misc/info/school/", getFormData({}));
 }
 
-type ResetPasswordProps = {
+type DoResetPasswordProps = {
   resetKey: string,
   newPassword: string,
 }
 
-export async function usePasswordReset(props: ResetPasswordProps): Promise<ApiErrorCode> {
+export async function doPasswordReset(props: DoResetPasswordProps): Promise<ApiErrorCode> {
   return await fetchApi("misc/usePasswordReset/", getFormData(props));
 }
 

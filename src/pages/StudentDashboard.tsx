@@ -6,55 +6,58 @@ import StudentDashboardLayout from '../components/StudentDashboardLayout';
 import StudentCalendarCard from '../components/StudentCalendarCard';
 
 import { Form, Popover, Container, CardDeck } from 'react-bootstrap';
-import { viewApptRequest, viewAttendance, viewAppt, isApiErrorCode } from '../utils/utils';
+import { isApiErrorCode, viewSessionRequest, viewSessionRequestResponse, viewCommittment, viewCommittmentResponse } from '../utils/utils';
 import UtilityWrapper from '../components/UtilityWrapper';
 
-import CreateApptRequestModal from '../components/CreateApptRequestModal';
-import ViewApptRequestModal from '../components/ViewApptRequestModal';
-import ViewApptModal from '../components/ViewApptModal';
-import ViewAttendanceModal from '../components/ViewAttendanceModal';
+import CreateSessionRequestModal from '../components/CreateSessionRequestModal';
 
 function StudentEventCalendar(props: StudentComponentProps & { showAllHours: boolean }) {
 
-  const apptRequestToEvent = (x: ApptRequest): EventInput => ({
-    id: `${x.apptRequestId}`,
+  const sessionRequestToEvent = (x: SessionRequest): EventInput => ({
+    id: `SessionRequest:${x.sessionRequestId}`,
     start: new Date(x.startTime),
     end: new Date(x.startTime + x.duration),
     color: "#00000000",
-    kind: "ApptRequest",
-    apptRequest: x
+    sessionRequest: x
   })
 
-  const apptToEvent = (x: Appt): EventInput => ({
-    id: `${x.apptRequest.apptRequestId}`,
-    start: new Date(x.startTime),
-    end: new Date(x.startTime + x.duration),
+  const sessionRequestResponseToEvent = (x: SessionRequestResponse): EventInput => ({
+    id: `SessionRequestResponse:${x.sessionRequest.sessionRequestId}`,
+    start: new Date(x.sessionRequest.startTime),
+    end: new Date(x.sessionRequest.startTime + x.sessionRequest.duration),
     color: "#00000000",
-    kind: "Appt",
-    appt: x
+    sessionRequestResponse: x
   })
 
-  const attendanceToEvent = (x: Attendance): EventInput => ({
-    id: `${x.appt.apptRequest.apptRequestId}`,
-    start: new Date(x.appt.startTime),
-    end: new Date(x.appt.startTime + x.appt.duration),
+  const committmentToEvent = (x: Committment): EventInput => ({
+    id: `Committment:${x.committmentId}`,
+    start: new Date(x.session.startTime),
+    end: new Date(x.session.startTime + x.session.duration),
     color: "#00000000",
-    kind: "Attendance",
-    attendance: x
+    committment: x
+  })
+
+  const committmentResponseToEvent = (x: CommittmentResponse): EventInput => ({
+    id: `CommittmentResponse:${x.committment.committmentId}`,
+    start: new Date(x.committment.session.startTime),
+    end: new Date(x.committment.session.startTime + x.committment.session.duration),
+    color: "#00000000",
+    committment: x
   })
 
   const [start, setStart] = React.useState(0);
   const [duration, setDuration] = React.useState(0);
 
-  const [showCreateApptRequestModal, setShowCreateApptRequestModal] = React.useState(false);
-  const [showViewApptRequestModal, setShowViewApptRequestModal] = React.useState(false);
-  const [showTakeAttendanceApptModal, setShowTakeAttendanceApptModal] = React.useState(false);
-  const [showViewAttendanceModal, setShowViewAttendanceModal] = React.useState(false);
+  const [showCreateSessionRequestModal, setShowCreateSessionRequestModal] = React.useState(false);
+  const [showViewSessionRequestModal, setShowViewSessionRequestModal] = React.useState(false);
+  const [showViewSessionRequestResponseModal, setShowViewSessionRequestResponseModal] = React.useState(false);
+  const [showViewCommittmentModal, setShowViewCommittmentModal] = React.useState(false);
+  const [showViewCommittmentResponseModal, setShowViewCommittmentResponseModal] = React.useState(false);
 
-
-  const [appt, setAppt] = React.useState<Appt | null>(null);
-  const [attendance, setAttendance] = React.useState<Attendance | null>(null);
-  const [apptRequest, setApptRequest] = React.useState<ApptRequest | null>(null);
+  const [selectedCommittment, setSelectedCommittment] = React.useState<Committment | null>(null);
+  const [selectedCommittmentResponse, setSelectedCommittmentResponse] = React.useState<CommittmentResponse | null>(null);
+  const [selectedSessionRequest, setSelectedSessionRequest] = React.useState<SessionRequest | null>(null);
+  const [selectedSessionRequestResponse, setSelectedSessionRequestResponse] = React.useState<SessionRequestResponse | null>(null);
 
   const calendarRef = React.useRef<FullCalendar | null>(null);
 
@@ -67,23 +70,31 @@ function StudentEventCalendar(props: StudentComponentProps & { showAllHours: boo
       timeZone: string;
     }) => {
 
-    const maybeApptRequests = await viewApptRequest({
+    const maybeSessionRequests = await viewSessionRequest({
       attendeeId: props.apiKey.creator.id,
       minStartTime: args.start.valueOf(),
       maxStartTime: args.end.valueOf(),
-      confirmed: false,
+      responded: false,
       apiKey: props.apiKey.key
     });
 
-    const maybeAppts = await viewAppt({
+    const maybeSessionRequestResponses = await viewSessionRequestResponse({
       attendeeId: props.apiKey.creator.id,
       minStartTime: args.start.valueOf(),
       maxStartTime: args.end.valueOf(),
-      attended: false,
+      accepted: false,
       apiKey: props.apiKey.key
     });
 
-    const maybeAttendances = await viewAttendance({
+    const maybeCommittments = await viewCommittment({
+      attendeeId: props.apiKey.creator.id,
+      minStartTime: args.start.valueOf(),
+      maxStartTime: args.end.valueOf(),
+      responded: false,
+      apiKey: props.apiKey.key
+    });
+
+    const maybeCommittmentResponses = await viewCommittmentResponse({
       attendeeId: props.apiKey.creator.id,
       minStartTime: args.start.valueOf(),
       maxStartTime: args.end.valueOf(),
@@ -91,34 +102,54 @@ function StudentEventCalendar(props: StudentComponentProps & { showAllHours: boo
     });
 
     return [
-      ...isApiErrorCode(maybeApptRequests) ? [] : maybeApptRequests.map(apptRequestToEvent),
-      ...isApiErrorCode(maybeAppts) ? [] : maybeAppts.map(apptToEvent),
-      ...isApiErrorCode(maybeAttendances) ? [] : maybeAttendances.map(attendanceToEvent),
+      ...isApiErrorCode(maybeSessionRequests) ? [] : maybeSessionRequests.map(sessionRequestToEvent),
+      ...isApiErrorCode(maybeSessionRequestResponses) ? [] : maybeSessionRequestResponses.map(sessionRequestResponseToEvent),
+      ...isApiErrorCode(maybeCommittments) ? [] : maybeCommittments.map(committmentToEvent),
+      ...isApiErrorCode(maybeCommittmentResponses) ? [] : maybeCommittmentResponses.map(committmentResponseToEvent),
     ];
   }
 
   const clickHandler = (eca: EventClickArg) => {
     const props = eca.event.extendedProps;
-    switch (props.kind) {
-      case "ApptRequest": {
-        setApptRequest(props.apptRequest);
-        setShowViewApptRequestModal(true);
-        setShowTakeAttendanceApptModal(false);
-        setShowViewAttendanceModal(false);
+    switch (eca.event.id.split(':')[0]) {
+      case "SessionRequest": {
+        setSelectedSessionRequest(props.sessionRequest);
+
+        setShowCreateSessionRequestModal(false);
+        setShowViewSessionRequestModal(true);
+        setShowViewSessionRequestResponseModal(false);
+        setShowViewCommittmentModal(false);
+        setShowViewCommittmentResponseModal(false);
         break;
       }
-      case "Appt": {
-        setAppt(props.appt);
-        setShowTakeAttendanceApptModal(true);
-        setShowViewApptRequestModal(false);
-        setShowViewAttendanceModal(false);
+      case "SessionRequestResponse": {
+        setSelectedSessionRequestResponse(props.sessionRequestResponse);
+
+        setShowCreateSessionRequestModal(false);
+        setShowViewSessionRequestModal(false);
+        setShowViewSessionRequestResponseModal(true);
+        setShowViewCommittmentModal(false);
+        setShowViewCommittmentResponseModal(false);
         break;
       }
-      case "Attendance": {
-        setAttendance(props.attendance);
-        setShowViewAttendanceModal(true);
-        setShowViewApptRequestModal(false);
-        setShowTakeAttendanceApptModal(false);
+      case "Committment": {
+        setSelectedCommittment(props.committment);
+
+        setShowCreateSessionRequestModal(false);
+        setShowViewSessionRequestModal(false);
+        setShowViewSessionRequestResponseModal(false);
+        setShowViewCommittmentModal(true);
+        setShowViewCommittmentResponseModal(false);
+        break;
+      }
+      case "CommittmentResponse": {
+        setSelectedCommittmentResponse(props.committmentResponse);
+
+        setShowCreateSessionRequestModal(false);
+        setShowViewSessionRequestModal(false);
+        setShowViewSessionRequestResponseModal(false);
+        setShowViewCommittmentModal(false);
+        setShowViewCommittmentResponseModal(true);
         break;
       }
     }
@@ -165,7 +196,7 @@ function StudentEventCalendar(props: StudentComponentProps & { showAllHours: boo
           if (dsa.start.valueOf() > Date.now()) {
             setStart(dsa.start.valueOf());
             setDuration(dsa.end.valueOf() - dsa.start.valueOf());
-            setShowCreateApptRequestModal(true);
+            setShowCreateSessionRequestModal(true);
           } else {
             if (calendarRef.current != null) {
               calendarRef.current.getApi().unselect();
@@ -173,14 +204,14 @@ function StudentEventCalendar(props: StudentComponentProps & { showAllHours: boo
           }
         }}
         unselect={() => {
-          setShowCreateApptRequestModal(false);
+          setShowCreateSessionRequestModal(false);
         }}
       />
-      <CreateApptRequestModal
+      <CreateSessionRequestModal
         apiKey={props.apiKey}
-        show={showCreateApptRequestModal}
+        show={showCreateSessionRequestModal}
         setShow={(a: boolean) => {
-          setShowCreateApptRequestModal(a)
+          setShowCreateSessionRequestModal(a)
           if (!a && calendarRef.current != null) {
             calendarRef.current.getApi().unselect();
           }
@@ -188,27 +219,33 @@ function StudentEventCalendar(props: StudentComponentProps & { showAllHours: boo
         start={start}
         duration={duration}
       />
-      {apptRequest == null ? <> </> :
-        <ViewApptRequestModal
+{/*
+selectedCommittment
+selectedCommittmentResponse
+selectedSessionRequest
+selectedSessionRequestResponse
+      {selectedSessionRequest== null ? {} :
+        <ViewSessionRequestModal
           show={showViewApptRequestModal}
           setShow={setShowViewApptRequestModal}
           apptRequest={apptRequest}
         />
       }
-      {appt == null ? <> </> :
+      {appt == null ? {}:
         <ViewApptModal
           show={showTakeAttendanceApptModal}
           setShow={setShowTakeAttendanceApptModal}
           appt={appt}
         />
       }
-      {attendance == null ? <> </> :
+      {attendance == null ? {} :
         <ViewAttendanceModal
           show={showViewAttendanceModal}
           setShow={setShowViewAttendanceModal}
           attendance={attendance}
         />
       }
+      */}
     </div>
   )
 }
