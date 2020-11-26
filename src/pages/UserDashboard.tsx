@@ -9,9 +9,10 @@ import { Form, Popover, Container, CardDeck } from 'react-bootstrap';
 import { viewSession, viewSessionRequest, isApiErrorCode } from '../utils/utils';
 import UtilityWrapper from '../components/UtilityWrapper';
 
-import CreateSessionModal from '../components/CreateSessionModal';
-import ReviewSessionRequestModal from '../components/ReviewSessionRequestModal';
-import ManageSessionModal from '../components/ManageSessionModal';
+import UserCreateSession from '../components/UserCreateSession';
+import UserReviewSessionRequest from '../components/UserReviewSessionRequest';
+import UserManageSession from '../components/UserManageSession';
+import DisplayModal from '../components/DisplayModal';
 
 function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: boolean }) {
 
@@ -34,7 +35,14 @@ function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: bool
   const [start, setStart] = React.useState(0);
   const [duration, setDuration] = React.useState(0);
 
-  const [showCreateSessionModal, setShowCreateSessionModal] = React.useState(false);
+  // Closing it should also unselect anything using it
+  const [showCreateSessionModal, setShowCreateSessionModalRaw] = React.useState(false);
+  const setShowCreateSessionModal = (a: boolean) => {
+    setShowCreateSessionModalRaw(a)
+    if (!a && calendarRef.current != null) {
+      calendarRef.current.getApi().unselect();
+    }
+  }
   const [showReviewSessionRequestModal, setShowReviewSessionRequestModal] = React.useState(false);
   const [showManageSessionModal, setShowManageSessionModal] = React.useState(false);
 
@@ -121,7 +129,7 @@ function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: bool
         selectMirror={true}
         events={eventSource}
         eventContent={UserCalendarCard}
-        unselectCancel=".CreateSessionModal"
+        unselectCancel=".modal-content"
         eventClick={clickHandler}
         expandRows={true}
         businessHours={{
@@ -147,33 +155,39 @@ function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: bool
           setShowCreateSessionModal(false);
         }}
       />
-      <CreateSessionModal
-        apiKey={props.apiKey}
+      <DisplayModal
+        title="Create New Session"
         show={showCreateSessionModal}
-        setShow={(a: boolean) => {
-          setShowCreateSessionModal(a)
-          if (!a && calendarRef.current != null) {
-            calendarRef.current.getApi().unselect();
-          }
-        }}
-        start={start}
-        duration={duration}
-      />
-      {selectedSessionRequest == null ? <> </> :
-        <ReviewSessionRequestModal
-          show={showReviewSessionRequestModal}
-          setShow={setShowReviewSessionRequestModal}
-          sessionRequest={selectedSessionRequest}
+        setShow={setShowCreateSessionModal}
+      >
+        <UserCreateSession
           apiKey={props.apiKey}
+          start={start}
+          duration={duration}
+          postSubmit={() => setShowCreateSessionModal(false)}
         />
+      </DisplayModal>
+      {selectedSessionRequest == null ? <> </> :
+        <DisplayModal
+          title="Review Student Request"
+          show={showCreateSessionModal}
+          setShow={setShowCreateSessionModal}
+        >
+          <UserReviewSessionRequest
+            sessionRequest={selectedSessionRequest}
+            apiKey={props.apiKey}
+            postSubmit={() => setShowReviewSessionRequestModal(false)}
+          />
+        </DisplayModal>
       }
       {selectedSession == null ? <> </> :
-        <ManageSessionModal
+        <DisplayModal
+          title="Manage Session"
           show={showManageSessionModal}
           setShow={setShowManageSessionModal}
-          session={selectedSession}
-          apiKey={props.apiKey}
-        />
+        >
+          <UserManageSession session={selectedSession} apiKey={props.apiKey}/>
+        </DisplayModal>
       }
     </div>
   )

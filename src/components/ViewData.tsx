@@ -1,5 +1,5 @@
 import React from 'react'
-import { Table, Button } from 'react-bootstrap';
+import { Table } from 'react-bootstrap';
 import format from 'date-fns/format';
 
 const ToggleExpandButton = (props: { expand: boolean, setExpand: (b: boolean) => void }) =>
@@ -33,6 +33,10 @@ export const ViewUser = (props: {
           <tr>
             <th>Email</th>
             <td>{props.user.email}</td>
+          </tr>
+          <tr>
+            <th>Kind</th>
+            <td>{props.user.kind}</td>
           </tr>
         </tbody>
       </Table>
@@ -199,7 +203,7 @@ export const ViewCommittment = (props: {
           </tr>
           <tr>
             <th>Mandatory</th>
-            <td>{!props.committment.cancellable}</td>
+            <td>{`${!props.committment.cancellable}`}</td>
           </tr>
         </tbody>
       </Table>

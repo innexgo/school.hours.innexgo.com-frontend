@@ -8,8 +8,10 @@ import StudentCalendarCard from '../components/StudentCalendarCard';
 import { Form, Popover, Container, CardDeck } from 'react-bootstrap';
 import { isApiErrorCode, viewSessionRequest, viewSessionRequestResponse, viewCommittment, viewCommittmentResponse } from '../utils/utils';
 import UtilityWrapper from '../components/UtilityWrapper';
+import DisplayModal from '../components/DisplayModal';
+import { ViewCommittment, ViewCommittmentResponse } from '../components/ViewData';
 
-import CreateSessionRequestModal from '../components/CreateSessionRequestModal';
+import StudentCreateSessionRequest from '../components/StudentCreateSessionRequest';
 
 function StudentEventCalendar(props: StudentComponentProps & { showAllHours: boolean }) {
 
@@ -48,7 +50,15 @@ function StudentEventCalendar(props: StudentComponentProps & { showAllHours: boo
   const [start, setStart] = React.useState(0);
   const [duration, setDuration] = React.useState(0);
 
-  const [showCreateSessionRequestModal, setShowCreateSessionRequestModal] = React.useState(false);
+  // Closing it should also unselect anything using it
+  const [showCreateSessionRequestModal, setShowCreateSessionRequestModalRaw] = React.useState(false);
+  const setShowCreateSessionRequestModal = (a: boolean) => {
+    setShowCreateSessionRequestModalRaw(a)
+    if (!a && calendarRef.current != null) {
+      calendarRef.current.getApi().unselect();
+    }
+  }
+
   const [showViewSessionRequestModal, setShowViewSessionRequestModal] = React.useState(false);
   const [showViewSessionRequestResponseModal, setShowViewSessionRequestResponseModal] = React.useState(false);
   const [showViewCommittmentModal, setShowViewCommittmentModal] = React.useState(false);
@@ -181,7 +191,7 @@ function StudentEventCalendar(props: StudentComponentProps & { showAllHours: boo
         selectMirror={true}
         events={eventSource}
         eventContent={StudentCalendarCard}
-        unselectCancel=".CreateApptRequestModal"
+        unselectCancel=".modal-content"
         eventClick={clickHandler}
         expandRows={true}
         businessHours={{
@@ -207,19 +217,39 @@ function StudentEventCalendar(props: StudentComponentProps & { showAllHours: boo
           setShowCreateSessionRequestModal(false);
         }}
       />
-      <CreateSessionRequestModal
-        apiKey={props.apiKey}
+      <DisplayModal
+        title="Create Appointment Request"
         show={showCreateSessionRequestModal}
-        setShow={(a: boolean) => {
-          setShowCreateSessionRequestModal(a)
-          if (!a && calendarRef.current != null) {
-            calendarRef.current.getApi().unselect();
-          }
-        }}
-        start={start}
-        duration={duration}
-      />
-{/*
+        setShow={setShowCreateSessionRequestModal}
+      >
+        <StudentCreateSessionRequest
+          apiKey={props.apiKey}
+          start={start}
+          duration={duration}
+          postSubmit={() => setShowCreateSessionRequestModal(false)}
+        />
+      </DisplayModal>
+      {selectedCommittment == null ? <div /> :
+        <DisplayModal
+          title="View Committment"
+          show={showViewCommittmentModal}
+          setShow={setShowViewCommittmentModal}
+        >
+          <ViewCommittment committment={selectedCommittment} expanded />
+        </DisplayModal>
+      }
+      {selectedCommittmentResponse == null ? <div /> :
+        <DisplayModal
+          title="View Attendance"
+          show={showViewCommittmentResponseModal}
+          setShow={setShowViewCommittmentResponseModal}
+        >
+          <ViewCommittmentResponse committmentResponse={selectedCommittmentResponse} expanded />
+        </DisplayModal>
+      }
+
+
+      {/*
 selectedCommittment
 selectedCommittmentResponse
 selectedSessionRequest

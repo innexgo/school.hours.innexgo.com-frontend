@@ -14,11 +14,10 @@ function SessionRequestCard(props: { sessionRequest: SessionRequest }) {
 
 function SessionCard(props: { session: Session }) {
   const session = props.session;
-  return <div className="px-1 py-1 h-100 w-100 bg-primary text-dark overflow-hidden">
+  return <div className="px-1 py-1 h-100 w-100 bg-primary text-light overflow-hidden">
     {session.name}
   </div>
 }
-
 
 function UserCalendarCard(eventInfo: EventContentArg) {
   const props = eventInfo.event.extendedProps;

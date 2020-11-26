@@ -313,6 +313,7 @@ type ViewCommittmentResponseProps = {
   duration?: number,
   minDuration?: number,
   maxDuration?: number,
+  sessionId?: number,
   offset?: number,
   count?: number,
   apiKey: string,

@@ -8,11 +8,12 @@ type DisplayModalProps = {
   children: React.ReactNode
 }
 
-function DisplayModal(props:DisplayModalProps) {
+export default function DisplayModal(props:DisplayModalProps) {
   return <Modal
     show={props.show}
     onHide={() => props.setShow(false)}
     keyboard={false}
+    backdrop="static"
     size="lg"
     centered
   >
