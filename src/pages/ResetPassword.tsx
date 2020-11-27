@@ -1,7 +1,7 @@
 import React from 'react';
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
 import { Card, Button, Form, } from 'react-bootstrap'
-import { doPasswordReset, isApiErrorCode, isPasswordValid } from '../utils/utils';
+import { doPasswordReset, isPasswordValid } from '../utils/utils';
 
 import SimpleLayout from '../components/SimpleLayout';
 
@@ -32,60 +32,55 @@ function ResetPasswordForm(props: ResetPasswordProps) {
       return;
     }
 
-    const maybeApiKey = await doPasswordReset({
+    const passwordResetResult = await doPasswordReset({
       resetKey: props.resetKey,
       newPassword: values.password1,
     });
-
-    if (!isApiErrorCode(maybeApiKey)) {
-      // on success set the api key
-      setStatus({
-        failureMessage: "",
-        successMessage: "Password successfully changed."
-      });
-    } else {
-      // otherwise display errors
-      switch (maybeApiKey) {
-        case "PASSWORD_RESET_KEY_NONEXISTENT": {
-          setStatus({
-            failureMessage: "Invalid password reset link.",
-            successMessage: ""
-          });
-          break;
-        }
-        case "PASSWORD_RESET_KEY_TIMED_OUT": {
-          setStatus({
-            failureMessage: "Password reset link timed out.",
-            successMessage: ""
-          });
-          break;
-        }
-        case "PASSWORD_RESET_KEY_INVALID": {
-          setStatus({
-            failureMessage: "Password reset link may only be used once.",
-            successMessage: ""
-          });
-          break;
-        }
-        case "PASSWORD_INSECURE": {
-          setErrors({
-            password1: "Password is of insufficient complexity"
-          });
-          break;
-        }
-        default: {
-          console.log(maybeApiKey);
-          setStatus({
-            failureMessage: "An unknown or network error has occured while trying to reset password.",
-            successMessage: ""
-          });
-          break;
-        }
+    switch (passwordResetResult) {
+      case "OK": {
+        setStatus({
+          failureMessage: "",
+          successMessage: "Password successfully changed."
+        });
+        break;
       }
-      return;
+      case "PASSWORD_RESET_KEY_NONEXISTENT": {
+        setStatus({
+          failureMessage: "Invalid password reset link.",
+          successMessage: ""
+        });
+        break;
+      }
+      case "PASSWORD_RESET_KEY_TIMED_OUT": {
+        setStatus({
+          failureMessage: "Password reset link timed out.",
+          successMessage: ""
+        });
+        break;
+      }
+      case "PASSWORD_RESET_KEY_INVALID": {
+        setStatus({
+          failureMessage: "Password reset link may only be used once.",
+          successMessage: ""
+        });
+        break;
+      }
+      case "PASSWORD_INSECURE": {
+        setErrors({
+          password1: "Password is of insufficient complexity"
+        });
+        break;
+      }
+      default: {
+        console.log(passwordResetResult);
+        setStatus({
+          failureMessage: "An unknown or network error has occured while trying to reset password.",
+          successMessage: ""
+        });
+        break;
+      }
     }
   }
-
   return <>
     <Formik<ResetPasswordValue>
       onSubmit={onSubmit}
@@ -138,6 +133,7 @@ function ResetPasswordForm(props: ResetPasswordProps) {
 }
 
 function ResetPassword() {
+  // get passwrd reset key from url
   const resetKey = new URLSearchParams(window.location.search).get("resetKey") ?? "";
   return <SimpleLayout>
     <div className="h-100 w-100 d-flex">

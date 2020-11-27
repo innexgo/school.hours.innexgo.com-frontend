@@ -63,6 +63,7 @@ const ApiErrorCodes = [
   "SESSION_CANNOT_CREATE_FOR_OTHERS_STUDENT",
   "SESSION_REQUEST_RESPONSE_EXISTENT",
   "SESSION_REQUEST_RESPONSE_CANNOT_CANCEL_STUDENT",
+  "COMMITTMENT_EXISTENT",
   "COMMITTMENT_NONEXISTENT",
   "COMMITTMENT_CANNOT_CREATE_FOR_OTHERS_STUDENT",
   "COMMITTMENT_CANNOT_CREATE_HIDDEN_STUDENT",
@@ -344,7 +345,7 @@ type DoResetPasswordProps = {
 }
 
 export async function doPasswordReset(props: DoResetPasswordProps): Promise<ApiErrorCode> {
-  return await fetchApi("misc/usePasswordReset/", getFormData(props));
+  return await fetchApi("misc/usePasswordResetKey/", getFormData(props));
 }
 
 export function isApiErrorCode(maybeApiErrorCode: any): maybeApiErrorCode is ApiErrorCode {
