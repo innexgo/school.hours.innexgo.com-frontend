@@ -23,7 +23,7 @@ function getFormData(data: object) {
 }
 
 // This function is guaranteed to only return ApiErrorCode | object
-export async function fetchApi(url: string, data: FormData) {
+async function fetchApi(url: string, data: FormData) {
   // Catch all errors and always return a response
   const resp = await (async () => {
     try {

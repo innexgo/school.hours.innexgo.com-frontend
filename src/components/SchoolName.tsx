@@ -2,7 +2,7 @@ import React from 'react'
 import { schoolInfo, isApiErrorCode } from '../utils/utils'
 import { Async } from 'react-async';
 
-const getSchoolInfo = async () => {
+export const getSchoolInfo = async () => {
   const maybeSchoolInfo = await schoolInfo();
   if (isApiErrorCode(maybeSchoolInfo)) {
     throw new Error();

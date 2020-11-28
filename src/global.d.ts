@@ -1,7 +1,8 @@
 declare global {
   type SchoolInfo = {
     name: string,
-    domain: string,
+    studentEmailSuffix: string,
+    userEmailSuffix: string,
   }
 
   type UserKind = "STUDENT" | "USER" | "ADMIN"

@@ -127,6 +127,7 @@ function ManageSessionModal(props: ManageSessionModalProps) {
                               <Form.Control
                                 as="select"
                                 size="sm"
+                                custom
                                 name="committmentResponseKind"
                                 onChange={fprops.handleChange}
                                 placeholder="Message"
@@ -169,6 +170,10 @@ function ManageSessionModal(props: ManageSessionModalProps) {
                     // TODO handle all other error codes that are possible
                     if (isApiErrorCode(maybeCommittment)) {
                       switch (maybeCommittment) {
+                        case "COMMITTMENT_EXISTENT": {
+                          // Committment existent is actually OK, we don't have to make an error
+                          continue;
+                        }
                         case "API_KEY_NONEXISTENT": {
                           setStatus({
                             studentList: "",

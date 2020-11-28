@@ -23,7 +23,7 @@ function CreateSessionModal(props: CreateSessionModalProps) {
   const onSubmit = async (values: CreateSessionValue, { setStatus }: FormikHelpers<CreateSessionValue>) => {
     if (values.name === "") {
       setStatus({
-        name: "Please enter an informative name.",
+        name: "Please enter session name",
         studentList: "",
         resultFailure: "",
       });
@@ -85,11 +85,13 @@ function CreateSessionModal(props: CreateSessionModalProps) {
         apiKey: props.apiKey.key
       });
 
-      // TODO when creating a committment, check to see if another committment exists before creating
-
       // TODO handle all other error codes that are possible
       if (isApiErrorCode(maybeCommittment)) {
         switch (maybeCommittment) {
+          case "COMMITTMENT_EXISTENT": {
+            // not an error;
+            continue;
+          }
           case "API_KEY_NONEXISTENT": {
             setStatus({
               studentList: "",
@@ -167,7 +169,7 @@ function CreateSessionModal(props: CreateSessionModalProps) {
               <Form.Control
                 name="name"
                 type="text"
-                placeholder="Informative name"
+                placeholder="Session Name"
                 value={fprops.values.name}
                 onChange={fprops.handleChange}
                 isInvalid={fprops.status.name !== ""}
@@ -175,6 +177,7 @@ function CreateSessionModal(props: CreateSessionModalProps) {
               <Form.Text className="text-danger">{fprops.status.name}</Form.Text>
             </Col>
           </Form.Group>
+          <br/>
           <Form.Group as={Row}>
             <Form.Label column sm={2}>Students Invited</Form.Label>
             <Col>

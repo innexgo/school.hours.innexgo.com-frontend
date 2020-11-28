@@ -14,7 +14,7 @@ export default function DisplayModal(props:DisplayModalProps) {
     onHide={() => props.setShow(false)}
     keyboard={false}
     backdrop="static"
-    size="lg"
+    size="xl"
     centered
   >
     <Modal.Header closeButton>

@@ -13,16 +13,16 @@ import { newSessionRequestResponse, newSession, newCommittment, viewSession, isA
 type CalendarWidgetProps = {
   sessionRequest: SessionRequest;
   apiKey: ApiKey;
-  setFieldValue: (f:string, a: number | null) => void;
+  setFieldValue: (f: string, a: number | null) => void;
   sessionId: number | null
 }
 
 class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
 
   render() {
-      const setStartTime= (x:number|null) => this.props.setFieldValue("startTime", x);
-      const setDuration= (x:number|null) => this.props.setFieldValue("duration", x);
-      const setSessionId= (x:number|null) => this.props.setFieldValue("sessionId", x);
+    const setStartTime = (x: number | null) => this.props.setFieldValue("startTime", x);
+    const setDuration = (x: number | null) => this.props.setFieldValue("duration", x);
+    const setSessionId = (x: number | null) => this.props.setFieldValue("sessionId", x);
 
     return <>
       <FullCalendar
@@ -157,7 +157,7 @@ function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
       }
 
       if (values.newSessionName === "") {
-        setErrors({ newSessionName: "Please enter an informative name" });
+        setErrors({ newSessionName: "Please enter a name for the session." });
         return;
       }
 
@@ -205,7 +205,16 @@ function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
     // TODO handle all other error codes that are possible
     // TODO if committment exists, we can just grab that
     if (isApiErrorCode(maybeCommittment)) {
-      setStatus("An unknown error has occurred while creating committment.");
+      switch (maybeCommittment) {
+        case "COMMITTMENT_EXISTENT": {
+          setStatus("Student is already scheduled for this session.");
+          break;
+        }
+        default: {
+          setStatus("An unknown error has occurred while creating committment.");
+          break;
+        }
+      }
       return;
     }
 
@@ -253,12 +262,15 @@ function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
         startTime: null,
         duration: null,
         sessionId: null,
-        newSessionName: "",
+        newSessionName: `${props.sessionRequest.host.name} - ${props.sessionRequest.attendee.name}`,
         newSessionPublic: false
       }}
       initialStatus="">
-      {(fprops) => (
-        <Row className="UserReviewSessionRequest">
+      {(fprops) => <Form
+        className="UserReviewSessionRequest"
+        noValidate
+        onSubmit={fprops.handleSubmit} >
+        <Row>
           <Col>
             <Card>
               <Card.Body>
@@ -267,82 +279,91 @@ function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
               </Card.Body>
             </Card>
             <br />
-            <Form
-              noValidate
-              onSubmit={fprops.handleSubmit} >
-              <Form.Group>
-                <Form.Control
-                  name="message"
-                  type="text"
-                  placeholder="(Optional) Message"
-                  as="textarea"
-                  rows={3}
-                  onChange={fprops.handleChange}
-                />
-              </Form.Group>
-              <br />
-              <div>
-                <ToggleButton
-                  key={0}
-                  type="radio"
-                  name="radio"
-                  value="ACCEPT"
-                  checked={fprops.values.accepted === true}
-                  onChange={_ => fprops.setFieldValue("accepted", true)}
-                  className="btn-success"
-                >
-                  Accept
-                </ToggleButton>
-                <ToggleButton
-                  key={1}
-                  type="radio"
-                  name="radio"
-                  value="REJECT"
-                  checked={fprops.values.accepted === false}
-                  onChange={_ => fprops.setFieldValue("accepted", false)}
-                  className="btn-danger"
-                >
-                  Reject
-                </ToggleButton>
-              </div>
-              <Form.Text className="text-danger">{fprops.errors.accepted}</Form.Text>
-              <br />
-              <Button type="submit" >Submit</Button>
-              <br />
-              <Form.Text className="text-danger">{fprops.status}</Form.Text>
-            </Form>
-          </Col>
-          <Col>
-            {/*We're gonna use React.memo here because rerendering the calendar is laggy*/}
-            <CalendarWidget
-              {...props}
-              setFieldValue={fprops.setFieldValue}
-              sessionId={fprops.values.sessionId}
-            />
-            <Form.Text className="text-danger">{fprops.status.sessionSelect}</Form.Text>
-            <Form.Check
-              name="newSessionPublic"
-              disabled={fprops.values.startTime === null || fprops.values.duration === null}
-              checked={fprops.values.newSessionPublic}
-              onChange={fprops.handleChange}
-              label="Visible to all students"
-              isInvalid={!!fprops.errors.newSessionPublic}
-              feedback={fprops.errors.newSessionPublic}
-            />
             <Form.Group>
+              <Form.Control
+                name="message"
+                type="text"
+                placeholder="(Optional) Message"
+                as="textarea"
+                rows={2}
+                onChange={fprops.handleChange}
+              />
+            </Form.Group>
+            <br />
+            <Form.Group  hidden={fprops.values.startTime === null || fprops.values.duration === null} >
+              <Form.Label>New Session Name</Form.Label>
               <Form.Control
                 name="newSessionName"
                 type="text"
-                disabled={fprops.values.startTime === null || fprops.values.duration === null}
-                placeholder="Informative name"
+                placeholder="New session name"
                 value={fprops.values.newSessionName}
                 onChange={fprops.handleChange}
                 isInvalid={!!fprops.errors.newSessionName}
               />
+              <Form.Text className="text-muted">
+                You can customize the session name.
+              </Form.Text>
+              <br/>
               <Form.Text className="text-danger">{fprops.errors.newSessionName}</Form.Text>
             </Form.Group>
+            <br/>
+            <Form.Group hidden={fprops.values.startTime === null || fprops.values.duration === null} >
+              <Form.Check
+                name="newSessionPublic"
+                checked={fprops.values.newSessionPublic}
+                onChange={fprops.handleChange}
+                label="New session visible to all students"
+                isInvalid={!!fprops.errors.newSessionPublic}
+                feedback={fprops.errors.newSessionPublic}
+              />
+            </Form.Group>
           </Col>
-        </Row>)}
+          <Col>
+            <Form.Group>
+              <CalendarWidget
+                {...props}
+                setFieldValue={fprops.setFieldValue}
+                sessionId={fprops.values.sessionId}
+              />
+              <Form.Text className="text-muted">
+                Calendar displays a list of all sessions you have scheduled for this day.
+                You may either assign a student to a preexisting session by clicking on the gray calendar item,
+                or you can drag out a portion of the calendar to create a new session.
+                If you create a new session, you can choose the name and visibility.
+              </Form.Text>
+              <br />
+              <Form.Text className="text-danger">{fprops.errors.sessionId}</Form.Text>
+            </Form.Group>
+          </Col>
+        </Row>
+        <br />
+        <Form.Group>
+          <ToggleButton
+            key={0}
+            type="radio"
+            name="radio"
+            value="ACCEPT"
+            checked={fprops.values.accepted === true}
+            onChange={_ => fprops.setFieldValue("accepted", true)}
+            className="btn-success"
+          > Accept </ToggleButton>
+          <ToggleButton
+            key={1}
+            type="radio"
+            name="radio"
+            value="REJECT"
+            checked={fprops.values.accepted === false}
+            onChange={_ => fprops.setFieldValue("accepted", false)}
+            className="btn-danger"
+          > Reject </ToggleButton>
+          <br />
+          <Form.Text className="text-danger">{fprops.errors.accepted}</Form.Text>
+        </Form.Group>
+        <br />
+        <Button type="submit" >Submit</Button>
+        <br />
+        <Form.Text className="text-danger">{fprops.status}</Form.Text>
+      </Form>}
     </Formik>
   </>
 }
