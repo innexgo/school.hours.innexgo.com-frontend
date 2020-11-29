@@ -4,7 +4,7 @@ import interactionPlugin from '@fullcalendar/interaction'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import { Card, Row, Col, Button, Form } from 'react-bootstrap';
 import ToggleButton from "react-bootstrap/ToggleButton";
-import { Formik, FormikHelpers, FormikErrors } from 'formik';
+import { Formik, FormikHelpers} from 'formik';
 
 import { ViewSessionRequest } from '../components/ViewData';
 import { newSessionRequestResponse, newSession, newCommittment, viewSession, isApiErrorCode } from '../utils/utils';
