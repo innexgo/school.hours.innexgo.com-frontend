@@ -129,7 +129,7 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
                 name="userId"
                 isInvalid={fprops.status.userId !== ""}
                 apiKey={props.apiKey}
-                userKind={"USER"} setFn={e => fprops.setFieldValue("userId", e)} />
+                userKind={"USER"} setFn={e => fprops.setFieldValue("userId", e?.id)} />
               <Form.Text className="text-danger">{fprops.status.userId}</Form.Text>
             </Col>
           </Form.Group>

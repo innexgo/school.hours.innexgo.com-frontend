@@ -4,7 +4,7 @@ import interactionPlugin from '@fullcalendar/interaction'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import { Card, Row, Col, Button, Form } from 'react-bootstrap';
 import ToggleButton from "react-bootstrap/ToggleButton";
-import { Formik, FormikHelpers} from 'formik';
+import { Formik, FormikHelpers } from 'formik';
 
 import { ViewSessionRequest } from '../components/ViewData';
 import { newSessionRequestResponse, newSession, newCommittment, viewSession, isApiErrorCode } from '../utils/utils';
@@ -103,6 +103,7 @@ function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
     message: string,
   }
 
+  const defaultSessionName = `${props.sessionRequest.host.name} - ${props.sessionRequest.attendee.name}`;
 
   const onSubmit = async (values: ReviewSessionRequestValues,
     { setStatus, setErrors, }: FormikHelpers<ReviewSessionRequestValues>) => {
@@ -156,13 +157,16 @@ function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
         return;
       }
 
+      let sessionName: string;
+
       if (values.newSessionName === "") {
-        setErrors({ newSessionName: "Please enter a name for the session." });
-        return;
+        sessionName = defaultSessionName;
+      } else {
+        sessionName = values.newSessionName;
       }
 
       const maybeSession = await newSession({
-        name: values.newSessionName,
+        name: sessionName,
         hostId: props.apiKey.creator.id,
         startTime: values.startTime,
         duration: values.duration,
@@ -262,7 +266,7 @@ function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
         startTime: null,
         duration: null,
         sessionId: null,
-        newSessionName: `${props.sessionRequest.host.name} - ${props.sessionRequest.attendee.name}`,
+        newSessionName: "",
         newSessionPublic: false
       }}
       initialStatus="">
@@ -289,34 +293,6 @@ function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
                 onChange={fprops.handleChange}
               />
             </Form.Group>
-            <br />
-            <Form.Group  hidden={fprops.values.startTime === null || fprops.values.duration === null} >
-              <Form.Label>New Session Name</Form.Label>
-              <Form.Control
-                name="newSessionName"
-                type="text"
-                placeholder="New session name"
-                value={fprops.values.newSessionName}
-                onChange={fprops.handleChange}
-                isInvalid={!!fprops.errors.newSessionName}
-              />
-              <Form.Text className="text-muted">
-                You can customize the session name.
-              </Form.Text>
-              <br/>
-              <Form.Text className="text-danger">{fprops.errors.newSessionName}</Form.Text>
-            </Form.Group>
-            <br/>
-            <Form.Group hidden={fprops.values.startTime === null || fprops.values.duration === null} >
-              <Form.Check
-                name="newSessionPublic"
-                checked={fprops.values.newSessionPublic}
-                onChange={fprops.handleChange}
-                label="New session visible to all students"
-                isInvalid={!!fprops.errors.newSessionPublic}
-                feedback={fprops.errors.newSessionPublic}
-              />
-            </Form.Group>
           </Col>
           <Col>
             <Form.Group>
@@ -325,17 +301,43 @@ function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
                 setFieldValue={fprops.setFieldValue}
                 sessionId={fprops.values.sessionId}
               />
+              {/*
               <Form.Text className="text-muted">
                 Calendar displays a list of all sessions you have scheduled for this day.
                 You may either assign a student to a preexisting session by clicking on the gray calendar item,
                 or you can drag out a portion of the calendar to create a new session.
                 If you create a new session, you can choose the name and visibility.
               </Form.Text>
+              */}
               <br />
               <Form.Text className="text-danger">{fprops.errors.sessionId}</Form.Text>
             </Form.Group>
           </Col>
         </Row>
+        <br />
+        <Form.Group hidden={fprops.values.startTime === null || fprops.values.duration === null} >
+          <Form.Label>New Session Name</Form.Label>
+          <Form.Control
+            name="newSessionName"
+            type="text"
+            placeholder={`${defaultSessionName} (default)`}
+            value={fprops.values.newSessionName}
+            onChange={fprops.handleChange}
+            isInvalid={!!fprops.errors.newSessionName}
+          />
+          <Form.Text className="text-danger">{fprops.errors.newSessionName}</Form.Text>
+        </Form.Group>
+        <br />
+        <Form.Group hidden={fprops.values.startTime === null || fprops.values.duration === null} >
+          <Form.Check
+            name="newSessionPublic"
+            checked={fprops.values.newSessionPublic}
+            onChange={fprops.handleChange}
+            label="New session visible to all students"
+            isInvalid={!!fprops.errors.newSessionPublic}
+            feedback={fprops.errors.newSessionPublic}
+          />
+        </Form.Group>
         <br />
         <Form.Group>
           <ToggleButton

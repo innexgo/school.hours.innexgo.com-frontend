@@ -20,18 +20,19 @@ function CreateSessionModal(props: CreateSessionModalProps) {
     studentList: number[],
   }
 
+  const [defaultSessionName, setDefaultSessionName] = React.useState(props.apiKey.creator.name);
+
   const onSubmit = async (values: CreateSessionValue, { setStatus }: FormikHelpers<CreateSessionValue>) => {
+    let sessionName: string;
+
     if (values.name === "") {
-      setStatus({
-        name: "Please enter session name",
-        studentList: "",
-        resultFailure: "",
-      });
-      return;
+      sessionName = defaultSessionName;
+    } else {
+      sessionName = values.name;
     }
 
     const maybeSession = await newSession({
-      name: values.name,
+      name: sessionName,
       hostId: props.apiKey.creator.id,
       startTime: props.start,
       duration: props.duration,
@@ -169,7 +170,7 @@ function CreateSessionModal(props: CreateSessionModalProps) {
               <Form.Control
                 name="name"
                 type="text"
-                placeholder="Session Name"
+                placeholder={`${defaultSessionName} (default)`}
                 value={fprops.values.name}
                 onChange={fprops.handleChange}
                 isInvalid={fprops.status.name !== ""}
@@ -177,7 +178,7 @@ function CreateSessionModal(props: CreateSessionModalProps) {
               <Form.Text className="text-danger">{fprops.status.name}</Form.Text>
             </Col>
           </Form.Group>
-          <br/>
+          <br />
           <Form.Group as={Row}>
             <Form.Label column sm={2}>Students Invited</Form.Label>
             <Col>
@@ -186,7 +187,14 @@ function CreateSessionModal(props: CreateSessionModalProps) {
                 apiKey={props.apiKey}
                 isInvalid={fprops.status.studentList !== ""}
                 userKind="STUDENT"
-                setFn={e => fprops.setFieldValue("studentList", e)} />
+                setFn={e => {
+                    fprops.setFieldValue("studentList", e.map(s => s.id));
+                    let newDefault = props.apiKey.creator.name;
+                    for(const s of e) {
+                      newDefault += ` - ${s.name}`
+                    }
+                    setDefaultSessionName(newDefault);
+                }} />
               <Form.Text className="text-danger">{fprops.status.studentList}</Form.Text>
             </Col>
           </Form.Group>

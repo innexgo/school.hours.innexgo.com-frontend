@@ -1,5 +1,3 @@
-import React from 'react';
-
 import AsyncSelect from 'react-select/async';
 import { viewUser, isApiErrorCode } from '../utils/utils';
 
@@ -8,12 +6,12 @@ interface SearchSingleUserProps {
   name: string,
   apiKey: ApiKey,
   userKind: "STUDENT" | "USER" | "ADMIN",
-  setFn: (id: number | null) => void
+  setFn: (id: User | null) => void
 }
 
 type UserOption = {
   label: string,
-  value: number
+  value: User
 }
 
 export default function SearchSingleUser(props: SearchSingleUserProps) {
@@ -30,7 +28,7 @@ export default function SearchSingleUser(props: SearchSingleUserProps) {
 
     return results.map((x: User): UserOption => ({
       label: `${x.name} -- ${x.email}`,
-      value: x.id
+      value: x
     }));
   };
 

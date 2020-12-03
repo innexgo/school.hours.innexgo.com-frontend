@@ -45,7 +45,7 @@ const loadData = async (props: AsyncProps<UserManageSessionData>) => {
 function ManageSessionModal(props: ManageSessionModalProps) {
 
   type CreateCommittmentResponseValues = {
-    committmentResponseKind: CommittmentResponseKind
+    committmentResponseKind: CommittmentResponseKind | "default"
   }
 
   type CreateCommittmentValues = {
@@ -81,6 +81,12 @@ function ManageSessionModal(props: ManageSessionModalProps) {
                     <td>
                       <Formik<CreateCommittmentResponseValues>
                         onSubmit={async (values, { setStatus }: FormikHelpers<CreateCommittmentResponseValues>) => {
+
+                          if (values.committmentResponseKind === "default") {
+                            setStatus("Please Select an Attendance");
+                            return;
+                          }
+
                           const maybeCommittmentResponse = await newCommittmentResponse({
                             committmentId: c.committmentId,
                             committmentResponseKind: values.committmentResponseKind,
@@ -115,7 +121,7 @@ function ManageSessionModal(props: ManageSessionModalProps) {
                           reload();
                         }}
                         initialValues={{
-                          committmentResponseKind: "PRESENT"
+                          committmentResponseKind: "default"
                         }}
                         initialStatus=""
                       >
@@ -133,6 +139,7 @@ function ManageSessionModal(props: ManageSessionModalProps) {
                                 placeholder="Message"
                                 isInvalid={fprops.status !== ""}
                               >
+                                <option value="default">Select</option>
                                 <option value="PRESENT">Present</option>
                                 <option value="TARDY">Tardy</option>
                                 <option value="ABSENT">Absent</option>
@@ -156,7 +163,7 @@ function ManageSessionModal(props: ManageSessionModalProps) {
               </Table>
             </Tab>
             <Tab eventKey="create" title="Add Students">
-              <br/>
+              <br />
               <Formik<CreateCommittmentValues>
                 onSubmit={async (values: CreateCommittmentValues, { setStatus }: FormikHelpers<CreateCommittmentValues>) => {
                   for (const studentId of values.studentList) {
@@ -232,7 +239,7 @@ function ManageSessionModal(props: ManageSessionModalProps) {
                           apiKey={props.apiKey}
                           isInvalid={fprops.status.studentList !== ""}
                           userKind="STUDENT"
-                          setFn={e => fprops.setFieldValue("studentList", e)} />
+                          setFn={e => fprops.setFieldValue("studentList", e.map(s => s.id))} />
                         <Form.Text className="text-danger">{fprops.status.studentList}</Form.Text>
                       </Col>
                     </Form.Group>

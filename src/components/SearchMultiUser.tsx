@@ -1,4 +1,3 @@
-import React from 'react';
 import { ValueType } from 'react-select';
 import AsyncSelect from 'react-select/async';
 import { viewUser, isApiErrorCode } from '../utils/utils';
@@ -8,12 +7,12 @@ interface SearchMultiUserProps {
   name: string,
   apiKey: ApiKey,
   userKind: "STUDENT" | "USER" | "ADMIN",
-  setFn: (ids: number[]) => void
+  setFn: (users: User[]) => void
 }
 
 type UserOption = {
   label: string,
-  value: number
+  value: User
 }
 
 export default function SearchMultiUser(props: SearchMultiUserProps) {
@@ -30,7 +29,7 @@ export default function SearchMultiUser(props: SearchMultiUserProps) {
 
     return results.map((x: User): UserOption => ({
       label: `${x.name} -- ${x.email}`,
-      value: x.id
+      value: x
     }));
   };
 
