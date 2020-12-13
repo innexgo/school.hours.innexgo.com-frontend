@@ -34,11 +34,9 @@ export default function SearchMultiUser(props: SearchMultiUserProps) {
   };
 
 
-  const onChange = (opt: ValueType<UserOption>) => {
+  const onChange = (opt: ValueType<UserOption, true>) => {
     if (opt == null) {
       props.setFn([]);
-    } else if ("label" in opt && "value" in opt) {
-      props.setFn([opt.value]);
     } else {
       props.setFn(opt.map(x => x.value));
     }

@@ -1,7 +1,7 @@
 import React from "react";
 import { Async, AsyncProps } from 'react-async';
 import { Row, Col, Card, Tabs, Tab, Table, Form, Button, } from 'react-bootstrap';
-import { Formik, FormikHelpers } from 'formik';
+import { Formik, FormikHelpers, } from 'formik';
 import Loader from '../components/Loader';
 import { ViewSession, ViewUser } from '../components/ViewData';
 import SearchMultiUser from '../components/SearchMultiUser';
@@ -45,7 +45,8 @@ const loadData = async (props: AsyncProps<UserManageSessionData>) => {
 function ManageSessionModal(props: ManageSessionModalProps) {
 
   type CreateCommittmentResponseValues = {
-    committmentResponseKind: CommittmentResponseKind | "default"
+    committment: Committment;
+    committmentResponseKind: CommittmentResponseKind | "default";
   }
 
   type CreateCommittmentValues = {
@@ -71,73 +72,75 @@ function ManageSessionModal(props: ManageSessionModalProps) {
           <Tabs defaultActiveKey="manage">
             <Tab eventKey="manage" title="Current Students">
               <br />
-              <Table hover bordered>
-                <thead>
-                  <tr><th>Student</th><th>Attendance Status</th></tr>
-                </thead>
-                <tbody>
-                  {data.committments.map((c: Committment) => <tr key={c.committmentId}>
-                    <td><ViewUser expanded={false} user={c.attendee} /></td>
-                    <td>
-                      <Formik<CreateCommittmentResponseValues>
-                        onSubmit={async (values, { setStatus }: FormikHelpers<CreateCommittmentResponseValues>) => {
+              <Formik<CreateCommittmentResponseValues[]>
+                onSubmit={async (values, {setStatus }: FormikHelpers<CreateCommittmentResponseValues[]>) => {
+                  let newStatus = values.map(_ => "");
+                  values.forEach(async (individual, i) => {
+                    if (individual.committmentResponseKind === "default") {
+                      return;
+                    }
 
-                          if (values.committmentResponseKind === "default") {
-                            setStatus("Please Select an Attendance");
-                            return;
-                          }
+                    const maybeCommittmentResponse = await newCommittmentResponse({
+                      committmentId: individual.committment.committmentId,
+                      committmentResponseKind: individual.committmentResponseKind,
+                      apiKey: props.apiKey.key,
+                    });
 
-                          const maybeCommittmentResponse = await newCommittmentResponse({
-                            committmentId: c.committmentId,
-                            committmentResponseKind: values.committmentResponseKind,
-                            apiKey: props.apiKey.key,
-                          });
-
-                          if (isApiErrorCode(maybeCommittmentResponse)) {
-                            switch (maybeCommittmentResponse) {
-                              case "COMMITTMENT_RESPONSE_EXISTENT": {
-                                setStatus("Attendance has already been taken");
-                                break;
-                              }
-                              case "COMMITTMENT_RESPONSE_UNCANCELLABLE": {
-                                setStatus("This committment cannot be cancelled.");
-                                break;
-                              }
-                              case "API_KEY_NONEXISTENT": {
-                                setStatus("You have been automatically logged out. Please relogin.");
-                                break;
-                              }
-                              case "API_KEY_UNAUTHORIZED": {
-                                setStatus("You are not currently authorized to perform this action.");
-                                break;
-                              }
-                              default: {
-                                setStatus("An unknown or network error has occurred.");
-                                break;
-                              }
-                            }
-                            return;
-                          }
-                          reload();
-                        }}
-                        initialValues={{
-                          committmentResponseKind: "default"
-                        }}
-                        initialStatus=""
-                      >
-                        {(fprops) => <Form
-                          noValidate
-                          onSubmit={fprops.handleSubmit} >
-                          <Row>
-                            <Form.Group as={Col}>
+                    if (isApiErrorCode(maybeCommittmentResponse)) {
+                      switch (maybeCommittmentResponse) {
+                        case "COMMITTMENT_RESPONSE_EXISTENT": {
+                          newStatus[i] = "Attendance has already been taken for this committment.";
+                          break;
+                        }
+                        case "COMMITTMENT_RESPONSE_UNCANCELLABLE": {
+                          newStatus[i] = "This committment cannot be cancelled.";
+                          break;
+                        }
+                        case "API_KEY_NONEXISTENT": {
+                          newStatus[i] = "You have been automatically logged out. Please relogin.";
+                          break;
+                        }
+                        case "API_KEY_UNAUTHORIZED": {
+                          newStatus[i] = "You are not currently authorized to perform this action.";
+                          break;
+                        }
+                        default: {
+                          newStatus[i] = "An unknown or network error has occurred.";
+                          break;
+                        }
+                      }
+                    }
+                  });
+                  setStatus(newStatus);
+                  reload();
+                }}
+                initialValues={data.committments.map(c => ({
+                  committment: c,
+                  committmentResponseKind: "default"
+                }))}
+                initialStatus={data.committments.map(_ => "")}
+              >
+                {fprops =>
+                  <Form noValidate onSubmit={fprops.handleSubmit} >
+                    <Table hover bordered>
+                      <thead>
+                        <tr><th>Student</th><th>Attendance Status</th></tr>
+                      </thead>
+                      <tbody>
+                        {fprops.values.map((c: CreateCommittmentResponseValues, i: number) =>
+                          <tr key={c.committment.committmentId}>
+                            <td><ViewUser expanded={false} user={c.committment.attendee} /></td>
+                            <td>
                               <Form.Control
                                 as="select"
                                 size="sm"
                                 custom
-                                name="committmentResponseKind"
-                                onChange={fprops.handleChange}
+                                onChange={(e) => {
+                                  fprops.values[i].committmentResponseKind = e.target.value as (CommittmentResponseKind | "default");
+                                  fprops.setValues(fprops.values)
+                                }}
                                 placeholder="Message"
-                                isInvalid={fprops.status !== ""}
+                                isInvalid={fprops.status[i] !== ""}
                               >
                                 <option value="default">Select</option>
                                 <option value="PRESENT">Present</option>
@@ -145,22 +148,22 @@ function ManageSessionModal(props: ManageSessionModalProps) {
                                 <option value="ABSENT">Absent</option>
                                 <option value="CANCELLED">Cancel</option>
                               </Form.Control>
-                            </Form.Group>
-                            <Form.Group as={Col}>
-                              <Button size="sm" type="submit" className="float-right">Submit</Button>
-                            </Form.Group>
-                          </Row>
-                          <Form.Text className="text-danger">{fprops.status}</Form.Text>
-                        </Form>}
-                      </Formik>
-                    </td>
-                  </tr>)}
-                  {data.committmentResponses.map((cr: CommittmentResponse) => <tr>
-                    <td><ViewUser expanded={false} user={cr.committment.attendee} /></td>
-                    <td>{cr.kind}</td>
-                  </tr>)}
-                </tbody>
-              </Table>
+                              <br/>
+                              <Form.Text className="text-danger">{fprops.status[i]}</Form.Text>
+                            </td>
+                          </tr>
+                        )}
+                        {
+                          data.committmentResponses.map((cr: CommittmentResponse) => <tr>
+                            <td><ViewUser expanded={false} user={cr.committment.attendee} /></td>
+                            <td>{cr.kind}</td>
+                          </tr>)
+                        }
+                      </tbody>
+                    </Table>
+                    <Button type="submit">Submit</Button>
+                  </Form>}
+              </Formik>
             </Tab>
             <Tab eventKey="create" title="Add Students">
               <br />

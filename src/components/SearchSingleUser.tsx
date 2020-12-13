@@ -1,4 +1,5 @@
 import AsyncSelect from 'react-select/async';
+import { ValueType } from 'react-select';
 import { viewUser, isApiErrorCode } from '../utils/utils';
 
 interface SearchSingleUserProps {
@@ -33,11 +34,11 @@ export default function SearchSingleUser(props: SearchSingleUserProps) {
   };
 
 
-  const onChange = (opt: any) => {
+  const onChange = (opt:  ValueType<UserOption, false>) => {
     if (opt == null) {
       props.setFn(null);
     } else {
-      props.setFn((opt as UserOption).value)
+      props.setFn(opt.value)
     }
   }
 
