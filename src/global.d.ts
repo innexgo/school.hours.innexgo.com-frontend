@@ -11,7 +11,6 @@ declare global {
     email: string,
   }
 
-
   type User = {
     id: number,
     creationTime: number,
@@ -29,7 +28,6 @@ declare global {
   }
 
   type AdminshipKind = "ADMIN" | "CANCEL";
-
 
   type Adminship = {
     adminshipId: number;
@@ -57,8 +55,17 @@ declare global {
     school: School;
     name: string;
     description: string;
-    joinable: boolean;
   }
+
+  type CoursePasswordKind = "CHANGE" | "CANCEL";
+
+  type CoursePassword = {
+    coursePasswordId: number;
+    creationTime: number;
+    creator: User;
+    course: Course;
+    coursePasswordKind: CoursePasswordKind;
+  };
 
   type CourseMembershipKind = "STUDENT" | "INSTRUCTOR" | "CANCEL";
 
@@ -71,69 +78,66 @@ declare global {
     courseMembershipKind: CourseMembershipKind;
   }
 
+  type ApiKeyKind = "VALID" | "CANCEL";
+
   type ApiKey = {
     creationTime: number,
     creator: User,
-    duration: number,
-    valid: boolean,
-    key: string,
+    duration: number, // only valid if ApiKeyKind isn't CANCEL
+    key: string, // only valid if ApiKeyKind isn't CANCEL
+    apiKeyKind: ApiKeyKind,
   }
-
 
   type Session = {
     sessionId: number,
     creationTime: number,
+    creator: User,
+    course: Course,
+    location: Location,
     name: string,
     startTime: number,
     duration: number,
     hidden: boolean,
-    creator: User,
-    host: User
   }
 
   type SessionRequest = {
     sessionRequestId: number,
     creationTime: number,
+    creator: User,
+    attendee: User,
+    course: Course,
     message: string,
     startTime: number,
     duration: number,
-    creator: User,
-    attendee: User,
-    host: User,
   }
 
   type SessionRequestResponse = {
+    sessionRequest: SessionRequest,
     creationTime: number,
+    creator: User,
     message: string,
     accepted: boolean,
-    creator: User,
-    sessionRequest: SessionRequest,
     committment: Committment | null,
   }
 
   type Committment = {
     committmentId: number
     creationTime: number
-    cancellable: boolean
     creator: User
+    cancellable: boolean
     attendee: User
     session: Session
   }
 
   type CommittmentResponseKind = "PRESENT" | "TARDY" | "ABSENT" | "CANCELLED";
   type CommittmentResponse = {
-    creationTime: number
-    kind: CommittmentResponseKind
-    creator: User
     committment: Committment
+    creationTime: number
+    creator: User
+    kind: CommittmentResponseKind
   }
 
   interface AuthenticatedComponentProps {
-    apiKey: ApiKey
-    setApiKey: (data: ApiKey | null) => void
-  }
-
-  interface StudentComponentProps {
     apiKey: ApiKey
     setApiKey: (data: ApiKey | null) => void
   }
