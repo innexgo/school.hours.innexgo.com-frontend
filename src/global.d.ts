@@ -1,26 +1,16 @@
 declare global {
-  type SchoolInfo = {
-    name: string,
-    studentEmailSuffix: string,
-    userEmailSuffix: string,
+
+  type PasswordReset = {
+    creationTime: long;
+    used: boolean;
   }
 
-  type UserKind = "STUDENT" | "USER" | "ADMIN"
-
-  type EmailVerificationChallenge = {
-    id: number,
+  type VerificationChallenge = {
+    creationTime: number,
     name: string,
     email: string,
-    creationTime: number,
-    kind: UserKind,
   }
 
-  type PasswordResetKey = {
-    id: number,
-    email: string,
-    creationTime: number,
-    used: boolean,
-  }
 
   type User = {
     id: number,
@@ -30,14 +20,65 @@ declare global {
     email: string,
   }
 
-  type ApiKey = {
-    id: number,
+  type School = {
+    schoolId: number,
     creator: User,
     creationTime: number,
+    name: string,
+    abbreviation: string,
+  }
+
+  type AdminshipKind = "ADMIN" | "CANCEL";
+
+
+  type Adminship = {
+    adminshipId: number;
+    creationTime: number;
+    creator: User;
+    user: User;
+    school: School;
+    adminshipKind: AdminshipKind;
+  }
+
+  type Location = {
+    locationId: number;
+    creationTime: number;
+    creator: User;
+    school: School;
+    name: string;
+    description: string;
+    valid: boolean;
+  }
+
+  type Course = {
+    courseId: number;
+    creationTime: number;
+    creator: User;
+    school: School;
+    name: string;
+    description: string;
+    joinable: boolean;
+  }
+
+  type CourseMembershipKind = "STUDENT" | "INSTRUCTOR" | "CANCEL";
+
+  type CourseMembership = {
+    courseMembershipId: number;
+    creationTime: number;
+    creator: User;
+    user: User;
+    course: Course;
+    courseMembershipKind: CourseMembershipKind;
+  }
+
+  type ApiKey = {
+    creationTime: number,
+    creator: User,
     duration: number,
     valid: boolean,
     key: string,
   }
+
 
   type Session = {
     sessionId: number,
