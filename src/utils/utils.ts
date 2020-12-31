@@ -49,9 +49,9 @@ const ApiErrorCodes = [
   "NOT_FOUND",
   "NO_CAPABILITY",
   "API_KEY_UNAUTHORIZED",
-  "DATABASE_INITIALIZED",
   "PASSWORD_INCORRECT",
   "PASSWORD_INSECURE",
+  "PASSWORD_CANNOT_CREATE_FOR_OTHERS",
   "USER_NONEXISTENT",
   "API_KEY_NONEXISTENT",
   "USER_EXISTENT",
@@ -59,10 +59,12 @@ const ApiErrorCodes = [
   "USER_EMAIL_EMPTY",
   "USER_EMAIL_INVALIDATED",
   "USER_KIND_INVALID",
-  "SESSION_NONEXISTENT",
-  "SESSION_CANNOT_CREATE_FOR_OTHERS_STUDENT",
+  "SCHOOL_NONEXISTENT",
+  "SESSION_REQUEST_NONEXISTENT",
   "SESSION_REQUEST_RESPONSE_EXISTENT",
   "SESSION_REQUEST_RESPONSE_CANNOT_CANCEL_STUDENT",
+  "SESSION_CANNOT_CREATE_FOR_OTHERS_STUDENT",
+  "SESSION_NONEXISTENT",
   "COMMITTMENT_EXISTENT",
   "COMMITTMENT_NONEXISTENT",
   "COMMITTMENT_CANNOT_CREATE_FOR_OTHERS_STUDENT",
@@ -72,12 +74,17 @@ const ApiErrorCodes = [
   "COMMITTMENT_RESPONSE_EXISTENT",
   "COMMITTMENT_RESPONSE_UNCANCELLABLE",
   "COMMITTMENT_RESPONSE_CANNOT_CREATE_FOR_OTHERS_STUDENT",
+  "COURSE_NONEXISTENT",
+  "COURSEMEMBERSHIP_NONEXISTENT",
+  "COURSEMEMBERSHIP_CANNOT_REMOVE_SELF",
+  "LOCATION_NONEXISTENT",
   "NEGATIVE_DURATION",
-  "EMAIL_VERIFICATION_CHALLENGE_KEY_NONEXISTENT",
-  "EMAIL_VERIFICATION_CHALLENGE_KEY_TIMED_OUT",
-  "PASSWORD_RESET_KEY_NONEXISTENT",
-  "PASSWORD_RESET_KEY_INVALID",
-  "PASSWORD_RESET_KEY_TIMED_OUT",
+  "CANNOT_ALTER_PAST",
+  "VERIFICATION_CHALLENGE_NONEXISTENT",
+  "VERIFICATION_CHALLENGE_TIMED_OUT",
+  "PASSWORD_RESET_NONEXISTENT",
+  "PASSWORD_EXISTENT",
+  "PASSWORD_RESET_TIMED_OUT",
   "EMAIL_RATELIMIT",
   "EMAIL_BLACKLISTED",
   "UNKNOWN",
@@ -87,26 +94,33 @@ const ApiErrorCodes = [
 // Creates a union type
 export type ApiErrorCode = typeof ApiErrorCodes[number];
 
-type NewApiKeyProps = {
+type NewValidApiKeyProps = {
   userEmail: string,
   userPassword: string,
   duration: number,
 }
 
-
-export async function newApiKey(props: NewApiKeyProps): Promise<ApiKey | ApiErrorCode> {
-  return await fetchApi("apiKey/new/", getFormData(props));
+export async function newValidApiKey(props: NewValidApiKeyProps): Promise<ApiKey | ApiErrorCode> {
+  return await fetchApi("apiKey/newValid/", getFormData(props));
 }
 
-type NewEmailVerificationChallengeProps = {
+type NewCancelApiKeyProps = {
+  apiKeyToCancel: string,
+  apiKey: string,
+}
+
+export async function newApiKeyCancel(props: NewCancelApiKeyProps): Promise<ApiKey | ApiErrorCode> {
+  return await fetchApi("apiKey/newCancel/", getFormData(props));
+}
+
+type NewVerificationChallengeProps = {
   userName: string,
   userEmail: string,
-  userKind: UserKind,
   userPassword: string,
 };
 
-export async function newEmailVerificationChallenge(props: NewEmailVerificationChallengeProps): Promise<EmailVerificationChallenge | ApiErrorCode> {
-  return await fetchApi("emailVerificationChallenge/new/", getFormData(props));
+export async function newVerificationChallenge(props: NewVerificationChallengeProps): Promise<VerificationChallenge | ApiErrorCode> {
+  return await fetchApi("verificationChallenge/new/", getFormData(props));
 }
 
 type NewUserProps = {
@@ -117,17 +131,100 @@ export async function newUser(props: NewUserProps): Promise<User | ApiErrorCode>
   return await fetchApi("user/new/", getFormData(props));
 }
 
-type NewResetPasswordKeyProps = {
+type NewPasswordResetProps = {
   userEmail: string,
 };
 
-export async function newPasswordResetKey(props: NewResetPasswordKeyProps): Promise<PasswordResetKey | ApiErrorCode> {
-  return await fetchApi("passwordResetKey/new/", getFormData(props));
+export async function newPasswordReset(props: NewPasswordResetProps): Promise<PasswordReset | ApiErrorCode> {
+  return await fetchApi("passwordReset/new/", getFormData(props));
 }
+
+type NewChangePasswordProps = {
+  userId: number,
+  newPassword: string,
+  apiKey: string
+}
+
+export async function newChangePassword(props: NewChangePasswordProps): Promise<Password | ApiErrorCode> {
+  return await fetchApi("password/newChange/", getFormData(props));
+}
+
+type NewCancelPasswordProps = {
+  userId: number,
+  apiKey: string
+}
+
+export async function newCancelPassword(props: NewCancelPasswordProps): Promise<Password | ApiErrorCode> {
+  return await fetchApi("password/newCancel/", getFormData(props));
+}
+
+
+type NewResetPasswordProps = {
+  passwordResetKey: string,
+  newPassword: string
+}
+
+export async function newResetPassword(props: NewResetPasswordProps): Promise<Password | ApiErrorCode> {
+  return await fetchApi("password/newReset/", getFormData(props));
+}
+
+type NewCourseProps = {
+  schoolId: number,
+  name: string,
+  description: string,
+  apiKey: string
+}
+
+export async function newCourse(props: NewCourseProps): Promise<Course | ApiErrorCode> {
+  return await fetchApi("course/new/", getFormData(props));
+}
+
+type NewChangeCoursePasswordProps = {
+  courseId: number,
+  newPassword: string,
+  apiKey: string
+}
+
+export async function newChangeCoursePassword(props: NewChangeCoursePasswordProps): Promise<CoursePassword | ApiErrorCode> {
+  return await fetchApi("coursePassword/newChange/", getFormData(props));
+}
+
+type NewCancelCoursePasswordProps = {
+  courseId: number,
+  apiKey: string
+}
+
+export async function newCancelCoursePassword(props: NewCancelCoursePasswordProps): Promise<CoursePassword | ApiErrorCode> {
+  return await fetchApi("coursePassword/newCancel/", getFormData(props));
+}
+
+type NewCourseMembershipProps = {
+  userId: number,
+  courseId: number,
+  courseMembershipKind: CourseMembershipKind,
+  apiKey: string
+}
+
+export async function newCourseMembership(props: NewCourseMembershipProps): Promise<CourseMembership | ApiErrorCode> {
+  return await fetchApi("courseMembership/new/", getFormData(props));
+}
+
+type NewAdminshipProps = {
+  userId: number,
+  schoolId: number,
+  adminshipKind: AdminshipKind,
+  apiKey: string
+}
+
+export async function newAdminship(props: NewAdminshipProps): Promise<Adminship | ApiErrorCode> {
+  return await fetchApi("adminship/new/", getFormData(props));
+}
+
 
 type NewSessionProps = {
   name: string
-  hostId: number
+  courseId: number
+  locationId: number
   startTime: number
   duration: number
   hidden: boolean
@@ -139,8 +236,7 @@ export async function newSession(props: NewSessionProps): Promise<Session | ApiE
 }
 
 type NewSessionRequestProps = {
-  attendeeId: number,
-  hostId: number,
+  courseId: number,
   message: string,
   startTime: number,
   duration: number,
@@ -151,17 +247,27 @@ export async function newSessionRequest(props: NewSessionRequestProps): Promise<
   return await fetchApi("sessionRequest/new/", getFormData(props));
 }
 
-type NewSessionRequestResponseProps = {
+type NewRejectSessionRequestResponseProps = {
   sessionRequestId: number,
   message: string,
-  accepted: boolean,
-  committmentId?: number,
   apiKey: string,
 }
 
-export async function newSessionRequestResponse(props: NewSessionRequestResponseProps): Promise<SessionRequestResponse | ApiErrorCode> {
-  return await fetchApi("sessionRequestResponse/new/", getFormData(props));
+export async function newRejectSessionRequestResponse(props: NewRejectSessionRequestResponseProps): Promise<SessionRequestResponse | ApiErrorCode> {
+  return await fetchApi("sessionRequestResponse/newReject/", getFormData(props));
 }
+
+type NewAcceptSessionRequestResponseProps = {
+  sessionRequestId: number,
+  message: string,
+  committmentId: number,
+  apiKey: string,
+}
+
+export async function newAcceptSessionRequestResponse(props: NewAcceptSessionRequestResponseProps): Promise<SessionRequestResponse | ApiErrorCode> {
+  return await fetchApi("sessionRequestResponse/newAccept/", getFormData(props));
+}
+
 
 type NewCommittmentProps = {
   attendeeId: number,
@@ -179,40 +285,179 @@ type NewCommittmentResponseProps = {
   committmentResponseKind: CommittmentResponseKind,
   apiKey: string,
 }
+
 export async function newCommittmentResponse(props: NewCommittmentResponseProps): Promise<CommittmentResponse | ApiErrorCode> {
   return await fetchApi("committmentResponse/new/", getFormData(props));
 }
 
+type ViewSchoolProps = {
+  schoolId?: number, //
+  creationTime?: number, //
+  minCreationTime?: number, //
+  maxCreationTime?: number, //
+  creatorUserId?: number, //
+  name?: string, //
+  partialName?: string, //
+  abbreviation?: string, //
+  offset?: number,
+  count?: number
+}
+
+export async function viewSchool(props: ViewSchoolProps): Promise<School[] | ApiErrorCode> {
+  return await fetchApi("school/", getFormData(props));
+}
+
 type ViewUserProps = {
-  userId?: number,
-  userKind?: UserKind,
-  userName?: string,
-  partialUserName?: string,
-  userEmail?: string,
+  userId?: number, //
+  creationTime?: number, //
+  minCreationTime?: number, //
+  maxCreationTime?: number, //
+  userName?: string, //
+  partialUserName?: string, //
+  userEmail?: string, //
   offset?: number,
   count?: number,
-  apiKey: string
+  apiKey: string,
 }
+
 
 export async function viewUser(props: ViewUserProps): Promise<User[] | ApiErrorCode> {
   return await fetchApi("user/", getFormData(props));
 }
 
+type ViewPasswordProps = {
+  passwordId?: number, //
+  creationTime?: number, //
+  minCreationTime?: number, //
+  maxCreationTime?: number, //
+  creatorUserId?: number, //
+  userId?: number, //
+  passwordKind?: PasswordKind, //
+  onlyRecent?: boolean,
+  offset?: number,
+  count?: number,
+  apiKey: string,
+}
+
+export async function viewPassword(props: ViewPasswordProps): Promise<Password[] | ApiErrorCode> {
+  return await fetchApi("password/", getFormData(props));
+}
+
+
+type ViewApiKeyProps = {
+  apiKeyId?: number, //
+  creatorUserId?: number, //
+  creationTime?: number, //
+  minCreationTime?: number, //
+  maxCreationTime?: number, //
+  duration?: number, //
+  minDuration?: number, //
+  maxDuration?: number, //
+  apiKeyKind?: ApiKeyKind, //
+  onlyRecent?: boolean, //
+  offset?: number,
+  count?: number,
+  apiKey: string,
+}
+
+export async function viewApiKey(props: ViewApiKeyProps): Promise<ApiKey[] | ApiErrorCode> {
+  return await fetchApi("apiKey/", getFormData(props));
+}
+
+type ViewCourseProps = {
+  courseId?: number, //
+  creationTime?: number, //
+  minCreationTime?: number, //
+  maxCreationTime?: number, //
+  creatorUserId?: number, //
+  schoolId?: number, //
+  name?: string, //
+  partialName?: string, //
+  description?: string, //
+  offset?: number,
+  count?: number,
+  apiKey: string,
+}
+
+export async function viewCourse(props: ViewCourseProps): Promise<Course[] | ApiErrorCode> {
+  return await fetchApi("course/", getFormData(props));
+}
+
+type ViewCoursePasswordProps = {
+  coursePasswordId?: number, //
+  creationTime?: number, //
+  minCreationTime?: number, //
+  maxCreationTime?: number, //
+  creatorUserId?: number, //
+  courseId?: number, //
+  coursePasswordKind?: CoursePasswordKind, //
+  onlyRecent?: boolean,
+  offset?: number,
+  count?: number,
+  apiKey: string,
+}
+
+export async function viewCoursePassword(props: ViewCoursePasswordProps): Promise<CoursePassword[] | ApiErrorCode> {
+  return await fetchApi("coursePassword/", getFormData(props));
+}
+
+
+type ViewCourseMembershipProps = {
+  courseMembershipId?: number, //
+  creationTime?: number, //
+  minCreationTime?: number, //
+  maxCreationTime?: number, //
+  creatorUserId?: number, //
+  userId?: number, //
+  courseId?: number, //
+  courseMembershipKind?: CourseMembershipKind, //
+  onlyRecent?: boolean,
+  offset?: number,
+  count?: number,
+  apiKey: string,
+}
+
+export async function viewCourseMembership(props: ViewCourseMembershipProps): Promise<CourseMembership[] | ApiErrorCode> {
+  return await fetchApi("courseMembership/", getFormData(props));
+}
+
+type ViewAdminshipProps = {
+  adminshipId?: number, //
+  creationTime?: number, //
+  minCreationTime?: number, //
+  maxCreationTime?: number, //
+  creatorUserId?: number, //
+  userId?: number, //
+  schoolId?: number, //
+  adminshipKind?: AdminshipKind, //
+  onlyRecent?: boolean,
+  offset?: number,
+  count?: number,
+  apiKey: string,
+}
+
+export async function viewAdminship(props: ViewAdminshipProps): Promise<Adminship[] | ApiErrorCode> {
+  return await fetchApi("adminship/", getFormData(props));
+}
+
+
 type ViewSessionProps = {
-  sessionId?: number,
-  creatorId?: number,
-  creationTime?: number,
-  minCreationTime?: number,
-  maxCreationTime?: number,
-  name?: string,
-  hostId?: number,
-  startTime?: number,
-  minStartTime?: number,
-  maxStartTime?: number,
-  duration?: number,
-  minDuration?: number,
-  maxDuration?: number,
-  hidden?: Boolean,
+  sessionId?: number, //
+  creationTime?: number, //
+  minCreationTime?: number, //
+  maxCreationTime?: number, //
+  creatorUserId?: number, //
+  courseId?: number, //
+  locationId?: number, //
+  name?: string, //
+  partialName?: string, //
+  startTime?: number, //
+  minStartTime?: number, //
+  maxStartTime?: number, //
+  duration?: number, //
+  minDuration?: number, //
+  maxDuration?: number, //
+  hidden?: boolean, //
   offset?: number,
   count?: number,
   apiKey: string,
@@ -223,21 +468,21 @@ export async function viewSession(props: ViewSessionProps): Promise<Session[] | 
 }
 
 type ViewSessionRequestProps = {
-  sessionRequestId?: number,
-  creatorId?: number,
-  attendeeId?: number,
-  hostId?: number,
-  message?: string,
-  creationTime?: number,
-  minCreationTime?: number,
-  maxCreationTime?: number,
-  startTime?: number,
-  minStartTime?: number,
-  maxStartTime?: number,
-  duration?: number,
-  minDuration?: number,
-  maxDuration?: number,
-  responded?: Boolean,
+  sessionRequestId?: number, //
+  creationTime?: number, //
+  minCreationTime?: number, //
+  maxCreationTime?: number, //
+  creatorUserId?: number, //
+  attendeeUserId?: number, //
+  courseId?: number, //
+  message?: string, //
+  startTime?: number, //
+  minStartTime?: number, //
+  maxStartTime?: number, //
+  duration?: number, //
+  minDuration?: number, //
+  maxDuration?: number, //
+  responded?: boolean, //
   offset?: number,
   count?: number,
   apiKey: string
@@ -248,22 +493,22 @@ export async function viewSessionRequest(props: ViewSessionRequestProps): Promis
 }
 
 type ViewSessionRequestResponseProps = {
-  sessionRequestId?: number,
-  creatorId?: number,
-  creationTime?: number,
-  minCreationTime?: number,
-  maxCreationTime?: number,
-  message?: string,
-  accepted?: Boolean,
-  committmentId?: number,
-  attendeeId?: number,
-  hostId?: number,
-  startTime?: number,
-  minStartTime?: number,
-  maxStartTime?: number,
-  duration?: number,
-  minDuration?: number,
-  maxDuration?: number,
+  sessionRequestId?: number, //
+  creationTime?: number, //
+  minCreationTime?: number, //
+  maxCreationTime?: number, //
+  creatorUserId?: number, //
+  message?: string, //
+  accepted?: boolean, //
+  committmentId?: number, //
+  attendeeUserId?: number, //
+  courseId?: number, //
+  startTime?: number, //
+  minStartTime?: number, //
+  maxStartTime?: number, //
+  duration?: number, //
+  minDuration?: number, //
+  maxDuration?: number, //
   offset?: number,
   count?: number,
   apiKey: string,
@@ -274,22 +519,22 @@ export async function viewSessionRequestResponse(props: ViewSessionRequestRespon
 }
 
 type ViewCommittmentProps = {
-  committmentId?: number,
-  creatorId?: number,
-  creationTime?: number,
-  minCreationTime?: number,
-  maxCreationTime?: number,
-  attendeeId?: number,
-  sessionId?: number,
-  cancellable?: Boolean,
-  hostId?: number,
-  startTime?: number,
-  minStartTime?: number,
-  maxStartTime?: number,
-  duration?: number,
-  minDuration?: number,
-  maxDuration?: number,
-  responded?: Boolean,
+  committmentId?: number, //
+  creationTime?: number, //
+  minCreationTime?: number, //
+  maxCreationTime?: number, //
+  creatorUserId?: number, //
+  attendeeUserId?: number, //
+  sessionId?: number, //
+  cancellable?: boolean, //
+  courseId?: number, //
+  startTime?: number, //
+  minStartTime?: number, //
+  maxStartTime?: number, //
+  duration?: number, //
+  minDuration?: number, //
+  maxDuration?: number, //
+  responded?: boolean, //
   offset?: number,
   count?: number,
   apiKey: string
@@ -300,21 +545,21 @@ export async function viewCommittment(props: ViewCommittmentProps): Promise<Comm
 }
 
 type ViewCommittmentResponseProps = {
-  committmentId?: number,
-  creatorId?: number,
-  creationTime?: number,
-  minCreationTime?: number,
-  maxCreationTime?: number,
-  committmentResponseKind?: CommittmentResponseKind,
-  attendeeId?: number,
-  hostId?: number,
-  startTime?: number,
-  minStartTime?: number,
-  maxStartTime?: number,
-  duration?: number,
-  minDuration?: number,
-  maxDuration?: number,
-  sessionId?: number,
+  committmentId?: number, //
+  creationTime?: number, //
+  minCreationTime?: number, //
+  maxCreationTime?: number, //
+  creatorUserId?: number, //
+  committmentResponseKind?: CommittmentResponseKind, //
+  attendeeUserId?: number, //
+  courseId?: number, //
+  startTime?: number, //
+  minStartTime?: number, //
+  maxStartTime?: number, //
+  duration?: number, //
+  minDuration?: number, //
+  maxDuration?: number, //
+  sessionId?: number, //
   offset?: number,
   count?: number,
   apiKey: string,
@@ -322,30 +567,6 @@ type ViewCommittmentResponseProps = {
 
 export async function viewCommittmentResponse(props: ViewCommittmentResponseProps): Promise<CommittmentResponse[] | ApiErrorCode> {
   return await fetchApi("committmentResponse/", getFormData(props));
-}
-
-type UpdatePasswordProps = {
-  userId: number,
-  oldPassword: string,
-  newPassword: string,
-  apiKey: string,
-}
-
-export async function updatePassword(props: UpdatePasswordProps): Promise<ApiErrorCode> {
-  return await fetchApi("misc/updatePassword/", getFormData(props));
-}
-
-export async function schoolInfo(): Promise<SchoolInfo | ApiErrorCode> {
-  return await fetchApi("misc/info/school/", getFormData({}));
-}
-
-type DoResetPasswordProps = {
-  resetKey: string,
-  newPassword: string,
-}
-
-export async function doPasswordReset(props: DoResetPasswordProps): Promise<ApiErrorCode> {
-  return await fetchApi("misc/usePasswordResetKey/", getFormData(props));
 }
 
 export function isApiErrorCode(maybeApiErrorCode: any): maybeApiErrorCode is ApiErrorCode {
