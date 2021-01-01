@@ -1,9 +1,5 @@
 declare global {
 
-  type PasswordReset = {
-    creationTime: long;
-    used: boolean;
-  }
 
   type VerificationChallenge = {
     creationTime: number,
@@ -12,10 +8,26 @@ declare global {
   }
 
   type User = {
-    id: number,
+    userId: number,
     creationTime: number,
     kind: UserKind,
     name: string,
+    email: string,
+  }
+
+  type PasswordReset = {
+    creationTime: long;
+  }
+
+  type PasswordKind = "CHANGE" | "RESET" | "CANCEL";
+
+  type Password = {
+    passwordId: number,
+    creationTime: number,
+    creator: User,
+    user: User,
+    kind: PasswordKind,
+    passwordReset: PasswordReset | null,
     email: string,
   }
 
@@ -81,6 +93,7 @@ declare global {
   type ApiKeyKind = "VALID" | "CANCEL";
 
   type ApiKey = {
+    apiKeyId: number,
     creationTime: number,
     creator: User,
     duration: number, // only valid if ApiKeyKind isn't CANCEL
