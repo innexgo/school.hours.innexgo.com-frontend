@@ -6,7 +6,6 @@ import 'bootstrap/dist/js/bootstrap.js'
 import 'popper.js/dist/popper.js'
 
 import Footer from './Footer';
-import SchoolName from './SchoolName';
 import ExternalHeader from './ExternalHeader';
 
 interface ExternalLayoutProps {
@@ -17,10 +16,12 @@ interface ExternalLayoutProps {
 class ExternalLayout extends React.Component<ExternalLayoutProps> {
   render() {
 
+    // TODO lets make this look better
+
     return (
       <>
         <ExternalHeader fixed={this.props.fixed} transparentTop={this.props.transparentTop}>
-          <SchoolName />
+          Innexgo Hourse
         </ExternalHeader>
         {this.props.children}
         <Footer />

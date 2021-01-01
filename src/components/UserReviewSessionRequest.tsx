@@ -7,7 +7,7 @@ import ToggleButton from "react-bootstrap/ToggleButton";
 import { Formik, FormikHelpers } from 'formik';
 
 import { ViewSessionRequest } from '../components/ViewData';
-import { newSessionRequestResponse, newSession, newCommittment, viewSession, isApiErrorCode } from '../utils/utils';
+import { newAcceptSessionRequestResponse, newRejectSessionRequestResponse, newSession, newCommittment, viewSession, isApiErrorCode } from '../utils/utils';
 
 
 type CalendarWidgetProps = {
@@ -60,7 +60,7 @@ class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
               timeZone: string;
             }) => {
             const maybeSessions = await viewSession({
-              hostId: this.props.apiKey.creator.id,
+              courseId: this.props.sessionRequest.course.courseId,
               minStartTime: args.start.valueOf(),
               maxStartTime: args.end.valueOf(),
               apiKey: this.props.apiKey.key
@@ -103,7 +103,7 @@ function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
     message: string,
   }
 
-  const defaultSessionName = `${props.sessionRequest.host.name} - ${props.sessionRequest.attendee.name}`;
+  const defaultSessionName = `${props.sessionRequest.course.name} - ${props.sessionRequest.attendee.name}`;
 
   const onSubmit = async (values: ReviewSessionRequestValues,
     { setStatus, setErrors, }: FormikHelpers<ReviewSessionRequestValues>) => {
@@ -114,10 +114,9 @@ function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
     }
 
     if (!values.accepted) {
-      const maybeSessionRequestResponse = await newSessionRequestResponse({
+      const maybeSessionRequestResponse = await newRejectSessionRequestResponse({
         sessionRequestId: props.sessionRequest.sessionRequestId,
         message: values.message,
-        accepted: false,
         apiKey: props.apiKey.key
       });
 
@@ -165,9 +164,12 @@ function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
         sessionName = values.newSessionName;
       }
 
+      // TODO location ???
+
       const maybeSession = await newSession({
         name: sessionName,
-        hostId: props.apiKey.creator.id,
+        courseId: props.sessionRequest.course.courseId,
+        locationId: 0,
         startTime: values.startTime,
         duration: values.duration,
         hidden: !values.newSessionPublic,
@@ -201,7 +203,7 @@ function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
     // create committment
     const maybeCommittment = await newCommittment({
       sessionId: sessionId,
-      attendeeId: props.sessionRequest.attendee.id,
+      attendeeId: props.sessionRequest.attendee.userId,
       cancellable: values.newSessionPublic,
       apiKey: props.apiKey.key
     });
@@ -223,10 +225,9 @@ function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
     }
 
     // create session request response
-    const maybeSessionRequestResponse = await newSessionRequestResponse({
+    const maybeSessionRequestResponse = await newAcceptSessionRequestResponse({
       sessionRequestId: props.sessionRequest.sessionRequestId,
       message: values.message,
-      accepted: true,
       committmentId: maybeCommittment.committmentId,
       apiKey: props.apiKey.key
     });

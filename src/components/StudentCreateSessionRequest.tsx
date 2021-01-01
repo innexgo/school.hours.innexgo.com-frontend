@@ -24,7 +24,7 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
 
     if (values.userId == null) {
       setStatus({
-        userId: "Please select a teacher.",
+        userId: "Please select a course.",
         message: "",
         failureResult: "",
       });
@@ -32,8 +32,7 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
     }
 
     const maybeSessionRequest = await newSessionRequest({
-      hostId: values.userId,
-      attendeeId: props.apiKey.creator.id,
+      courseId: values.userId,
       message: values.message,
       startTime: props.start,
       duration: props.duration,

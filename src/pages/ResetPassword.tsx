@@ -1,7 +1,7 @@
 import React from 'react';
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
 import { Card, Button, Form, } from 'react-bootstrap'
-import { doPasswordReset, isPasswordValid } from '../utils/utils';
+import { newResetPassword, isPasswordValid } from '../utils/utils';
 
 import SimpleLayout from '../components/SimpleLayout';
 
@@ -32,8 +32,8 @@ function ResetPasswordForm(props: ResetPasswordProps) {
       return;
     }
 
-    const passwordResetResult = await doPasswordReset({
-      resetKey: props.resetKey,
+    const passwordResetResult = await newResetPassword({
+      passwordResetKey: props.resetKey,
       newPassword: values.password1,
     });
     switch (passwordResetResult) {
@@ -133,7 +133,7 @@ function ResetPasswordForm(props: ResetPasswordProps) {
 }
 
 function ResetPassword() {
-  // get passwrd reset key from url
+  // get password reset key from url
   const resetKey = new URLSearchParams(window.location.search).get("resetKey") ?? "";
   return <SimpleLayout>
     <div className="h-100 w-100 d-flex">

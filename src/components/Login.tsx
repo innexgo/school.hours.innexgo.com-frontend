@@ -1,14 +1,12 @@
 import React from 'react';
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
 import { Card, Button, Form, } from 'react-bootstrap'
-import { newApiKey, isApiErrorCode } from '../utils/utils';
+import { newValidApiKey, isApiErrorCode } from '../utils/utils';
 
 import SimpleLayout from '../components/SimpleLayout';
-import SchoolName from '../components/SchoolName';
 
 interface LoginProps {
   setApiKey: (data: ApiKey | null) => void
-  userKind?: UserKind,
 }
 
 function LoginForm(props: LoginProps) {
@@ -35,7 +33,7 @@ function LoginForm(props: LoginProps) {
       return;
     }
 
-    const maybeApiKey = await newApiKey({
+    const maybeApiKey = await newValidApiKey({
       userEmail: values.email,
       userPassword: values.password,
       duration: 5 * 60 * 60 * 1000
@@ -121,34 +119,11 @@ function LoginForm(props: LoginProps) {
 }
 
 function Login(props: LoginProps) {
-
-  const LoginPhrase = (x: UserKind | undefined) => {
-    const linkStyle= {
-        fontWeight: "normal" as const,
-        fontSize:"0.875rem"
-    }
-    switch (x) {
-      case undefined: {
-        return <span>Login</span>
-      }
-      case "STUDENT": {
-        return <>Student Login <a style={linkStyle} href="/">(Go To Teacher Login)</a></>
-      }
-      case "USER": {
-        return <>Teacher Login <a style={linkStyle} href="/">(Go To Student Login)</a></>
-      }
-      case "ADMIN": {
-        return <>Admin Login   <a style={linkStyle} href="/">(Go To Student Login)</a></>
-      }
-    }
-  }
-
   return <SimpleLayout>
     <div className="h-100 w-100 d-flex">
       <Card className="mx-auto my-auto">
         <Card.Body>
-          <Card.Title>{LoginPhrase(props.userKind)}</Card.Title>
-          <Card.Subtitle className="text-muted"><SchoolName/></Card.Subtitle>
+          <Card.Title>Login</Card.Title>
           <LoginForm {...props} />
         </Card.Body>
       </Card>

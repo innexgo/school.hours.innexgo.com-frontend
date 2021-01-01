@@ -19,7 +19,6 @@ export default function SearchMultiUser(props: SearchMultiUserProps) {
   const promiseOptions = async function(input: string): Promise<UserOption[]> {
     const results = await viewUser({
       partialUserName: input.toUpperCase(),
-      userKind: props.userKind,
       apiKey: props.apiKey.key
     });
 

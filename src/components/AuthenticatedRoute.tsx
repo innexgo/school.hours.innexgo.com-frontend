@@ -19,13 +19,13 @@ function AuthenticatedRoute({
 
   const isAuthenticated = apiKey != null &&
     apiKey.creationTime + apiKey.duration > Date.now() &&
-    apiKey.creator.kind !== "STUDENT";
+    apiKey.apiKeyKind != "CANCEL";
 
   return (
     <Route {...rest} >
       {isAuthenticated
         ? <AuthenticatedComponent apiKey={apiKey!} setApiKey={setApiKey} />
-        : <Login setApiKey={setApiKey} userKind="USER" />}
+        : <Login setApiKey={setApiKey}  />}
     </Route>
   );
 }

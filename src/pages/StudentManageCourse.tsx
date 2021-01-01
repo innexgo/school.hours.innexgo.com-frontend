@@ -15,7 +15,7 @@ import {sessionRequestResponseToEvent, sessionRequestToEvent, committmentToEvent
 
 import StudentCreateSessionRequest from '../components/StudentCreateSessionRequest';
 
-function StudentEventCalendar(props: StudentComponentProps & { showAllHours: boolean }) {
+function StudentEventCalendar(props: AuthenticatedComponentProps & { showAllHours: boolean }) {
 
   const [start, setStart] = React.useState(0);
   const [duration, setDuration] = React.useState(0);
@@ -51,7 +51,7 @@ function StudentEventCalendar(props: StudentComponentProps & { showAllHours: boo
     }) => {
 
     const maybeSessionRequests = await viewSessionRequest({
-      attendeeId: props.apiKey.creator.id,
+      attendeeUserId: props.apiKey.creator.userId,
       minStartTime: args.start.valueOf(),
       maxStartTime: args.end.valueOf(),
       responded: false,
@@ -59,7 +59,7 @@ function StudentEventCalendar(props: StudentComponentProps & { showAllHours: boo
     });
 
     const maybeSessionRequestResponses = await viewSessionRequestResponse({
-      attendeeId: props.apiKey.creator.id,
+      attendeeUserId: props.apiKey.creator.userId,
       minStartTime: args.start.valueOf(),
       maxStartTime: args.end.valueOf(),
       accepted: false,
@@ -67,7 +67,7 @@ function StudentEventCalendar(props: StudentComponentProps & { showAllHours: boo
     });
 
     const maybeCommittments = await viewCommittment({
-      attendeeId: props.apiKey.creator.id,
+      attendeeUserId: props.apiKey.creator.userId,
       minStartTime: args.start.valueOf(),
       maxStartTime: args.end.valueOf(),
       responded: false,
@@ -75,7 +75,7 @@ function StudentEventCalendar(props: StudentComponentProps & { showAllHours: boo
     });
 
     const maybeCommittmentResponses = await viewCommittmentResponse({
-      attendeeId: props.apiKey.creator.id,
+      attendeeUserId: props.apiKey.creator.userId,
       minStartTime: args.start.valueOf(),
       maxStartTime: args.end.valueOf(),
       apiKey: props.apiKey.key
@@ -239,7 +239,7 @@ function StudentEventCalendar(props: StudentComponentProps & { showAllHours: boo
   )
 }
 
-function StudentDashboard(props: StudentComponentProps) {
+function StudentDashboard(props: AuthenticatedComponentProps) {
   const [showAllHours, setShowAllHours] = React.useState(false);
 
   return (

@@ -6,7 +6,7 @@ function SessionRequestCard(props: { sessionRequest: SessionRequest }) {
   const sessionRequest = props.sessionRequest;
   return (
     <div className="px-1 py-1 h-100 w-100 bg-info text-light overflow-hidden" >
-      To: {sessionRequest.host.name}
+      To: {sessionRequest.course.name}
       <br />
       Msg: {sessionRequest.message}
     </div>
@@ -18,7 +18,7 @@ function SessionRequestResponseCard(props: { sessionRequestResponse: SessionRequ
   const sessionRequestResponse = props.sessionRequestResponse;
   return (
     <div className="px-1 py-1 h-100 w-100 bg-light text-dark overflow-hidden" >
-      To: {sessionRequestResponse.sessionRequest.host.name}
+      To: {sessionRequestResponse.sessionRequest.course.name}
       <br />
       Response: {sessionRequestResponse.message}
     </div>
@@ -32,7 +32,7 @@ function CommittmentCard(props: { committment: Committment }) {
     <div className="px-1 py-1 h-100 w-100 bg-primary text-light overflow-hidden" >
       Appt: {committment.session.name}
       <br/>
-      At: {committment.session.host.name}
+      At: {committment.session.course.name}
     </div>
   )
 }
