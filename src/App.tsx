@@ -23,9 +23,11 @@ import Dashboard from './pages/Dashboard';
 // permits you to edit and make changes to a school
 import AdminManageSchool from './pages/AdminManageSchool';
 
-// permits you to edit and make appointments & etc
-import InstructorManageCourse from './pages/InstructorManageCourse';
+// Student can view their own course performance, and (if permitted) withdraw
 import StudentManageCourse from './pages/StudentManageCourse';
+// Instructor can add and remove students, change the course password, name, and description
+import InstructorManageCourse from './pages/InstructorManageCourse';
+
 
 // view object data
 import SchoolStatsReport from './pages/SchoolStatsReport';
@@ -75,6 +77,7 @@ function App() {
         <Route path="/register_confirm" component={RegisterConfirm} />
         <AuthenticatedRoute path="/dashboard" {...apiKeyGetSetter} component={Dashboard} />
         <AuthenticatedRoute path="/admin_manage_school" {...apiKeyGetSetter} component={AdminManageSchool} />
+
         <AuthenticatedRoute path="/instructor_manage_course" {...apiKeyGetSetter} component={InstructorManageCourse} />
         <AuthenticatedRoute path="/student_manage_course" {...apiKeyGetSetter} component={StudentManageCourse} />
 
