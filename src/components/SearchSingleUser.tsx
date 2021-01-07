@@ -1,13 +1,13 @@
 import AsyncSelect from 'react-select/async';
 import { ValueType } from 'react-select';
-import { viewUser, isApiErrorCode } from '../utils/utils';
+import { isApiErrorCode } from '../utils/utils';
 
 interface SearchSingleUserProps {
-  isInvalid: boolean,
   name: string,
-  apiKey: ApiKey,
-  userKind: "STUDENT" | "USER" | "ADMIN",
-  setFn: (id: User | null) => void
+  disabled?:boolean,
+  search: (input: string) => Promise<User[]>,
+  isInvalid: boolean,
+  setFn: (user: User | null) => void
 }
 
 type UserOption = {
@@ -17,10 +17,7 @@ type UserOption = {
 
 export default function SearchSingleUser(props: SearchSingleUserProps) {
   const promiseOptions = async function(input: string): Promise<UserOption[]> {
-    const results = await viewUser({
-      partialUserName: input.toUpperCase(),
-      apiKey: props.apiKey.key
-    });
+    const results = await props.search(input);
 
     if (isApiErrorCode(results)) {
       return [];
@@ -45,8 +42,9 @@ export default function SearchSingleUser(props: SearchSingleUserProps) {
     placeholder="Start typing to search"
     isClearable={true}
     onChange={onChange}
-    cacheOptions={true}
     name={props.name}
+    cacheOptions={true}
+    isDisabled={props.disabled}
     components={{ DropdownIndicator: () => null, IndicatorSeparator: () => null }}
     noOptionsMessage={() => null}
     loadOptions={promiseOptions} />

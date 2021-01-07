@@ -8,13 +8,13 @@ import { newUser, isApiErrorCode } from '../utils/utils';
 function RegisterConfirmError(prop: { maybeUser: any }) {
   if (isApiErrorCode(prop.maybeUser)) {
     switch (prop.maybeUser) {
-      case "EMAIL_VERIFICATION_CHALLENGE_KEY_NONEXISTENT": {
+      case "VERIFICATION_CHALLENGE_NONEXISTENT": {
         return <Card.Text>
           Verification link is invalid.
           Click <a href="/register">here</a> to register.
         </Card.Text>;
       }
-      case "EMAIL_VERIFICATION_CHALLENGE_KEY_TIMED_OUT": {
+      case "VERIFICATION_CHALLENGE_TIMED_OUT": {
         return <Card.Text>
           Verification link has timed out.
           Click <a href="/register">here</a> to register again.

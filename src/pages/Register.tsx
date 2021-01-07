@@ -1,16 +1,17 @@
 import React from 'react';
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
-import { InputGroup, Button, Card, Form } from 'react-bootstrap'
+import { Button, Card, Form } from 'react-bootstrap'
 
 import { newVerificationChallenge, isApiErrorCode, isPasswordValid } from '../utils/utils';
 
-import { Async } from 'react-async'
-
 import SimpleLayout from '../components/SimpleLayout';
 import Loader from '../components/Loader';
-import { getSchoolInfo } from '../components/SchoolName';
 
-function RegisterForm() {
+type RegisterFormProps = {
+  onSuccess: () => void
+}
+
+function RegisterForm(props: RegisterFormProps) {
 
   type RegistrationValue = {
     firstName: string,
@@ -116,6 +117,8 @@ function RegisterForm() {
       failureMessage: "",
       successMessage: "We've sent an email to verify your address."
     });
+    // execute callback
+    props.onSuccess();
   }
   const normalizeInput = (e: string) => e.toUpperCase().replace(/[^A-Z]+/g, "");
   return (
@@ -222,13 +225,17 @@ function RegisterForm() {
 }
 
 function Register() {
+  const [successful, setSuccess] = React.useState(false);
   return (
     <SimpleLayout>
       <div className="h-100 w-100 d-flex">
         <Card className="mx-auto my-auto">
           <Card.Body>
             <Card.Title>Register</Card.Title>
-            <RegisterForm />
+            {successful
+              ? <Form.Text className="text-success">We've sent an email to verify your address.</Form.Text>
+              : <RegisterForm onSuccess={() => setSuccess(true)} />
+            }
           </Card.Body>
         </Card>
       </div>

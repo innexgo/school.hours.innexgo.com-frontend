@@ -1,12 +1,12 @@
 import { ValueType } from 'react-select';
 import AsyncSelect from 'react-select/async';
-import { viewUser, isApiErrorCode } from '../utils/utils';
+import { isApiErrorCode } from '../utils/utils';
 
 interface SearchMultiUserProps {
-  isInvalid: boolean,
   name: string,
-  apiKey: ApiKey,
-  userKind: "STUDENT" | "USER" | "ADMIN",
+  disabled?: boolean,
+  search: (input:string) => Promise<User[]>,
+  isInvalid: boolean,
   setFn: (users: User[]) => void
 }
 
@@ -17,10 +17,7 @@ type UserOption = {
 
 export default function SearchMultiUser(props: SearchMultiUserProps) {
   const promiseOptions = async function(input: string): Promise<UserOption[]> {
-    const results = await viewUser({
-      partialUserName: input.toUpperCase(),
-      apiKey: props.apiKey.key
-    });
+    const results = await props.search(input)
 
     if (isApiErrorCode(results)) {
       return [];
@@ -47,6 +44,7 @@ export default function SearchMultiUser(props: SearchMultiUserProps) {
     onChange={onChange}
     cacheOptions={true}
     name={props.name}
+    isDisabled={props.disabled}
     isMulti={true}
     components={{ DropdownIndicator: () => null, IndicatorSeparator: () => null }}
     noOptionsMessage={() => null}

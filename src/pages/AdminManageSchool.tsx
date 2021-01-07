@@ -1,33 +1,26 @@
-import React from 'react'
-import { Form} from 'react-bootstrap';
-import DashboardLayout from '../components/DashboardLayout';
 
+import React from 'react';
+import { Link } from 'react-router-dom';
 
-function Admin(props: AuthenticatedComponentProps) {
-  const formStyle = {
-    padding: '0% 3%',
-    textAlign: 'center' as const,
-  };
+// Bootstrap CSS & JS
+import '../style/dashboard.scss';
+import 'bootstrap/dist/js/bootstrap';
+import 'popper.js/dist/popper';
 
-  const headerStyle = {
-    marginTop: '2%',
-    textAlign: 'center' as const,
-  };
-
+function AdminManageSchool() {
   return (
-    <DashboardLayout name={props.apiKey.creator.name} logoutCallback={() => props.setApiKey(null)} >
-      <h1 style={headerStyle}>Upload data </h1>
-      <Form style={formStyle}>
-
-      <Form.File 
-    id="csv-data"
-    label="Please upload a csv file with your data."
-    custom
-  />
-      </Form>
-    </DashboardLayout>
-  );
+    <div style={{
+      display: "flex",
+      height: "100vh",
+      width: "100vw"
+    }}>
+      <div className="my-auto mx-auto text-center">
+        <h1>Admin manage school</h1>
+        <h5>Page under construction</h5>
+        <Link to="/">Return Home</Link>
+      </div>
+    </div>
+  )
 }
 
-
-export default Admin;
+export default AdminManageSchool

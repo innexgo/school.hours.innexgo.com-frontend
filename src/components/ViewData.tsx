@@ -12,6 +12,36 @@ const ToggleExpandButton = (props: { expand: boolean, setExpand: (b: boolean) =>
     {props.expand ? "Less" : "More"}
   </button>
 
+export const ViewCourse = (props: {
+  course: Course,
+  expanded: boolean
+}) => {
+  const [expanded, setExpanded] = React.useState(props.expanded);
+  if (!expanded) {
+    return <span>
+      {props.course.name}
+      <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
+    </span>
+  } else {
+    return <div>
+      <Table hover bordered>
+        <tbody>
+          <tr>
+            <th>Name</th>
+            <td>{props.course.name}</td>
+          </tr>
+          <tr>
+            <th>Description</th>
+            <td>{props.course.description}</td>
+          </tr>
+        </tbody>
+      </Table>
+      <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
+    </div>
+  }
+}
+
+
 export const ViewUser = (props: {
   user: User,
   expanded: boolean
@@ -79,8 +109,8 @@ export const ViewSession = (props: {
             <td>{`${props.session.hidden}`}</td>
           </tr>
           <tr>
-            <th>Host</th>
-            <td><ViewUser user={props.session.host} expanded={false} /></td>
+            <th>Course</th>
+            <td><ViewCourse course={props.session.course} expanded={false} /></td>
           </tr>
         </tbody>
       </Table>
@@ -95,7 +125,7 @@ export const ViewSessionRequest = (props: {
 }) => {
   const [expanded, setExpanded] = React.useState(props.expanded);
   if (!expanded) {
-    return <span> {props.sessionRequest.attendee.name} - {props.sessionRequest.host.name} - {format(props.sessionRequest.startTime, "MMM do")}
+    return <span> {props.sessionRequest.attendee.name} - {props.sessionRequest.course.name} - {format(props.sessionRequest.startTime, "MMM do")}
       <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
     </span>
   } else {
@@ -127,7 +157,7 @@ export const ViewSessionRequest = (props: {
           </tr>
           <tr>
             <th>Host</th>
-            <td><ViewUser user={props.sessionRequest.host} expanded={false} /></td>
+            <td><ViewCourse course={props.sessionRequest.course} expanded={false} /></td>
           </tr>
         </tbody>
       </Table>
@@ -143,7 +173,7 @@ export const ViewSessionRequestResponse = (props: {
   const [expanded, setExpanded] = React.useState(props.expanded);
   if (!expanded) {
     return <span>
-      {props.sessionRequestResponse.sessionRequest.attendee.name} - {props.sessionRequestResponse.sessionRequest.host.name} - {format(props.sessionRequestResponse.sessionRequest.startTime, "MMM do")}
+      {props.sessionRequestResponse.sessionRequest.attendee.name} - {props.sessionRequestResponse.sessionRequest.course.name} - {format(props.sessionRequestResponse.sessionRequest.startTime, "MMM do")}
       <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
     </span>
   } else {

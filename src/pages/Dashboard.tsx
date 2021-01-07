@@ -5,7 +5,7 @@ import interactionPlugin from '@fullcalendar/interaction'
 import DashboardLayout from '../components/DashboardLayout';
 import CalendarCard from '../components/CalendarCard';
 
-import { Form, Popover, Container, CardDeck } from 'react-bootstrap';
+import { Tab, Tabs, Form, Popover, Container, CardDeck } from 'react-bootstrap';
 import { viewSession, viewSessionRequest, isApiErrorCode, viewCourseMembership } from '../utils/utils';
 import { viewSessionRequestResponse, viewCommittment, viewCommittmentResponse } from '../utils/utils';
 
@@ -14,10 +14,14 @@ import { ViewSession, ViewSessionRequest, ViewSessionRequestResponse, ViewCommit
 import UtilityWrapper from '../components/UtilityWrapper';
 
 import UserCreateSession from '../components/UserCreateSession';
+import StudentCreateSessionRequest from '../components/StudentCreateSessionRequest';
 import UserReviewSessionRequest from '../components/UserReviewSessionRequest';
 import UserManageSession from '../components/UserManageSession';
 import DisplayModal from '../components/DisplayModal';
 import { sessionToEvent, sessionRequestToEvent, sessionRequestResponseToEvent, committmentToEvent, committmentResponseToEvent } from '../components/ToCalendar';
+
+
+
 
 function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: boolean }) {
 
@@ -301,12 +305,27 @@ function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: bool
         setShow={setShowCreatorPickerModal}
       >
         {/* TODO */}
-        <UserCreateSession
-          apiKey={props.apiKey}
-          start={start}
-          duration={duration}
-          postSubmit={() => setShowCreateSessionModal(false)}
-        />
+
+        <Tabs defaultActiveKey="session">
+          <Tab eventKey="session" title="Create Session">
+            <UserCreateSession
+              apiKey={props.apiKey}
+              start={start}
+              duration={duration}
+              postSubmit={() => setShowCreatorPickerModal(false)}
+            />
+          </Tab>
+          <Tab eventKey="profile" title="Create Request">
+            <StudentCreateSessionRequest
+              apiKey={props.apiKey}
+              start={start}
+              duration={duration}
+              postSubmit={() => setShowCreatorPickerModal(false)}
+            />
+          </Tab>
+        </Tabs>
+
+
       </DisplayModal>
       {selectedSession == null ? <> </> :
         <>
@@ -319,8 +338,8 @@ function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: bool
           </DisplayModal>
           <DisplayModal
             title="View Session"
-            show={showManageSessionModal}
-            setShow={setShowManageSessionModal}
+            show={showViewSessionModal}
+            setShow={setShowViewSessionModal}
           >
             <ViewSession session={selectedSession} expanded />
           </DisplayModal>

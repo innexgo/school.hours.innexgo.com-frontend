@@ -1,30 +1,30 @@
 import React from "react"
-import SearchSingleUser from "../components/SearchSingleUser";
+import SearchSingleCourse from "../components/SearchSingleCourse";
 import { Formik, FormikHelpers } from "formik";
 import { Row, Col, Button, Form } from "react-bootstrap";
-import { newSessionRequest, isApiErrorCode } from "../utils/utils";
+import { newSessionRequest, viewCourseMembership, isApiErrorCode } from "../utils/utils";
 import format from "date-fns/format";
 
 type StudentCreateSessionRequestProps = {
   start: number;
   duration: number;
   apiKey: ApiKey;
-  postSubmit: () =>void;
+  postSubmit: () => void;
 }
 
 function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
 
   type CreateSessionRequestValue = {
     message: string,
-    userId: number | null,
+    courseId: number | null,
   }
 
   const onSubmit = async (values: CreateSessionRequestValue,
     { setStatus }: FormikHelpers<CreateSessionRequestValue>) => {
 
-    if (values.userId == null) {
+    if (values.courseId == null) {
       setStatus({
-        userId: "Please select a course.",
+        courseId: "Please select a course.",
         message: "",
         failureResult: "",
       });
@@ -32,7 +32,7 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
     }
 
     const maybeSessionRequest = await newSessionRequest({
-      courseId: values.userId,
+      courseId: values.courseId,
       message: values.message,
       startTime: props.start,
       duration: props.duration,
@@ -44,7 +44,7 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
         case "API_KEY_NONEXISTENT": {
           setStatus({
             message: "",
-            userId: "",
+            courseId: "",
             failureResult: "You have been automatically logged out. Please relogin.",
             successResult: ""
           });
@@ -53,7 +53,7 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
         case "USER_NONEXISTENT": {
           setStatus({
             message: "",
-            userId: "This teacher does not exist.",
+            courseId: "This teacher does not exist.",
             failureResult: "",
             successResult: ""
           });
@@ -62,7 +62,7 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
         case "NEGATIVE_DURATION": {
           setStatus({
             message: "",
-            userId: "",
+            courseId: "",
             failureResult: "The duration you have selected is not valid.",
             successResult: ""
           });
@@ -71,7 +71,7 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
         default: {
           setStatus({
             message: "",
-            userId: "",
+            courseId: "",
             failureResult: "An unknown or network error has occurred.",
             successResult: ""
           });
@@ -83,7 +83,7 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
 
     setStatus({
       message: "",
-      userId: "",
+      courseId: "",
       failureResult: "",
       successResult: "Request Created",
     });
@@ -96,11 +96,11 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
       onSubmit={onSubmit}
       initialValues={{
         message: "",
-        userId: null
+        courseId: null
       }}
       initialStatus={{
         message: "",
-        userId: "",
+        courseId: "",
         failureResult: "",
         successResult: ""
       }}
@@ -122,14 +122,23 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
             </Col>
           </Form.Group>
           <Form.Group as={Row}>
-            <Form.Label column sm={2}>Teacher Name</Form.Label>
+            <Form.Label column sm={2}>Course Name</Form.Label>
             <Col>
-              <SearchSingleUser
-                name="userId"
-                isInvalid={fprops.status.userId !== ""}
-                apiKey={props.apiKey}
-                userKind={"USER"} setFn={e => fprops.setFieldValue("userId", e?.id)} />
-              <Form.Text className="text-danger">{fprops.status.userId}</Form.Text>
+              <SearchSingleCourse
+                name="courseId"
+                search={async (input: string) => {
+                  const maybeCourseMemberships = await viewCourseMembership({
+                    partialCourseName: input,
+                    courseMembershipKind: "STUDENT",
+                    userId: props.apiKey.creator.userId,
+                    onlyRecent: true,
+                    apiKey: props.apiKey.key,
+                  });
+                  return isApiErrorCode(maybeCourseMemberships) ? [] : maybeCourseMemberships.map(x => x.course)
+                }}
+                isInvalid={fprops.status.courseId !== ""}
+                setFn={(e: Course | null) => fprops.setFieldValue("courseId", e?.courseId)} />
+              <Form.Text className="text-danger">{fprops.status.courseId}</Form.Text>
             </Col>
           </Form.Group>
           <Form.Group as={Row}>

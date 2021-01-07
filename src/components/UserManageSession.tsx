@@ -5,7 +5,7 @@ import { Formik, FormikHelpers, } from 'formik';
 import Loader from '../components/Loader';
 import { ViewSession, ViewUser } from '../components/ViewData';
 import SearchMultiUser from '../components/SearchMultiUser';
-import { newCommittment, newCommittmentResponse, viewCommittment, viewCommittmentResponse, isApiErrorCode } from '../utils/utils';
+import { newCommittment, newCommittmentResponse, viewCommittment, viewCommittmentResponse, viewCourseMembership, isApiErrorCode } from '../utils/utils';
 
 type ManageSessionModalProps = {
   session: Session;
@@ -73,7 +73,7 @@ function ManageSessionModal(props: ManageSessionModalProps) {
             <Tab eventKey="manage" title="Current Students">
               <br />
               <Formik<CreateCommittmentResponseValues[]>
-                onSubmit={async (values, {setStatus }: FormikHelpers<CreateCommittmentResponseValues[]>) => {
+                onSubmit={async (values, { setStatus }: FormikHelpers<CreateCommittmentResponseValues[]>) => {
                   let newStatus = values.map(_ => "");
                   values.forEach(async (individual, i) => {
                     if (individual.committmentResponseKind === "default") {
@@ -148,7 +148,7 @@ function ManageSessionModal(props: ManageSessionModalProps) {
                                 <option value="ABSENT">Absent</option>
                                 <option value="CANCELLED">Cancel</option>
                               </Form.Control>
-                              <br/>
+                              <br />
                               <Form.Text className="text-danger">{fprops.status[i]}</Form.Text>
                             </td>
                           </tr>
@@ -239,10 +239,17 @@ function ManageSessionModal(props: ManageSessionModalProps) {
                       <Col>
                         <SearchMultiUser
                           name="studentList"
-                          apiKey={props.apiKey}
                           isInvalid={fprops.status.studentList !== ""}
-                          userKind="STUDENT"
-                          setFn={e => fprops.setFieldValue("studentList", e.map(s => s.id))} />
+                          search={async (input: string) => {
+                            const maybeCourseMemberships = await viewCourseMembership({
+                              courseId: props.session.course.courseId,
+                              courseMembershipKind: "STUDENT",
+                              partialUserName: input,
+                              apiKey: props.apiKey.key,
+                            });
+                            return isApiErrorCode(maybeCourseMemberships) ? [] : maybeCourseMemberships.map(x => x.user)
+                          }}
+                          setFn={e => fprops.setFieldValue("studentList", e.map(s => s.userId))} />
                         <Form.Text className="text-danger">{fprops.status.studentList}</Form.Text>
                       </Col>
                     </Form.Group>

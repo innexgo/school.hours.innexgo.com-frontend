@@ -1,21 +1,23 @@
 import React from 'react'
 import SearchMultiUser from '../components/SearchMultiUser';
+import SearchSingleCourse from '../components/SearchSingleCourse';
 import { Formik, FormikHelpers } from 'formik';
 
 import { Row, Col, Button, Form } from 'react-bootstrap';
-import { newSession, newCommittment, isApiErrorCode } from '../utils/utils';
+import { newSession, newCommittment, viewCourseMembership, isApiErrorCode } from '../utils/utils';
 import format from 'date-fns/format';
 
-type CreateSessionModalProps = {
+type CreateSessionProps = {
   start: number;
   duration: number;
   postSubmit: () => void;
   apiKey: ApiKey;
 }
 
-function CreateSessionModal(props: CreateSessionModalProps) {
+function CreateSession(props: CreateSessionProps) {
   type CreateSessionValue = {
     name: string,
+    courseId: number | null,
     makePublic: boolean,
     studentList: number[],
   }
@@ -31,9 +33,20 @@ function CreateSessionModal(props: CreateSessionModalProps) {
       sessionName = values.name;
     }
 
+    if (values.courseId == null) {
+      setStatus({
+        name: "",
+        courseId: "Select which course you wish to create this session for.",
+        studentList: "",
+        resultFailure: "",
+      });
+      return;
+    }
+
     const maybeSession = await newSession({
       name: sessionName,
-      hostId: props.apiKey.creator.id,
+      locationId: 0,
+      courseId: values.courseId,
       startTime: props.start,
       duration: props.duration,
       hidden: !values.makePublic,
@@ -95,32 +108,45 @@ function CreateSessionModal(props: CreateSessionModalProps) {
           }
           case "API_KEY_NONEXISTENT": {
             setStatus({
-              studentList: "",
               name: "",
+              courseId: "",
+              studentList: "",
               resultFailure: "You have been automatically logged out. Please relogin.",
             });
             break;
           }
           case "API_KEY_UNAUTHORIZED": {
             setStatus({
-              studentList: "",
               name: "",
+              courseId: "",
+              studentList: "",
               resultFailure: "You are not currently authorized to perform this action.",
             });
             break;
           }
           case "USER_NONEXISTENT": {
             setStatus({
-              studentList: "This user does not exist.",
               name: "",
+              courseId: "",
+              studentList: "This user does not exist.",
+              resultFailure: "",
+            });
+            break;
+          }
+          case "COURSE_NONEXISTENT": {
+            setStatus({
+              name: "",
+              courseId: "This course does not exist.",
+              studentList: "",
               resultFailure: "",
             });
             break;
           }
           default: {
             setStatus({
-              studentList: "",
               name: "",
+              courseId: "",
+              studentList: "",
               resultFailure: "An unknown error has occurred",
             });
             break;
@@ -139,11 +165,13 @@ function CreateSessionModal(props: CreateSessionModalProps) {
       onSubmit={onSubmit}
       initialValues={{
         name: "",
+        courseId: null,
         studentList: [],
         makePublic: false
       }}
       initialStatus={{
         name: "",
+        courseId: "",
         studentList: "",
         resultFailure: "",
       }}
@@ -162,6 +190,30 @@ function CreateSessionModal(props: CreateSessionModalProps) {
             <Form.Label column sm={2}>End Time</Form.Label>
             <Col>
               <span>{format(props.start + props.duration, "MMM do, hh:mm a")} </span>
+            </Col>
+          </Form.Group>
+          <Form.Group as={Row}>
+            <Form.Label column sm={2}>Course Name</Form.Label>
+            <Col>
+              <SearchSingleCourse
+                name="courseId"
+                search={async (input: string) => {
+                  const maybeCourseMemberships = await viewCourseMembership({
+                    partialCourseName: input,
+                    courseMembershipKind: "STUDENT",
+                    userId: props.apiKey.creator.userId,
+                    onlyRecent: true,
+                    apiKey: props.apiKey.key,
+                  });
+                  return isApiErrorCode(maybeCourseMemberships) ? [] : maybeCourseMemberships.map(x => x.course)
+                }}
+                isInvalid={fprops.status.courseId !== ""}
+                setFn={(e: Course | null) => {
+                  fprops.setFieldValue("courseId", e?.courseId)
+                  // set student list to blank to ensure students are in the course
+                  fprops.setFieldValue("studentList", []);
+                }} />
+              <Form.Text className="text-danger">{fprops.status.courseId}</Form.Text>
             </Col>
           </Form.Group>
           <Form.Group as={Row}>
@@ -184,16 +236,24 @@ function CreateSessionModal(props: CreateSessionModalProps) {
             <Col>
               <SearchMultiUser
                 name="studentList"
-                apiKey={props.apiKey}
+                disabled={fprops.values.courseId == null}
                 isInvalid={fprops.status.studentList !== ""}
-                userKind="STUDENT"
+                search={async (input: string) => {
+                  const maybeCourseMemberships = await viewCourseMembership({
+                    courseId: fprops.values.courseId!,
+                    courseMembershipKind:"STUDENT",
+                    partialUserName: input,
+                    apiKey: props.apiKey.key,
+                  });
+                  return isApiErrorCode(maybeCourseMemberships) ? [] : maybeCourseMemberships.map(x => x.user)
+                }}
                 setFn={e => {
-                    fprops.setFieldValue("studentList", e.map(s => s.id));
-                    let newDefault = props.apiKey.creator.name;
-                    for(const s of e) {
-                      newDefault += ` - ${s.name}`
-                    }
-                    setDefaultSessionName(newDefault);
+                  fprops.setFieldValue("studentList", e.map(s => s.userId));
+                  let newDefault = props.apiKey.creator.name;
+                  for (const s of e) {
+                    newDefault += ` - ${s.name}`
+                  }
+                  setDefaultSessionName(newDefault);
                 }} />
               <Form.Text className="text-danger">{fprops.status.studentList}</Form.Text>
             </Col>
@@ -213,4 +273,4 @@ function CreateSessionModal(props: CreateSessionModalProps) {
   </>
 }
 
-export default CreateSessionModal;
+export default CreateSession;

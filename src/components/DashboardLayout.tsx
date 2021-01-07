@@ -1,13 +1,13 @@
 import React from 'react';
 import { Home, } from '@material-ui/icons';
 
-import DashboardLayout from '../components/DashboardLayout';
+import InnerLayout from '../components/InnerLayout';
 
 export default function DashboardLayout(props: React.PropsWithChildren<AuthenticatedComponentProps>) {
-  return (<DashboardLayout name={props.apiKey.creator.name} logoutCallback={() => props.setApiKey(null)} >
-    <DashboardLayout.SidebarEntry label="Home" icon={Home} href="/user" />
-    <DashboardLayout.Body>
+  return (<InnerLayout name={props.apiKey.creator.name} logoutCallback={() => props.setApiKey(null)} >
+    <InnerLayout.SidebarEntry label="Home" icon={Home} href="/user" />
+    <InnerLayout.Body>
       {props.children}
-    </DashboardLayout.Body>
-  </DashboardLayout>)
+    </InnerLayout.Body>
+  </InnerLayout>)
 }
