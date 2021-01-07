@@ -5,7 +5,11 @@ import { newPasswordReset, isApiErrorCode } from '../utils/utils';
 
 import SimpleLayout from '../components/SimpleLayout';
 
-function ForgotPasswordForm() {
+type ForgotPasswordFormProps = {
+  onSuccess: ()=>void;
+}
+
+function ForgotPasswordForm(props:ForgotPasswordFormProps) {
 
   type ForgotPasswordValue = {
     email: string,
@@ -51,6 +55,7 @@ function ForgotPasswordForm() {
         failureMessage: "",
         successMessage: "A reset email has been sent."
       });
+      props.onSuccess();
     }
   }
 
@@ -93,12 +98,16 @@ function ForgotPasswordForm() {
 }
 
 function ForgotPassword() {
+  const [successful, setSuccess] = React.useState(false);
   return <SimpleLayout>
     <div className="h-100 w-100 d-flex">
       <Card className="mx-auto my-auto">
         <Card.Body>
           <Card.Title>Send Reset Password Email</Card.Title>
-          <ForgotPasswordForm />
+            {successful
+              ? <Form.Text className="text-success">We've sent an email to reset your password.</Form.Text>
+              : <ForgotPasswordForm onSuccess={() => setSuccess(true)} />
+            }
         </Card.Body>
       </Card>
     </div>

@@ -1,4 +1,6 @@
 import React from 'react'
+import { Async, AsyncProps } from 'react-async';
+import Loader from '../components/Loader';
 import FullCalendar, { DateSelectArg, EventClickArg } from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
@@ -253,6 +255,31 @@ function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: bool
     weekends: false
   }
 
+
+  type CreatorPickerData = {
+    courseMemberships: CourseMembership[]
+  }
+
+  type CreatorPickerDataProps = {
+    apiKey: ApiKey,
+  }
+
+  const loadCreatorPickerData = async (props: AsyncProps<CreatorPickerData>) => {
+    const maybeCourseMemberships = await viewCourseMembership({
+      userId: props.apiKey.creator.userId,
+      //onlyRecent: true,
+      apiKey: props.apiKey.key,
+    });
+
+    if (isApiErrorCode(maybeCourseMemberships)) {
+      throw Error;
+    }
+
+    return {
+      courseMemberships: maybeCourseMemberships
+    };
+  }
+
   return (
     <div>
       <FullCalendar
@@ -304,28 +331,39 @@ function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: bool
         show={showCreatorPickerModal}
         setShow={setShowCreatorPickerModal}
       >
-        {/* TODO */}
-
-        <Tabs defaultActiveKey="session">
-          <Tab eventKey="session" title="Create Session">
-            <UserCreateSession
-              apiKey={props.apiKey}
-              start={start}
-              duration={duration}
-              postSubmit={() => setShowCreatorPickerModal(false)}
-            />
-          </Tab>
-          <Tab eventKey="profile" title="Create Request">
-            <StudentCreateSessionRequest
-              apiKey={props.apiKey}
-              start={start}
-              duration={duration}
-              postSubmit={() => setShowCreatorPickerModal(false)}
-            />
-          </Tab>
-        </Tabs>
-
-
+        <Async promiseFn={loadCreatorPickerData} apiKey={props.apiKey}>
+          {_ => <>
+            <Async.Pending><Loader /></Async.Pending>
+            <Async.Rejected>
+              <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
+            </Async.Rejected>
+            <Async.Fulfilled<CreatorPickerData>>{data => <>
+              <Tabs className="py-3">
+                {data.courseMemberships.filter(x => x.courseMembershipKind === "INSTRUCTOR").length === 0 ? <> </> :
+                  <Tab eventKey="session" title="Create Session">
+                    <UserCreateSession
+                      apiKey={props.apiKey}
+                      start={start}
+                      duration={duration}
+                      postSubmit={() => setShowCreatorPickerModal(false)}
+                    />
+                  </Tab>
+                }
+                {data.courseMemberships.filter(x => x.courseMembershipKind === "STUDENT").length === 0 ? <> </> :
+                  <Tab eventKey="profile" title="Create Request">
+                    <StudentCreateSessionRequest
+                      apiKey={props.apiKey}
+                      start={start}
+                      duration={duration}
+                      postSubmit={() => setShowCreatorPickerModal(false)}
+                    />
+                  </Tab>
+                }
+              </Tabs>
+            </>}
+            </Async.Fulfilled>
+          </>}
+        </Async>
       </DisplayModal>
       {selectedSession == null ? <> </> :
         <>

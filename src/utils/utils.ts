@@ -124,7 +124,7 @@ export async function newVerificationChallenge(props: NewVerificationChallengePr
 }
 
 export type NewUserProps = {
-  verificationKey: string,
+  verificationChallengeKey: string,
 };
 
 export async function newUser(props: NewUserProps): Promise<User | ApiErrorCode> {

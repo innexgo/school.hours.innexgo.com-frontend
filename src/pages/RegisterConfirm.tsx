@@ -41,7 +41,7 @@ function RegisterConfirmError(prop: { maybeUser: any }) {
 
 function RegisterConfirm() {
   const maybeUserPromise = newUser({
-    verificationKey: new URLSearchParams(window.location.search).get("verificationKey") ?? ""
+    verificationChallengeKey: new URLSearchParams(window.location.search).get("verificationChallengeKey") ?? ""
   });
 
   return (

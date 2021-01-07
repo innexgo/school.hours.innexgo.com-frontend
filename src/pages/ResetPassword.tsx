@@ -1,12 +1,13 @@
 import React from 'react';
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
 import { Card, Button, Form, } from 'react-bootstrap'
-import { newResetPassword, isPasswordValid } from '../utils/utils';
+import { newResetPassword, isPasswordValid, isApiErrorCode } from '../utils/utils';
 
 import SimpleLayout from '../components/SimpleLayout';
 
 interface ResetPasswordProps {
   resetKey: string,
+  onSuccess: () => void
 }
 
 function ResetPasswordForm(props: ResetPasswordProps) {
@@ -36,49 +37,52 @@ function ResetPasswordForm(props: ResetPasswordProps) {
       passwordResetKey: props.resetKey,
       newPassword: values.password1,
     });
-    switch (passwordResetResult) {
-      case "OK": {
-        setStatus({
-          failureMessage: "",
-          successMessage: "Password successfully changed."
-        });
-        break;
+    if (isApiErrorCode(passwordResetResult)) {
+      switch (passwordResetResult) {
+        case "OK": {
+          setStatus({
+            failureMessage: "",
+            successMessage: "Password successfully changed."
+          });
+          break;
+        }
+        case "PASSWORD_RESET_NONEXISTENT": {
+          setStatus({
+            failureMessage: "Invalid password reset link.",
+            successMessage: ""
+          });
+          break;
+        }
+        case "PASSWORD_RESET_TIMED_OUT": {
+          setStatus({
+            failureMessage: "Password reset link timed out.",
+            successMessage: ""
+          });
+          break;
+        }
+        case "PASSWORD_EXISTENT": {
+          setStatus({
+            failureMessage: "Password reset link may only be used once.",
+            successMessage: ""
+          });
+          break;
+        }
+        case "PASSWORD_INSECURE": {
+          setErrors({
+            password1: "Password is of insufficient complexity"
+          });
+          break;
+        }
+        default: {
+          setStatus({
+            failureMessage: "An unknown or network error has occured while trying to reset password.",
+            successMessage: ""
+          });
+          break;
+        }
       }
-      case "PASSWORD_RESET_KEY_NONEXISTENT": {
-        setStatus({
-          failureMessage: "Invalid password reset link.",
-          successMessage: ""
-        });
-        break;
-      }
-      case "PASSWORD_RESET_KEY_TIMED_OUT": {
-        setStatus({
-          failureMessage: "Password reset link timed out.",
-          successMessage: ""
-        });
-        break;
-      }
-      case "PASSWORD_RESET_KEY_INVALID": {
-        setStatus({
-          failureMessage: "Password reset link may only be used once.",
-          successMessage: ""
-        });
-        break;
-      }
-      case "PASSWORD_INSECURE": {
-        setErrors({
-          password1: "Password is of insufficient complexity"
-        });
-        break;
-      }
-      default: {
-        console.log(passwordResetResult);
-        setStatus({
-          failureMessage: "An unknown or network error has occured while trying to reset password.",
-          successMessage: ""
-        });
-        break;
-      }
+    } else {
+      props.onSuccess();
     }
   }
   return <>
@@ -135,12 +139,16 @@ function ResetPasswordForm(props: ResetPasswordProps) {
 function ResetPassword() {
   // get password reset key from url
   const resetKey = new URLSearchParams(window.location.search).get("resetKey") ?? "";
+  const [successful, setSuccess] = React.useState(false);
   return <SimpleLayout>
     <div className="h-100 w-100 d-flex">
       <Card className="mx-auto my-auto">
         <Card.Body>
           <Card.Title>Reset Password</Card.Title>
-          <ResetPasswordForm resetKey={resetKey} />
+          {successful
+            ? <Form.Text className="text-success">Password changed successfully</Form.Text>
+            : <ResetPasswordForm resetKey={resetKey} onSuccess={() => setSuccess(true)} />
+          }
         </Card.Body>
       </Card>
     </div>
