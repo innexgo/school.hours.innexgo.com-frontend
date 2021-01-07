@@ -65,9 +65,14 @@ function App() {
     }
   };
 
+
+  // TODO can someone make a REAL find my school?
+  // You have to query viewSchools and then show a list of schools
+
   return (
     <BrowserRouter>
       <Switch>
+        <AuthenticatedRoute exact path="/" {...apiKeyGetSetter} component={Dashboard} />{/*TODO make this point to a real home page that looks good*/}
         <Route path="/instructions" component={Instructions} />
         <Route path="/terms_of_service" component={TermsOfService} />
         <Route path="/school_search" component={SchoolSearch} />
