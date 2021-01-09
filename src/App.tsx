@@ -20,6 +20,9 @@ import ResetPassword from './pages/ResetPassword';
 // dashboard
 import Dashboard from './pages/Dashboard';
 
+// settings
+import Settings from './pages/Settings';
+
 // permits you to edit and make changes to a school
 import AdminManageSchool from './pages/AdminManageSchool';
 
@@ -27,6 +30,7 @@ import AdminManageSchool from './pages/AdminManageSchool';
 import StudentManageCourse from './pages/StudentManageCourse';
 // Instructor can add and remove students, change the course password, name, and description
 import InstructorManageCourse from './pages/InstructorManageCourse';
+
 
 
 // view object data
@@ -82,6 +86,7 @@ function App() {
         <Route path="/register_confirm" component={RegisterConfirm} />
         <AuthenticatedRoute path="/dashboard" {...apiKeyGetSetter} component={Dashboard} />
         <AuthenticatedRoute path="/admin_manage_school" {...apiKeyGetSetter} component={AdminManageSchool} />
+        <AuthenticatedRoute path="/settings" {...apiKeyGetSetter} component={Settings} />
 
         <AuthenticatedRoute path="/instructor_manage_course" {...apiKeyGetSetter} component={InstructorManageCourse} />
         <AuthenticatedRoute path="/student_manage_course" {...apiKeyGetSetter} component={StudentManageCourse} />

@@ -141,6 +141,7 @@ export async function newPasswordReset(props: NewPasswordResetProps): Promise<Pa
 
 export type NewChangePasswordProps = {
   userId: number,
+  oldPassword: string,
   newPassword: string,
   apiKey: string
 }
