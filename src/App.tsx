@@ -23,6 +23,9 @@ import Dashboard from './pages/Dashboard';
 // settings
 import Settings from './pages/Settings';
 
+//report
+import Report from './pages/Report'
+
 // permits you to edit and make changes to a school
 import AdminManageSchool from './pages/AdminManageSchool';
 
@@ -98,6 +101,7 @@ function App() {
         <AuthenticatedRoute path="/adminship" {...apiKeyGetSetter} component={AdminshipStatsReport} />
         <AuthenticatedRoute path="/session" {...apiKeyGetSetter} component={SessionStatsReport} />
         <AuthenticatedRoute path="/committment" {...apiKeyGetSetter} component={CommittmentStatsReport} />
+        <AuthenticatedRoute path="/report" {...apiKeyGetSetter} component={Report}/>
         <Route path="/" component={Error404} />
       </Switch>
     </BrowserRouter>
