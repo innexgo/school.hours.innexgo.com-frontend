@@ -24,6 +24,7 @@ import Dashboard from './pages/Dashboard';
 // settings
 import Settings from './pages/Settings';
 
+
 // to search and add a course
 import AddCourse from './pages/AddCourse';
 
@@ -36,6 +37,8 @@ import StudentManageCourse from './pages/StudentManageCourse';
 import InstructorManageCourse from './pages/InstructorManageCourse';
 
 
+// reports
+import Reports from './pages/Reports'
 
 // view object data
 import SchoolStatsReport from './pages/SchoolStatsReport';
@@ -90,12 +93,13 @@ function App() {
         <Route path="/register_confirm" component={RegisterConfirm} />
         <AuthenticatedRoute path="/dashboard" {...apiKeyGetSetter} component={Dashboard} />
         <AuthenticatedRoute path="/add_course" {...apiKeyGetSetter} component={AddCourse} />
-        <AuthenticatedRoute path="/admin_manage_school" {...apiKeyGetSetter} component={AdminManageSchool} />
         <AuthenticatedRoute path="/settings" {...apiKeyGetSetter} component={Settings} />
 
+        <AuthenticatedRoute path="/admin_manage_school" {...apiKeyGetSetter} component={AdminManageSchool} />
         <AuthenticatedRoute path="/instructor_manage_course" {...apiKeyGetSetter} component={InstructorManageCourse} />
         <AuthenticatedRoute path="/student_manage_course" {...apiKeyGetSetter} component={StudentManageCourse} />
 
+        <AuthenticatedRoute path="/reports" {...apiKeyGetSetter} component={Reports}/>
         <AuthenticatedRoute path="/school" {...apiKeyGetSetter} component={SchoolStatsReport} />
         <AuthenticatedRoute path="/course" {...apiKeyGetSetter} component={CourseStatsReport} />
         <AuthenticatedRoute path="/user" {...apiKeyGetSetter} component={UserStatsReport} />
