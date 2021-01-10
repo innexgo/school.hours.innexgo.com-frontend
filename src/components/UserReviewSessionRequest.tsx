@@ -203,7 +203,7 @@ function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
     // create committment
     const maybeCommittment = await newCommittment({
       sessionId: sessionId,
-      attendeeId: props.sessionRequest.attendee.userId,
+      attendeeUserId: props.sessionRequest.attendee.userId,
       cancellable: values.newSessionPublic,
       apiKey: props.apiKey.key
     });

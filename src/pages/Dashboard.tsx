@@ -117,16 +117,18 @@ function EventCalendar(props: EventCalendarProps) {
 
       ...isApiErrorCode(maybeCommittments)
         ? []
-        : maybeCommittments.map(x => committmentToEvent(x, "STUDENT")),
+        : maybeCommittments
+          .filter(x => !props.hiddenCourses.includes(x.session.course.courseId))
+          .map(x => committmentToEvent(x, "STUDENT")),
 
       ...isApiErrorCode(maybeCommittmentResponses)
         ? []
         : maybeCommittmentResponses.map(x => committmentResponseToEvent(x, "STUDENT")),
     ];
 
-
     // get all the course memberships I have where i am an instructor
     const maybeInstructorCourseMemberships = await viewCourseMembership({
+      userId: props.apiKey.creator.userId,
       courseMembershipKind: "INSTRUCTOR",
       onlyRecent: true,
       apiKey: props.apiKey.key
@@ -134,7 +136,7 @@ function EventCalendar(props: EventCalendarProps) {
 
     const instructorEvents = isApiErrorCode(maybeInstructorCourseMemberships) ? [] :
       // promise all waits on an array of promises
-      await Promise.all(maybeInstructorCourseMemberships
+      (await Promise.all(maybeInstructorCourseMemberships
         .flatMap(async (x: CourseMembership) => {
           // for each membership i have:
 
@@ -161,13 +163,16 @@ function EventCalendar(props: EventCalendarProps) {
           // return an array made out of each session / session request converted to a calendar event
           // note that we mark these with "INSTRUCTOR" to show that these are existing in our instructor capacity
           return [
-            ...isApiErrorCode(maybeSessionRequests) ? [] : maybeSessionRequests.map(x => sessionRequestToEvent(x, "INSTRUCTOR")),
-            ...isApiErrorCode(maybeSessions) ? [] : maybeSessions.map(x => sessionToEvent(x, "INSTRUCTOR")),
+            ...isApiErrorCode(maybeSessionRequests)
+              ? []
+              : maybeSessionRequests.map(x => sessionRequestToEvent(x, "INSTRUCTOR")),
+            ...isApiErrorCode(maybeSessions)
+              ? []
+              : maybeSessions.map(x => sessionToEvent(x, "INSTRUCTOR")),
           ];
-        }));
+        }))).flat();
 
     return [...studentEvents, ...instructorEvents];
-
   }
 
   //this handler runs any time we recieve a click on an event

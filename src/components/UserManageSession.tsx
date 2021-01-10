@@ -172,7 +172,7 @@ function ManageSessionModal(props: ManageSessionModalProps) {
                   for (const studentId of values.studentList) {
                     const maybeCommittment = await newCommittment({
                       sessionId: props.session.sessionId,
-                      attendeeId: studentId,
+                      attendeeUserId: studentId,
                       cancellable: !props.session.hidden,
                       apiKey: props.apiKey.key
                     });

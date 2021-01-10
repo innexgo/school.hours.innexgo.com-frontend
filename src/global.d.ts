@@ -69,14 +69,16 @@ declare global {
     description: string;
   }
 
-  type CoursePasswordKind = "CHANGE" | "CANCEL";
+  type CourseKeyKind = "VALID" | "CANCEL";
 
-  type CoursePassword = {
-    coursePasswordId: number;
+  type CourseKey = {
+    courseKeyId: number;
     creationTime: number;
     creator: User;
     course: Course;
-    coursePasswordKind: CoursePasswordKind;
+    key:string;
+    courseKeyKind: CourseKeyKind;
+    duration: number;
   };
 
   type CourseMembershipKind = "STUDENT" | "INSTRUCTOR" | "CANCEL";

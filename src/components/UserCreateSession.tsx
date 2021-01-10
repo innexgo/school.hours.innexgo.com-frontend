@@ -94,7 +94,7 @@ function CreateSession(props: CreateSessionProps) {
     for (const studentId of values.studentList) {
       const maybeCommittment = await newCommittment({
         sessionId: maybeSession.sessionId,
-        attendeeId: studentId,
+        attendeeUserId: studentId,
         cancellable: values.makePublic,
         apiKey: props.apiKey.key
       });
@@ -200,7 +200,7 @@ function CreateSession(props: CreateSessionProps) {
                 search={async (input: string) => {
                   const maybeCourseMemberships = await viewCourseMembership({
                     partialCourseName: input,
-                    courseMembershipKind: "STUDENT",
+                    courseMembershipKind: "INSTRUCTOR",
                     userId: props.apiKey.creator.userId,
                     onlyRecent: true,
                     apiKey: props.apiKey.key,
