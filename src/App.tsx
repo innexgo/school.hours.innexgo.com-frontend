@@ -17,11 +17,15 @@ import RegisterConfirm from './pages/RegisterConfirm';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 
+
 // dashboard
 import Dashboard from './pages/Dashboard';
 
 // settings
 import Settings from './pages/Settings';
+
+// to search and add a course
+import AddCourse from './pages/AddCourse';
 
 // permits you to edit and make changes to a school
 import AdminManageSchool from './pages/AdminManageSchool';
@@ -85,6 +89,7 @@ function App() {
         <Route path="/register" component={Register} />
         <Route path="/register_confirm" component={RegisterConfirm} />
         <AuthenticatedRoute path="/dashboard" {...apiKeyGetSetter} component={Dashboard} />
+        <AuthenticatedRoute path="/add_course" {...apiKeyGetSetter} component={AddCourse} />
         <AuthenticatedRoute path="/admin_manage_school" {...apiKeyGetSetter} component={AdminManageSchool} />
         <AuthenticatedRoute path="/settings" {...apiKeyGetSetter} component={Settings} />
 

@@ -7,7 +7,7 @@ import interactionPlugin from '@fullcalendar/interaction'
 import DashboardLayout from '../components/DashboardLayout';
 import CalendarCard from '../components/CalendarCard';
 
-import { Tab, Tabs, Form, Popover, Container, CardDeck } from 'react-bootstrap';
+import { Tab, Tabs, Form, Popover, Container, Row, Col, Card } from 'react-bootstrap';
 import { viewSession, viewSessionRequest, isApiErrorCode, viewCourseMembership } from '../utils/utils';
 import { viewSessionRequestResponse, viewCommittment, viewCommittmentResponse } from '../utils/utils';
 
@@ -22,10 +22,13 @@ import UserManageSession from '../components/UserManageSession';
 import DisplayModal from '../components/DisplayModal';
 import { sessionToEvent, sessionRequestToEvent, sessionRequestResponseToEvent, committmentToEvent, committmentResponseToEvent } from '../components/ToCalendar';
 
+type EventCalendarProps = {
+  apiKey: ApiKey,
+  showAllHours: boolean,
+  hiddenCourses: number[]
+}
 
-
-
-function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: boolean }) {
+function EventCalendar(props: EventCalendarProps) {
 
   const [start, setStart] = React.useState(0);
   const [duration, setDuration] = React.useState(0);
@@ -66,6 +69,7 @@ function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: bool
       timeZone: string;
     }) => {
 
+
     const maybeSessionRequests = await viewSessionRequest({
       attendeeUserId: props.apiKey.creator.userId,
       minStartTime: args.start.valueOf(),
@@ -97,13 +101,27 @@ function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: bool
       apiKey: props.apiKey.key
     });
 
-
     // note that we mark these with "STUDENT" to show that these are existing in our student capacity
     const studentEvents = [
-      ...isApiErrorCode(maybeSessionRequests) ? [] : maybeSessionRequests.map(x => sessionRequestToEvent(x, "STUDENT")),
-      ...isApiErrorCode(maybeSessionRequestResponses) ? [] : maybeSessionRequestResponses.map(x => sessionRequestResponseToEvent(x, "STUDENT")),
-      ...isApiErrorCode(maybeCommittments) ? [] : maybeCommittments.map(x => committmentToEvent(x, "STUDENT")),
-      ...isApiErrorCode(maybeCommittmentResponses) ? [] : maybeCommittmentResponses.map(x => committmentResponseToEvent(x, "STUDENT")),
+      ...isApiErrorCode(maybeSessionRequests)
+        ? []
+        : maybeSessionRequests
+          .filter(x => !props.hiddenCourses.includes(x.course.courseId))
+          .map(x => sessionRequestToEvent(x, "STUDENT")),
+
+      ...isApiErrorCode(maybeSessionRequestResponses)
+        ? []
+        : maybeSessionRequestResponses
+          .filter(x => !props.hiddenCourses.includes(x.sessionRequest.course.courseId))
+          .map(x => sessionRequestResponseToEvent(x, "STUDENT")),
+
+      ...isApiErrorCode(maybeCommittments)
+        ? []
+        : maybeCommittments.map(x => committmentToEvent(x, "STUDENT")),
+
+      ...isApiErrorCode(maybeCommittmentResponses)
+        ? []
+        : maybeCommittmentResponses.map(x => committmentResponseToEvent(x, "STUDENT")),
     ];
 
 
@@ -119,6 +137,11 @@ function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: bool
       await Promise.all(maybeInstructorCourseMemberships
         .flatMap(async (x: CourseMembership) => {
           // for each membership i have:
+
+          // check its not hidden
+          if (props.hiddenCourses.includes(x.course.courseId)) {
+            return [];
+          }
 
           const maybeSessions = await viewSession({
             courseId: x.course.courseId,
@@ -260,14 +283,10 @@ function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: bool
     courseMemberships: CourseMembership[]
   }
 
-  type CreatorPickerDataProps = {
-    apiKey: ApiKey,
-  }
-
   const loadCreatorPickerData = async (props: AsyncProps<CreatorPickerData>) => {
     const maybeCourseMemberships = await viewCourseMembership({
       userId: props.apiKey.creator.userId,
-      //onlyRecent: true,
+      onlyRecent: true,
       apiKey: props.apiKey.key,
     });
 
@@ -359,6 +378,15 @@ function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: bool
                     />
                   </Tab>
                 }
+                {data.courseMemberships.filter(x => x.courseMembershipKind !== "CANCEL").length > 0 ? <> </> :
+                  <Tab eventKey="joincourse" title="Join a Course">
+                    <p>You need to join a course in order to create an event.</p>
+                    <ul>
+                      <li>If you're a student, you can join a course <a href="/add_course">here</a>.</li>
+                      <li>If you're an instructor, create a course <a href="/add_course">here</a>.</li>
+                    </ul>
+                  </Tab>
+                }
               </Tabs>
             </>}
             </Async.Fulfilled>
@@ -439,26 +467,82 @@ function EventCalendar(props: AuthenticatedComponentProps & { showAllHours: bool
 
 function Dashboard(props: AuthenticatedComponentProps) {
   const [showAllHours, setShowAllHours] = React.useState(false);
+  const [hiddenCourses, setHiddenCourses] = React.useState<number[]>([]);
+
+  const loadCourseHiderData = async (props: AsyncProps<CourseMembership[]>) => {
+    const maybeCourseMemberships = await viewCourseMembership({
+      userId: props.apiKey.creator.userId,
+      onlyRecent: true,
+      apiKey: props.apiKey.key,
+    });
+
+    if (isApiErrorCode(maybeCourseMemberships)) {
+      throw Error;
+    }
+    return maybeCourseMemberships
+  }
+
+
   return (
     <DashboardLayout {...props} >
       <Container fluid className="py-3 px-3">
-        <CardDeck>
-          <UtilityWrapper title="Upcoming Appointments">
-            <Popover id="information-tooltip">
-              This screen shows all future appointments.
-              You can click any date to add an appointment on that date,
-              or click an existing appointment to delete it.
-           </Popover>
-            <div>
-              <Form.Check
-                checked={showAllHours}
-                onChange={_ => setShowAllHours(!showAllHours)}
-                label="Show All Hours"
-              />
-              <EventCalendar {...props} showAllHours={showAllHours} />
-            </div>
-          </UtilityWrapper>
-        </CardDeck>
+        <UtilityWrapper title="Upcoming Appointments">
+          <Popover id="information-tooltip">
+            This screen shows all future appointments.
+            You can click any date to add an appointment on that date,
+            or click an existing appointment to delete it.
+              </Popover>
+          <Row>
+            <Col sm>
+              <Card className="my-3 mx-3">
+                <Card.Body>
+                  <Card.Title> View Settings </Card.Title>
+                  <Form.Check
+                    checked={showAllHours}
+                    onChange={_ => setShowAllHours(!showAllHours)}
+                    label="Show All Hours"
+                  />
+                  <Async promiseFn={loadCourseHiderData} apiKey={props.apiKey}>
+                    {_ => <>
+                      <Async.Pending><Loader /></Async.Pending>
+                      <Async.Rejected>
+                        <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
+                      </Async.Rejected>
+                      <Async.Fulfilled<CourseMembership[]>>{data =>
+                        <>
+                          {data.length == 0
+                            ? <> </>
+                            : <Card.Subtitle className="my-2"> Hide Courses </Card.Subtitle>
+                          }
+                          {data.map((cm: CourseMembership) =>
+                            <Form.Check
+                              checked={hiddenCourses.includes(cm.course.courseId)}
+                              onChange={_ => setHiddenCourses(
+                                hiddenCourses.includes(cm.course.courseId)
+                                  // if its included, remove it
+                                  ? hiddenCourses.filter(ci => ci != cm.course.courseId)
+                                  // if its not included, disinclude it
+                                  : [...hiddenCourses, cm.course.courseId]
+                              )}
+                              label={`Hide ${cm.course.name}`}
+                            />
+                          )}
+                        </>}
+                      </Async.Fulfilled>
+                    </>}
+                  </Async>
+
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col lg={10}>
+              <EventCalendar
+                hiddenCourses={hiddenCourses}
+                apiKey={props.apiKey}
+                showAllHours={showAllHours} />
+            </Col>
+          </Row>
+        </UtilityWrapper>
       </Container>
     </DashboardLayout>
   )
