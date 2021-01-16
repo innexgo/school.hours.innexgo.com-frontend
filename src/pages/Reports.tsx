@@ -13,12 +13,71 @@
 
 import React from 'react'
 import DashboardLayout from '../components/DashboardLayout';
-import { Container, Col, Row } from 'react-bootstrap';
-
-import SchoolCard from '../components/SchoolCard';
-import CourseTaughtCard from '../components/CourseTaughtCard';
-import CourseEnrolledCard from '../components/CourseEnrolledCard';
+import { Container, Col, Row, Card } from 'react-bootstrap';
 import Section from '../components/Section';
+
+
+import { ArrowForwardIos, MoreHoriz } from '@material-ui/icons'
+
+interface CourseEnrolledCardProps {
+  courseName: string,
+};
+
+function CourseEnrolledCard(props: CourseEnrolledCardProps) {
+  return (
+    <Card style={{ width: '18rem' }}>
+      <Card.Body>
+        <Card.Title>{props.courseName}</Card.Title>
+        <a title="Go to course page" href="" >
+          <ArrowForwardIos />
+        </a>
+        <a title="Manage course" href="">
+          <MoreHoriz />
+        </a>
+      </Card.Body>
+    </Card>
+  )
+}
+
+interface CourseTaughtProps {
+  numberOfStudents: number,
+  courseName: string,
+};
+
+function CourseTaughtCard(props: CourseTaughtProps) {
+  return (
+    <Card>
+      <p style={{ color: '#212529', marginBottom: '0' }}>
+        {props.numberOfStudents} students enrolled</p>
+      <h5 style={{ marginTop: '5px' }}>{props.courseName}</h5>
+      <a title="Go to course page" href="" style={{ float: 'left' }}>
+        <ArrowForwardIos /></a>
+      <a title="Manage course" href="" style={{ float: 'left', marginLeft: '5%' }}>
+        <MoreHoriz /></a>
+    </Card>
+  )
+}
+
+
+type SchoolCardProps = {
+  schoolName: string,
+};
+
+function SchoolCard(props: SchoolCardProps) {
+  const schoolName = (props.schoolName).substring(0, 20)
+  return (
+    <Card>
+      <Card.Body>
+        <Card.Title>{schoolName}</Card.Title>
+        <a title="Go to school page" href="" style={{ float: 'left' }}>
+          <ArrowForwardIos /></a>
+        <a title="Manage school" href="" style={{ float: 'left', marginLeft: '5%' }}>
+          <MoreHoriz /></a>
+      </Card.Body>
+    </Card>
+  )
+}
+
 
 function Reports(props: AuthenticatedComponentProps) {
   return (
