@@ -4,8 +4,6 @@ import { SvgIconComponent, ExitToApp, Menu } from '@material-ui/icons';
 
 // Bootstrap CSS & Js
 import '../style/dashboard.scss';
-import 'bootstrap/dist/js/bootstrap.js'
-import 'popper.js/dist/popper.js'
 
 const iconStyle = {
   width: "2rem",

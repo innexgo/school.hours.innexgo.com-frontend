@@ -17,7 +17,7 @@ function AuthenticatedRoute({
   ...rest
 }: AuthenticatedRouteProps) {
 
-  const isAuthenticated = apiKey != null &&
+  const isAuthenticated = apiKey !== null &&
     apiKey.creationTime + apiKey.duration > Date.now() &&
     apiKey.apiKeyKind != "CANCEL";
 

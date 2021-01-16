@@ -1,6 +1,6 @@
 import React from 'react';
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
-import { Card, Button, Form, } from 'react-bootstrap'
+import { Card, Button, Form, Container } from 'react-bootstrap'
 import { newChangePassword, isPasswordValid, isApiErrorCode } from '../utils/utils';
 
 import DashboardLayout from '../components/DashboardLayout';
@@ -152,7 +152,7 @@ function ChangePasswordForm(props: ChangePasswordProps) {
 
 function ChangeName(props: ChangeAccountProps) {
   type ChangeNameValue = {
-    name:string,
+    name: string,
   }
 
 
@@ -160,60 +160,60 @@ function ChangeName(props: ChangeAccountProps) {
     // Validate input
     let errors: FormikErrors<ChangeNameValue> = {};
     let hasError = false;
-    
 
-   /** const passwordResetResult = await newResetPassword({
-      passwordResetKey: props.resetKey,
-      newPassword: values.password1,
-    });
-    if (isApiErrorCode(passwordResetResult)) {
-      switch (passwordResetResult) {
-        case "OK": {
-          setStatus({
-            failureMessage: "",
-            successMessage: "Password successfully changed."
-          });
-          break;
-        }
-        case "PASSWORD_RESET_NONEXISTENT": {
-          setStatus({
-            failureMessage: "Invalid password reset link.",
-            successMessage: ""
-          });
-          break;
-        }
-        case "PASSWORD_RESET_TIMED_OUT": {
-          setStatus({
-            failureMessage: "Password reset link timed out.",
-            successMessage: ""
-          });
-          break;
-        }
-        case "PASSWORD_EXISTENT": {
-          setStatus({
-            failureMessage: "Password reset link may only be used once.",
-            successMessage: ""
-          });
-          break;
-        }
-        case "PASSWORD_INSECURE": {
-          setErrors({
-            password1: "Password is of insufficient complexity"
-          });
-          break;
-        }
-        default: {
-          setStatus({
-            failureMessage: "An unknown or network error has occured while trying to reset password.",
-            successMessage: ""
-          });
-          break;
-        }
-      }
-    } else {
-      props.onSuccess();
-    }
-    */
+
+    /** const passwordResetResult = await newResetPassword({
+       passwordResetKey: props.resetKey,
+       newPassword: values.password1,
+     });
+     if (isApiErrorCode(passwordResetResult)) {
+       switch (passwordResetResult) {
+         case "OK": {
+           setStatus({
+             failureMessage: "",
+             successMessage: "Password successfully changed."
+           });
+           break;
+         }
+         case "PASSWORD_RESET_NONEXISTENT": {
+           setStatus({
+             failureMessage: "Invalid password reset link.",
+             successMessage: ""
+           });
+           break;
+         }
+         case "PASSWORD_RESET_TIMED_OUT": {
+           setStatus({
+             failureMessage: "Password reset link timed out.",
+             successMessage: ""
+           });
+           break;
+         }
+         case "PASSWORD_EXISTENT": {
+           setStatus({
+             failureMessage: "Password reset link may only be used once.",
+             successMessage: ""
+           });
+           break;
+         }
+         case "PASSWORD_INSECURE": {
+           setErrors({
+             password1: "Password is of insufficient complexity"
+           });
+           break;
+         }
+         default: {
+           setStatus({
+             failureMessage: "An unknown or network error has occured while trying to reset password.",
+             successMessage: ""
+           });
+           break;
+         }
+       }
+     } else {
+       props.onSuccess();
+     }
+     */
   }
 
   //TODO autopopulate name and email
@@ -225,7 +225,7 @@ function ChangeName(props: ChangeAccountProps) {
         failureMessage: "",
       }}
       initialValues={{
-        name: "", 
+        name: "",
       }}
     >
       {(props) => (
@@ -256,7 +256,7 @@ function ChangeName(props: ChangeAccountProps) {
 
 function ChangeEmail(props: ChangeAccountProps) {
   type ChangeEmailValue = {
-    email:string,
+    email: string,
   }
 
 
@@ -264,60 +264,60 @@ function ChangeEmail(props: ChangeAccountProps) {
     // Validate input
     let errors: FormikErrors<ChangeEmailValue> = {};
     let hasError = false;
-    
 
-   /** const passwordResetResult = await newResetPassword({
-      passwordResetKey: props.resetKey,
-      newPassword: values.password1,
-    });
-    if (isApiErrorCode(passwordResetResult)) {
-      switch (passwordResetResult) {
-        case "OK": {
-          setStatus({
-            failureMessage: "",
-            successMessage: "Password successfully changed."
-          });
-          break;
-        }
-        case "PASSWORD_RESET_NONEXISTENT": {
-          setStatus({
-            failureMessage: "Invalid password reset link.",
-            successMessage: ""
-          });
-          break;
-        }
-        case "PASSWORD_RESET_TIMED_OUT": {
-          setStatus({
-            failureMessage: "Password reset link timed out.",
-            successMessage: ""
-          });
-          break;
-        }
-        case "PASSWORD_EXISTENT": {
-          setStatus({
-            failureMessage: "Password reset link may only be used once.",
-            successMessage: ""
-          });
-          break;
-        }
-        case "PASSWORD_INSECURE": {
-          setErrors({
-            password1: "Password is of insufficient complexity"
-          });
-          break;
-        }
-        default: {
-          setStatus({
-            failureMessage: "An unknown or network error has occured while trying to reset password.",
-            successMessage: ""
-          });
-          break;
-        }
-      }
-    } else {
-      props.onSuccess();
-    }
-    */
+
+    /** const passwordResetResult = await newResetPassword({
+       passwordResetKey: props.resetKey,
+       newPassword: values.password1,
+     });
+     if (isApiErrorCode(passwordResetResult)) {
+       switch (passwordResetResult) {
+         case "OK": {
+           setStatus({
+             failureMessage: "",
+             successMessage: "Password successfully changed."
+           });
+           break;
+         }
+         case "PASSWORD_RESET_NONEXISTENT": {
+           setStatus({
+             failureMessage: "Invalid password reset link.",
+             successMessage: ""
+           });
+           break;
+         }
+         case "PASSWORD_RESET_TIMED_OUT": {
+           setStatus({
+             failureMessage: "Password reset link timed out.",
+             successMessage: ""
+           });
+           break;
+         }
+         case "PASSWORD_EXISTENT": {
+           setStatus({
+             failureMessage: "Password reset link may only be used once.",
+             successMessage: ""
+           });
+           break;
+         }
+         case "PASSWORD_INSECURE": {
+           setErrors({
+             password1: "Password is of insufficient complexity"
+           });
+           break;
+         }
+         default: {
+           setStatus({
+             failureMessage: "An unknown or network error has occured while trying to reset password.",
+             successMessage: ""
+           });
+           break;
+         }
+       }
+     } else {
+       props.onSuccess();
+     }
+     */
   }
 
   //TODO autopopulate name and email
@@ -329,7 +329,7 @@ function ChangeEmail(props: ChangeAccountProps) {
         failureMessage: "",
       }}
       initialValues={{
-        email: "", 
+        email: "",
       }}
     >
       {(props) => (
@@ -359,10 +359,16 @@ function ChangeEmail(props: ChangeAccountProps) {
 }
 
 
-function Settings(props:AuthenticatedComponentProps) {
+function Settings(props: AuthenticatedComponentProps) {
+
+  // TODO actually add backend components to handle changing the name properly
+  // Also, make the name and email and password changes into one box initially
+  // Then, when you click on them to change, a modal should pop up
+  // IMO this would look better than the tiny boxes we have now
+
   const [successful, setSuccess] = React.useState(false);
   return <DashboardLayout {...props}>
-    <div className="h-100 w-100 d-flex">
+    <Container fluid className="py-3 px-3 d-flex">
       <Card className="mx-auto my-auto">
         <Card.Body>
           <Card.Title>Change Name</Card.Title>
@@ -390,8 +396,7 @@ function Settings(props:AuthenticatedComponentProps) {
           }
         </Card.Body>
       </Card>
-      
-    </div>
+    </Container>
   </DashboardLayout>
 }
 
