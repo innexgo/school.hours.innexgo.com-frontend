@@ -222,6 +222,15 @@ export async function newAdminship(props: NewAdminshipProps): Promise<Adminship 
   return await fetchApi("adminship/new/", getFormData(props));
 }
 
+export type NewSchoolProps = {
+  name: string,
+  abbreviation: string,
+  apiKey: string
+}
+
+export async function newSchool(props: NewSchoolProps): Promise<School | ApiErrorCode> {
+  return await fetchApi("school/new/", getFormData(props));
+}
 
 export type NewSessionProps = {
   name: string,
@@ -436,6 +445,10 @@ export type ViewAdminshipProps = {
   userId?: number, //
   schoolId?: number, //
   adminshipKind?: AdminshipKind, //
+  schoolName?: string,
+  partialSchoolName?: string,
+  userName?: string,
+  partialUserName?: string,
   onlyRecent?: boolean,
   offset?: number,
   count?: number,

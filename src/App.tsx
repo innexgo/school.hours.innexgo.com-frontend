@@ -20,13 +20,11 @@ import ResetPassword from './pages/ResetPassword';
 
 // dashboard
 import Dashboard from './pages/Dashboard';
+// calendar
+import Calendar from './pages/Calendar';
 
 // settings
 import Settings from './pages/Settings';
-
-
-// to search and add a course
-import AddCourse from './pages/AddCourse';
 
 // permits you to edit and make changes to a school
 import AdminManageSchool from './pages/AdminManageSchool';
@@ -36,9 +34,6 @@ import StudentManageCourse from './pages/StudentManageCourse';
 // Instructor can add and remove students, change the course password, name, and description
 import InstructorManageCourse from './pages/InstructorManageCourse';
 
-
-// reports
-import Reports from './pages/Reports'
 
 // view object data
 import SchoolStatsReport from './pages/SchoolStatsReport';
@@ -76,14 +71,9 @@ function App() {
     }
   };
 
-
-  // TODO can someone make a REAL find my school?
-  // You have to query viewSchools and then show a list of schools
-
   return (
     <BrowserRouter>
       <Switch>
-        <AuthenticatedRoute exact path="/" {...apiKeyGetSetter} component={Dashboard} />{/*TODO make this point to a real home page that looks good*/}
         <Route path="/instructions" component={Instructions} />
         <Route path="/terms_of_service" component={TermsOfService} />
         <Route path="/school_search" component={SchoolSearch} />
@@ -92,14 +82,14 @@ function App() {
         <Route path="/register" component={Register} />
         <Route path="/register_confirm" component={RegisterConfirm} />
         <AuthenticatedRoute path="/dashboard" {...apiKeyGetSetter} component={Dashboard} />
-        <AuthenticatedRoute path="/add_course" {...apiKeyGetSetter} component={AddCourse} />
         <AuthenticatedRoute path="/settings" {...apiKeyGetSetter} component={Settings} />
 
         <AuthenticatedRoute path="/admin_manage_school" {...apiKeyGetSetter} component={AdminManageSchool} />
         <AuthenticatedRoute path="/instructor_manage_course" {...apiKeyGetSetter} component={InstructorManageCourse} />
         <AuthenticatedRoute path="/student_manage_course" {...apiKeyGetSetter} component={StudentManageCourse} />
 
-        <AuthenticatedRoute path="/reports" {...apiKeyGetSetter} component={Reports}/>
+        <AuthenticatedRoute exact path="/" {...apiKeyGetSetter} component={Dashboard} />
+        <AuthenticatedRoute path="/calendar" {...apiKeyGetSetter} component={Calendar}/>
         <AuthenticatedRoute path="/school" {...apiKeyGetSetter} component={SchoolStatsReport} />
         <AuthenticatedRoute path="/course" {...apiKeyGetSetter} component={CourseStatsReport} />
         <AuthenticatedRoute path="/user" {...apiKeyGetSetter} component={UserStatsReport} />

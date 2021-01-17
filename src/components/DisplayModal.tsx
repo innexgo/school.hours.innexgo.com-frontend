@@ -18,7 +18,7 @@ export default function DisplayModal(props:DisplayModalProps) {
     centered
   >
     <Modal.Header closeButton>
-      <Modal.Title id="modal-title">{props.title}</Modal.Title>
+      <Modal.Title>{props.title}</Modal.Title>
     </Modal.Header>
     <Modal.Body>
       {props.children}

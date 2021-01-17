@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { SvgIconComponent, ExitToApp, Menu } from '@material-ui/icons';
 
 // Bootstrap CSS & Js
@@ -25,22 +24,22 @@ const SidebarEntry: React.FunctionComponent<SidebarEntryProps> = props => {
   const Icon = props.icon;
   if (React.useContext(InnerLayoutContext)) {
     // collapsed
-    return <Link style={style} className="nav-item nav-link" to={props.href}>
+    return <a style={style} className="nav-item nav-link" href={props.href}>
       <Icon style={iconStyle} />
-    </Link>
+    </a>
   } else {
     // not collapsed
-    return <Link style={style} className="nav-item nav-link" to={props.href}>
+    return <a style={style} className="nav-item nav-link" href={props.href}>
       <Icon style={iconStyle} /> {props.label}
-    </Link>
+    </a>
   }
 }
 
-const Body: React.StatelessComponent = props => <> {props.children} </>
+const Body: React.FunctionComponent = props => <> {props.children} </>
 
 interface InnerLayoutComposition {
   SidebarEntry: React.FunctionComponent<SidebarEntryProps>
-  Body: React.StatelessComponent
+  Body: React.FunctionComponent 
 }
 
 interface InnerLayoutProps {
