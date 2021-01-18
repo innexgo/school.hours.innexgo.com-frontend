@@ -75,7 +75,7 @@ function ForgotPasswordForm(props:ForgotPasswordFormProps) {
           noValidate
           onSubmit={props.handleSubmit} >
           <Form.Group >
-            <Form.Label column md={2}>Email</Form.Label>
+            <Form.Label>Email</Form.Label>
             <Form.Control
               name="email"
               type="email"

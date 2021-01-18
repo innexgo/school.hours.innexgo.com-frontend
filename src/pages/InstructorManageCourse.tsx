@@ -4,18 +4,12 @@ import { Button, Tabs, Tab, Row, Container, Popover, Form, Table } from 'react-b
 import DashboardLayout from '../components/DashboardLayout';
 import Loader from '../components/Loader';
 import InstructorManageCourseMemberships from '../components/InstructorManageCourseMemberships';
+import InstructorManageCourseKeys from '../components/InstructorManageCourseKeys';
 import UtilityWrapper from '../components/UtilityWrapper';
 import { ViewUser, ViewCourse } from '../components/ViewData';
 
-import { Delete, Visibility, Settings, Add } from '@material-ui/icons'
-import { Formik, FormikHelpers, FormikErrors } from 'formik'
-
-import SearchMultiUser from "../components/SearchMultiUser";
-
-import format from "date-fns/format";
-
 import { Async, AsyncProps } from 'react-async';
-import { viewUser, viewCourseMembership, viewCourse, isApiErrorCode } from '../utils/utils';
+import { viewCourse, isApiErrorCode } from '../utils/utils';
 
 const loadCourse = async (props: AsyncProps<Course>) => {
   const maybeCourses = await viewCourse({
@@ -55,10 +49,18 @@ function InstructorManageCourse(props: AuthenticatedComponentProps) {
                 <InstructorManageCourseMemberships course={course} apiKey={props.apiKey} courseMembershipKind="INSTRUCTOR" />
               </UtilityWrapper>
             </div>
+
             <div className="mx-3 my-3">
               <UtilityWrapper title="Current Students">
                 <Popover id="information-tooltip"> Shows the current students in this course.</Popover>
                 <InstructorManageCourseMemberships course={course} apiKey={props.apiKey} courseMembershipKind="STUDENT" />
+              </UtilityWrapper>
+            </div>
+
+            <div className="mx-3 my-3">
+              <UtilityWrapper title="Active Course Keys">
+                <Popover id="information-tooltip"> Shows the currently active course keys.</Popover>
+                <InstructorManageCourseKeys course={course} apiKey={props.apiKey} />
               </UtilityWrapper>
             </div>
 

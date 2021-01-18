@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Button, Tabs, Tab, Form, Table } from 'react-bootstrap';
+import { Button, Form, Table } from 'react-bootstrap';
 import Loader from '../components/Loader';
 import DisplayModal from '../components/DisplayModal';
 import { ViewUser, } from '../components/ViewData';
@@ -11,7 +11,7 @@ import { Formik, FormikHelpers, } from 'formik'
 import format from "date-fns/format";
 
 import { Async, AsyncProps } from 'react-async';
-import { viewUser, newCourseMembership, viewCourseMembership, isApiErrorCode } from '../utils/utils';
+import { newSetCourseMembership, viewCourseMembership, isApiErrorCode } from '../utils/utils';
 
 
 type CancelCourseMembershipProps = {
@@ -29,7 +29,7 @@ function CancelCourseMembership(props: CancelCourseMembershipProps) {
   const onSubmit = async (values: CancelCourseMembershipValue,
     fprops: FormikHelpers<CancelCourseMembershipValue>) => {
 
-    const maybeCourseMembership = await newCourseMembership({
+    const maybeCourseMembership = await newSetCourseMembership({
       courseId: props.course.courseId,
       userId: props.user.userId,
       courseMembershipKind: "CANCEL",

@@ -1,9 +1,8 @@
 import React from "react"
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
 import { Button, Form } from "react-bootstrap";
-import { newCourseMembership, isApiErrorCode } from "../utils/utils";
+import { newKeyCourseMembership, isApiErrorCode } from "../utils/utils";
 
-/*
 type UserCreateCourseMembershipProps = {
   apiKey: ApiKey;
   postSubmit: () => void;
@@ -14,8 +13,7 @@ type UserCreateCourseMembershipProps = {
 function UserCreateCourseMembership(props: UserCreateCourseMembershipProps) {
 
   type CreateCourseMembershipValue = {
-    name: string,
-    abbreviation: string,
+    key: string,
   }
 
   const onSubmit = async (values: CreateCourseMembershipValue,
@@ -26,12 +24,8 @@ function UserCreateCourseMembership(props: UserCreateCourseMembershipProps) {
     // Validate input
 
     let hasError = false;
-    if (values.name === "") {
-      errors.name = "Please enter your school name";
-      hasError = true;
-    }
-    if (values.abbreviation === "") {
-      errors.abbreviation = "Please enter a unique school abbreviation";
+    if (values.key === "") {
+      errors.key = "Please enter a course key";
       hasError = true;
     }
 
@@ -40,9 +34,8 @@ function UserCreateCourseMembership(props: UserCreateCourseMembershipProps) {
       return;
     }
 
-    const maybeCourseMembership = await newCourseMembership({
-      abbreviation: values.abbreviation,
-      name: values.name,
+    const maybeCourseMembership = await newKeyCourseMembership({
+      courseKey: values.key,
       apiKey: props.apiKey.key,
     });
 
@@ -55,9 +48,30 @@ function UserCreateCourseMembership(props: UserCreateCourseMembershipProps) {
           });
           break;
         }
-        case "USER_NONEXISTENT": {
+        case "API_KEY_UNAUTHORIZED": {
           fprops.setStatus({
-            failureResult: "This user does not exist.",
+            failureResult: "You don't have the ability to join this course.",
+            successResult: ""
+          });
+          break;
+        }
+        case "COURSE_KEY_NONEXISTENT": {
+          fprops.setStatus({
+            failureResult: "This key is invalid.",
+            successResult: ""
+          });
+          break;
+        }
+        case "COURSE_KEY_EXPIRED": {
+          fprops.setStatus({
+            failureResult: "This key has expired.",
+            successResult: ""
+          });
+          break;
+        }
+        case "COURSE_KEY_USED": {
+          fprops.setStatus({
+            failureResult: "This key has already been used.",
             successResult: ""
           });
           break;
@@ -74,21 +88,18 @@ function UserCreateCourseMembership(props: UserCreateCourseMembershipProps) {
     }
 
     fprops.setStatus({
-      failureMessage: "",
-      successMessage: "CourseMembership Created"
+      failureResult: "",
+      successResult: "CourseMembership Created"
     });
     // execute callback
     props.postSubmit();
   }
 
-  const normalizeInput = (e: string) => e.toUpperCase().replace(/[^A-Z]+/g, "");
-
   return <>
     <Formik<CreateCourseMembershipValue>
       onSubmit={onSubmit}
       initialValues={{
-        name: "",
-        abbreviation: ""
+        key: "",
       }}
       initialStatus={{
         failureResult: "",
@@ -99,46 +110,29 @@ function UserCreateCourseMembership(props: UserCreateCourseMembershipProps) {
         <Form
           noValidate
           onSubmit={fprops.handleSubmit} >
-          <div hidden={fprops.status.successMessage !== ""}>
+          <div hidden={fprops.status.successResult !== ""}>
             <Form.Group >
-              <Form.Label>CourseMembership Name</Form.Label>
+              <Form.Label>Course Key</Form.Label>
               <Form.Control
-                name="name"
+                name="key"
                 type="text"
-                placeholder="CourseMembership Name"
+                placeholder="Course Key"
                 as="input"
-                value={fprops.values.name}
-                onChange={e => fprops.setFieldValue("name", normalizeInput(e.target.value))}
-                isInvalid={!!fprops.errors.name}
+                value={fprops.values.key}
+                onChange={e => fprops.setFieldValue("key", e.target.value)}
+                isInvalid={!!fprops.errors.key}
               />
-              <Form.Control.Feedback type="invalid">{fprops.errors.name}</Form.Control.Feedback>
+              <Form.Control.Feedback type="invalid">{fprops.errors.key}</Form.Control.Feedback>
             </Form.Group>
-            <Form.Group >
-              <Form.Label >CourseMembership Abbreviation</Form.Label>
-              <Form.Control
-                name="abbreviation"
-                type="text"
-                placeholder="CourseMembership Abbreviation"
-                value={fprops.values.abbreviation}
-                onChange={e => fprops.setFieldValue("abbreviation", normalizeInput(e.target.value))}
-                isInvalid={!!fprops.errors.abbreviation}
-              />
-              <Form.Control.Feedback type="invalid">{fprops.errors.abbreviation}</Form.Control.Feedback>
-            </Form.Group>
-            <Button type="submit">Submit form</Button>
+            <Button type="submit">Join</Button>
             <br />
-            <Form.Text className="text-danger">{fprops.status.failureMessage}</Form.Text>
+            <Form.Text className="text-danger">{fprops.status.failureResult}</Form.Text>
           </div>
-          <Form.Text className="text-success">{fprops.status.successMessage}</Form.Text>
+          <Form.Text className="text-success">{fprops.status.successResult}</Form.Text>
         </Form>
       </>}
     </Formik>
   </>
 }
 
-export default UserCreateCourseMembership;
-*/
-function UserCreateCourseMembership() {
-  return <div></div>
-}
 export default UserCreateCourseMembership;

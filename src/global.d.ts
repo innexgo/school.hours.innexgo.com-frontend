@@ -26,9 +26,15 @@ declare global {
     creationTime: number,
     creator: User,
     user: User,
-    kind: PasswordKind,
-    passwordReset: PasswordReset | null,
-    email: string,
+    kind: "CANCEL" | "CHANGE",
+    passwordReset: null,
+  } | {
+    passwordId: number,
+    creationTime: number,
+    creator: User,
+    user: User,
+    kind: "RESET",
+    passwordReset: PasswordReset,
   }
 
   type School = {
@@ -69,6 +75,9 @@ declare global {
     description: string;
   }
 
+  type CourseMembershipKind = "STUDENT" | "INSTRUCTOR" | "CANCEL";
+  type CourseMembershipSourceKind = "KEY" | "SET";
+
   type CourseKeyKind = "VALID" | "CANCEL";
 
   type CourseKey = {
@@ -77,11 +86,21 @@ declare global {
     creator: User;
     course: Course;
     key:string;
-    courseKeyKind: CourseKeyKind;
+    courseKeyKind: "CANCEL";
+    courseMembershipKind: null;
+    duration: null;
+    maxUses: null;
+  } | {
+    courseKeyId: number;
+    creationTime: number;
+    creator: User;
+    course: Course;
+    key:string;
+    courseKeyKind: "VALID";
+    courseMembershipKind: CourseMembershipKind ;
     duration: number;
+    maxUses: number;
   };
-
-  type CourseMembershipKind = "STUDENT" | "INSTRUCTOR" | "CANCEL";
 
   type CourseMembership = {
     courseMembershipId: number;
@@ -90,6 +109,17 @@ declare global {
     user: User;
     course: Course;
     courseMembershipKind: CourseMembershipKind;
+    courseMembershipSourceKind: "KEY";
+    courseKey: CourseKey;
+  } | {
+    courseMembershipId: number;
+    creationTime: number;
+    creator: User;
+    user: User;
+    course: Course;
+    courseMembershipKind: CourseMembershipKind;
+    courseMembershipSourceKind: "SET";
+    courseKey: null;
   }
 
   type ApiKeyKind = "VALID" | "CANCEL";

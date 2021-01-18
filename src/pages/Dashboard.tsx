@@ -1,5 +1,5 @@
 import React from 'react'
-import { Container, Card, Form } from 'react-bootstrap';
+import { Container, Card, Form, Tabs, Tab } from 'react-bootstrap';
 import { BarChart, Settings, Add } from '@material-ui/icons'
 import { Async, AsyncProps } from 'react-async';
 
@@ -178,16 +178,28 @@ function Dashboard(props: AuthenticatedComponentProps) {
                   <div className="my-3 mx-3">
                     <AddNewCard setShow={setShowNewCourseModal} />
                     <DisplayModal
-                      title="Create New Course"
+                      title="Add Course"
                       show={showNewCourseModal}
                       onClose={() => setShowNewCourseModal(false)}
                     >
-                      <UserCreateCourse apiKey={props.apiKey}
-                        postSubmit={() => {
-                          setShowNewCourseModal(false);
-                          reload();
-                        }}
-                      />
+                      <Tabs >
+                        <Tab title="Create Course" eventKey="course_create" className="py-4">
+                          <UserCreateCourse apiKey={props.apiKey}
+                            postSubmit={() => {
+                              setShowNewCourseModal(false);
+                              reload();
+                            }}
+                          />
+                        </Tab>
+                        <Tab title="Join Course" eventKey="course_join" className="py-4">
+                          <UserCreateCourseMembership apiKey={props.apiKey}
+                            postSubmit={() => {
+                              setShowNewCourseModal(false);
+                              reload();
+                            }}
+                          />
+                        </Tab>
+                      </Tabs>
                     </DisplayModal>
                   </div>
                 </div>
@@ -213,10 +225,17 @@ function Dashboard(props: AuthenticatedComponentProps) {
                   <div className="my-3 mx-3">
                     <AddNewCard setShow={setShowNewCourseMembershipModal} />
                     <DisplayModal
-                      title="Create New CourseMembership"
+                      title="Join Course"
                       show={showNewCourseMembershipModal}
                       onClose={() => setShowNewCourseMembershipModal(false)}
                     >
+                      {/* todo: figure out how to globally reload the things */}
+                      <UserCreateCourseMembership apiKey={props.apiKey}
+                        postSubmit={() => {
+                          setShowNewCourseMembershipModal(false);
+                          reload();
+                        }}
+                      />
                     </DisplayModal>
                   </div>
                 </div>

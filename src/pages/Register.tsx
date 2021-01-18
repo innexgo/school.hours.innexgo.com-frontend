@@ -213,7 +213,7 @@ function RegisterForm(props: RegisterFormProps) {
               <Form.Check.Label> Agree to <a href="/terms_of_service">terms of service</a></Form.Check.Label>
               <Form.Control.Feedback type="invalid">{fprops.errors.terms}</Form.Control.Feedback>
             </Form.Check>
-            <Button type="submit">Submit form</Button>
+            <Button type="submit">Submit Form</Button>
             <br />
             <Form.Text className="text-danger">{fprops.status.failureMessage}</Form.Text>
           </div>

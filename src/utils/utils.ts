@@ -76,6 +76,8 @@ const ApiErrorCodes = [
   "COMMITTMENT_RESPONSE_CANNOT_CREATE_FOR_OTHERS_STUDENT",
   "COURSE_NONEXISTENT",
   "COURSE_KEY_NONEXISTENT",
+  "COURSE_KEY_EXPIRED",
+  "COURSE_KEY_USED",
   "COURSE_MEMBERSHIP_NONEXISTENT",
   "COURSE_MEMBERSHIP_CANNOT_LEAVE_EMPTY",
   "ADMINSHIP_CANNOT_LEAVE_EMPTY",
@@ -184,7 +186,9 @@ export async function newCourse(props: NewCourseProps): Promise<Course | ApiErro
 
 export type NewValidCourseKeyProps = {
   courseId: number,
+  courseMembershipKind: CourseMembershipKind,
   duration: number,
+  maxUses: number,
   apiKey: string
 }
 
@@ -201,15 +205,24 @@ export async function newCancelCourseKey(props: NewCancelCourseKeyProps): Promis
   return await fetchApi("courseKey/newCancel/", getFormData(props));
 }
 
-export type NewCourseMembershipProps = {
+export type NewSetCourseMembershipProps = {
   userId: number,
   courseId: number,
   courseMembershipKind: CourseMembershipKind,
   apiKey: string
 }
 
-export async function newCourseMembership(props: NewCourseMembershipProps): Promise<CourseMembership | ApiErrorCode> {
-  return await fetchApi("courseMembership/new/", getFormData(props));
+export async function newSetCourseMembership(props: NewSetCourseMembershipProps): Promise<CourseMembership | ApiErrorCode> {
+  return await fetchApi("courseMembership/newSet/", getFormData(props));
+}
+
+export type NewKeyCourseMembershipProps = {
+  courseKey: string,
+  apiKey: string
+}
+
+export async function newKeyCourseMembership(props: NewKeyCourseMembershipProps): Promise<CourseMembership | ApiErrorCode> {
+  return await fetchApi("courseMembership/newKey/", getFormData(props));
 }
 
 export type NewAdminshipProps = {
@@ -403,6 +416,11 @@ export type ViewCourseKeyProps = {
   creatorUserId?: number, //
   courseId?: number, //
   courseKeyKind?: CourseKeyKind, //
+  courseMembershipKind?: CourseMembershipKind, //
+  duration?: number,
+  minDuration?: number,
+  maxDuration?: number,
+  maxUses?: number,
   onlyRecent?: boolean,
   offset?: number,
   count?: number,
@@ -423,6 +441,8 @@ export type ViewCourseMembershipProps = {
   userId?: number, //
   courseId?: number, //
   courseMembershipKind?: CourseMembershipKind, //
+  courseMembershipSourceKind?: CourseMembershipSourceKind, //
+  courseKeyId?: number, //
   courseName?: string,
   partialCourseName?: string,
   userName?: string,
