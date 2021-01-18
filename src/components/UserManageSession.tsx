@@ -245,6 +245,7 @@ function ManageSessionModal(props: ManageSessionModalProps) {
                               courseId: props.session.course.courseId,
                               courseMembershipKind: "STUDENT",
                               partialUserName: input,
+                              onlyRecent:true,
                               apiKey: props.apiKey.key,
                             });
                             return isApiErrorCode(maybeCourseMemberships) ? [] : maybeCourseMemberships.map(x => x.user)

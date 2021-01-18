@@ -1,12 +1,12 @@
 
 import React from 'react';
-import { Button, Tabs, Tab, Row, Container, Popover, Form, Table } from 'react-bootstrap';
+import { Container, Popover, Form, } from 'react-bootstrap';
 import DashboardLayout from '../components/DashboardLayout';
 import Loader from '../components/Loader';
 import InstructorManageCourseMemberships from '../components/InstructorManageCourseMemberships';
 import InstructorManageCourseKeys from '../components/InstructorManageCourseKeys';
 import UtilityWrapper from '../components/UtilityWrapper';
-import { ViewUser, ViewCourse } from '../components/ViewData';
+import { ViewCourse } from '../components/ViewData';
 
 import { Async, AsyncProps } from 'react-async';
 import { viewCourse, isApiErrorCode } from '../utils/utils';

@@ -1,15 +1,14 @@
 import React from 'react';
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
-import { Card, Button, Form, Container } from 'react-bootstrap'
+import { Popover, Card, Button, Form, Container } from 'react-bootstrap'
 import { newChangePassword, isPasswordValid, isApiErrorCode } from '../utils/utils';
+
+import UtilityWrapper from '../components/UtilityWrapper';
 
 import DashboardLayout from '../components/DashboardLayout';
 
 interface ChangePasswordProps {
   apiKey: ApiKey,
-  onSuccess: () => void
-}
-interface ChangeAccountProps {
   onSuccess: () => void
 }
 
@@ -149,216 +148,6 @@ function ChangePasswordForm(props: ChangePasswordProps) {
 }
 
 
-
-function ChangeName(props: ChangeAccountProps) {
-  type ChangeNameValue = {
-    name: string,
-  }
-
-
-  const onSubmit = async (values: ChangeNameValue, { setStatus, setErrors }: FormikHelpers<ChangeNameValue>) => {
-    // Validate input
-    let errors: FormikErrors<ChangeNameValue> = {};
-    let hasError = false;
-
-
-    /** const passwordResetResult = await newResetPassword({
-       passwordResetKey: props.resetKey,
-       newPassword: values.password1,
-     });
-     if (isApiErrorCode(passwordResetResult)) {
-       switch (passwordResetResult) {
-         case "OK": {
-           setStatus({
-             failureMessage: "",
-             successMessage: "Password successfully changed."
-           });
-           break;
-         }
-         case "PASSWORD_RESET_NONEXISTENT": {
-           setStatus({
-             failureMessage: "Invalid password reset link.",
-             successMessage: ""
-           });
-           break;
-         }
-         case "PASSWORD_RESET_TIMED_OUT": {
-           setStatus({
-             failureMessage: "Password reset link timed out.",
-             successMessage: ""
-           });
-           break;
-         }
-         case "PASSWORD_EXISTENT": {
-           setStatus({
-             failureMessage: "Password reset link may only be used once.",
-             successMessage: ""
-           });
-           break;
-         }
-         case "PASSWORD_INSECURE": {
-           setErrors({
-             password1: "Password is of insufficient complexity"
-           });
-           break;
-         }
-         default: {
-           setStatus({
-             failureMessage: "An unknown or network error has occured while trying to reset password.",
-             successMessage: ""
-           });
-           break;
-         }
-       }
-     } else {
-       props.onSuccess();
-     }
-     */
-  }
-
-  //TODO autopopulate name and email
-  return <>
-    <Formik<ChangeNameValue>
-      onSubmit={onSubmit}
-      initialStatus={{
-        successMessage: "",
-        failureMessage: "",
-      }}
-      initialValues={{
-        name: "",
-      }}
-    >
-      {(props) => (
-        <Form
-          noValidate
-          onSubmit={props.handleSubmit} >
-          <Form.Group >
-            <Form.Label >Name</Form.Label>
-            <Form.Control
-              name="name"
-              type="text"
-              value={props.values.name}
-              onChange={props.handleChange}
-              isInvalid={!!props.errors.name}
-            />
-            <Form.Control.Feedback type="invalid"> {props.errors.name} </Form.Control.Feedback>
-          </Form.Group>
-          <br />
-          <Button type="submit">Change Name</Button>
-          <br />
-          <Form.Text className="text-danger">{props.status.failureMessage}</Form.Text>
-          <Form.Text className="text-success">{props.status.successMessage}</Form.Text>
-        </Form>
-      )}
-    </Formik>
-  </>
-}
-
-function ChangeEmail(props: ChangeAccountProps) {
-  type ChangeEmailValue = {
-    email: string,
-  }
-
-
-  const onSubmit = async (values: ChangeEmailValue, { setStatus, setErrors }: FormikHelpers<ChangeEmailValue>) => {
-    // Validate input
-    let errors: FormikErrors<ChangeEmailValue> = {};
-    let hasError = false;
-
-
-    /** const passwordResetResult = await newResetPassword({
-       passwordResetKey: props.resetKey,
-       newPassword: values.password1,
-     });
-     if (isApiErrorCode(passwordResetResult)) {
-       switch (passwordResetResult) {
-         case "OK": {
-           setStatus({
-             failureMessage: "",
-             successMessage: "Password successfully changed."
-           });
-           break;
-         }
-         case "PASSWORD_RESET_NONEXISTENT": {
-           setStatus({
-             failureMessage: "Invalid password reset link.",
-             successMessage: ""
-           });
-           break;
-         }
-         case "PASSWORD_RESET_TIMED_OUT": {
-           setStatus({
-             failureMessage: "Password reset link timed out.",
-             successMessage: ""
-           });
-           break;
-         }
-         case "PASSWORD_EXISTENT": {
-           setStatus({
-             failureMessage: "Password reset link may only be used once.",
-             successMessage: ""
-           });
-           break;
-         }
-         case "PASSWORD_INSECURE": {
-           setErrors({
-             password1: "Password is of insufficient complexity"
-           });
-           break;
-         }
-         default: {
-           setStatus({
-             failureMessage: "An unknown or network error has occured while trying to reset password.",
-             successMessage: ""
-           });
-           break;
-         }
-       }
-     } else {
-       props.onSuccess();
-     }
-     */
-  }
-
-  //TODO autopopulate name and email
-  return <>
-    <Formik<ChangeEmailValue>
-      onSubmit={onSubmit}
-      initialStatus={{
-        successMessage: "",
-        failureMessage: "",
-      }}
-      initialValues={{
-        email: "",
-      }}
-    >
-      {(props) => (
-        <Form
-          noValidate
-          onSubmit={props.handleSubmit} >
-          <Form.Group >
-            <Form.Label >Email</Form.Label>
-            <Form.Control
-              name="email"
-              type="text"
-              value={props.values.email}
-              onChange={props.handleChange}
-              isInvalid={!!props.errors.email}
-            />
-            <Form.Control.Feedback type="invalid"> {props.errors.email} </Form.Control.Feedback>
-          </Form.Group>
-          <br />
-          <Button type="submit">Change Email</Button>
-          <br />
-          <Form.Text className="text-danger">{props.status.failureMessage}</Form.Text>
-          <Form.Text className="text-success">{props.status.successMessage}</Form.Text>
-        </Form>
-      )}
-    </Formik>
-  </>
-}
-
-
 function Settings(props: AuthenticatedComponentProps) {
 
   // TODO actually add backend components to handle changing the name properly
@@ -368,34 +157,16 @@ function Settings(props: AuthenticatedComponentProps) {
 
   const [successful, setSuccess] = React.useState(false);
   return <DashboardLayout {...props}>
-    <Container fluid className="py-3 px-3 d-flex">
-      <Card className="mx-auto my-auto">
-        <Card.Body>
-          <Card.Title>Change Name</Card.Title>
-          {successful
-            ? <Form.Text className="text-success">Name changed successfully</Form.Text>
-            : <ChangeName onSuccess={() => setSuccess(true)} />
-          }
-        </Card.Body>
-      </Card>
-      <Card className="mx-auto my-auto">
-        <Card.Body>
-          <Card.Title>Change Email</Card.Title>
-          {successful
-            ? <Form.Text className="text-success">Email changed successfully</Form.Text>
-            : <ChangeEmail onSuccess={() => setSuccess(true)} />
-          }
-        </Card.Body>
-      </Card>
-      <Card className="mx-auto my-auto">
-        <Card.Body>
-          <Card.Title>Reset Password</Card.Title>
+    <Container fluid className="py-4 px-4">
+      <div className="mx-3 my-3">
+        <UtilityWrapper title="Change Password">
+          <Popover id="information-tooltip"> Shows basic information about this course. </Popover>
           {successful
             ? <Form.Text className="text-success">Password changed successfully</Form.Text>
             : <ChangePasswordForm apiKey={props.apiKey} onSuccess={() => setSuccess(true)} />
           }
-        </Card.Body>
-      </Card>
+        </UtilityWrapper>
+      </div>
     </Container>
   </DashboardLayout>
 }

@@ -126,7 +126,9 @@ function EventCalendar(props: EventCalendarProps) {
 
       ...isApiErrorCode(maybeCommittmentResponses)
         ? []
-        : maybeCommittmentResponses.map(x => committmentResponseToEvent(x, "STUDENT")),
+        : maybeCommittmentResponses
+          .filter(x => !props.hiddenCourses.includes(x.committment.session.course.courseId))
+          .map(x => committmentResponseToEvent(x, "STUDENT")),
     ];
 
     // get all the course memberships I have where i am an instructor
