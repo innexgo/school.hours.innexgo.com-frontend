@@ -12,6 +12,36 @@ const ToggleExpandButton = (props: { expand: boolean, setExpand: (b: boolean) =>
     {props.expand ? "Less" : "More"}
   </button>
 
+export const ViewSchool = (props: {
+  school: School,
+  expanded: boolean
+}) => {
+  const [expanded, setExpanded] = React.useState(props.expanded);
+  if (!expanded) {
+    return <span>
+      {props.school.name}
+      <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
+    </span>
+  } else {
+    return <div>
+      <Table hover bordered>
+        <tbody>
+          <tr>
+            <th>Name</th>
+            <td>{props.school.name}</td>
+          </tr>
+          <tr>
+            <th>Abbreviation</th>
+            <td>{props.school.abbreviation}</td>
+          </tr>
+        </tbody>
+      </Table>
+      <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
+    </div>
+  }
+}
+
+
 export const ViewCourse = (props: {
   course: Course,
   expanded: boolean
@@ -63,10 +93,6 @@ export const ViewUser = (props: {
           <tr>
             <th>Email</th>
             <td>{props.user.email}</td>
-          </tr>
-          <tr>
-            <th>Kind</th>
-            <td>{props.user.kind}</td>
           </tr>
         </tbody>
       </Table>

@@ -80,7 +80,7 @@ function UserCreateSchool(props: UserCreateSchoolProps) {
     props.postSubmit();
   }
 
-  const normalizeSchoolName = (e: string) => e.toUpperCase().replace(/[^A-Z ]+/g, "");
+  const normalizeSchoolName = (e: string) => e.toUpperCase().replace(/[^A-Z ]+/g, "").replace(/ +(?= )/g,"");
   const normalizeSchoolAbbreviation = (e: string) => e.toUpperCase().replace(/[^A-Z]+/g, "");
 
   return <>

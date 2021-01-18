@@ -1,6 +1,6 @@
 import React from 'react'
 import { Container, Card, Form } from 'react-bootstrap';
-import { ArrowForwardIos, MoreHoriz, Add } from '@material-ui/icons'
+import { BarChart, Settings, Add } from '@material-ui/icons'
 import { Async, AsyncProps } from 'react-async';
 
 import DashboardLayout from '../components/DashboardLayout';
@@ -13,58 +13,43 @@ import UserCreateCourseMembership from '../components/UserCreateCourseMembership
 
 import { viewAdminship, viewCourseMembership, isApiErrorCode } from '../utils/utils';
 
-interface CourseEnrolledCardProps {
-  courseName: string,
-};
-
-function CourseEnrolledCard(props: CourseEnrolledCardProps) {
+function CourseEnrolledCard(props: { course: Course }) {
   return (
     <Card className="h-100" style={{ width: '15rem' }}>
       <Card.Body>
-        <Card.Title>{props.courseName}</Card.Title>
-        <a title="Go to course page" href="" >
-          <ArrowForwardIos />
-        </a>
-        <a title="Manage course" href="">
-          <MoreHoriz />
+        <Card.Title>{props.course.name}</Card.Title>
+        <Card.Text>{props.course.description}</Card.Text>
+        <a className="text-dark float-right" href={`/student_manage_course?courseId=${props.course.courseId}`}>
+          <Settings fontSize="default" />
         </a>
       </Card.Body>
     </Card>
   )
 }
 
-interface CourseTaughtProps {
-  courseName: string,
-};
-
-function CourseTaughtCard(props: CourseTaughtProps) {
+function CourseTaughtCard(props: { course: Course }) {
   return (
     <Card className="h-100" style={{ width: '15rem' }}>
       <Card.Body>
-        <Card.Title>{props.courseName}</Card.Title>
-        <a title="Go to school page" href="" style={{ float: 'left' }}>
-          <ArrowForwardIos /></a>
-        <a title="Manage school" href="" className="float-left">
-          <MoreHoriz /></a>
+        <Card.Title>{props.course.name}</Card.Title>
+        <Card.Text>{props.course.description}</Card.Text>
+        <a className="text-dark float-right" href={`/instructor_manage_course?courseId=${props.course.courseId}`}>
+          <Settings fontSize="default" />
+        </a>
       </Card.Body>
     </Card>
   )
 }
 
-
-type SchoolCardProps = {
-  schoolName: string,
-};
-
-function SchoolCard(props: SchoolCardProps) {
+function SchoolCard(props: { school: School }) {
   return (
     <Card className="h-100" style={{ width: '15rem' }}>
       <Card.Body>
-        <Card.Title>{props.schoolName}</Card.Title>
-        <a title="Go to school page" href="" style={{ float: 'left' }}>
-          <ArrowForwardIos /></a>
-        <a title="Manage school" href="" className="float-left">
-          <MoreHoriz /></a>
+        <Card.Title>{props.school.name}</Card.Title>
+        <Card.Text>{props.school.abbreviation}</Card.Text>
+        <a className="text-dark float-right" href={`/admin_manage_school?schoolId=${props.school.schoolId}`}>
+          <Settings fontSize="default" />
+        </a>
       </Card.Body>
     </Card>
   )
@@ -76,14 +61,14 @@ type AddNewCardProps = {
 
 function AddNewCard(props: AddNewCardProps) {
   return (
-    <Card
+    <button
       className="h-100"
       style={{ width: '15rem', borderStyle: 'dashed', borderWidth: "medium" }}
       onClick={() => props.setShow(true)}>
       <div className="h-100 w-100 d-flex">
         <Add className="mx-auto my-auto text-muted" fontSize="large" />
       </div>
-    </Card>
+    </button>
   )
 }
 
@@ -152,7 +137,7 @@ function Dashboard(props: AuthenticatedComponentProps) {
                 <div className="d-flex flex-wrap">
                   {data.map((a: Adminship) =>
                     <div className="my-3 mx-3">
-                      <SchoolCard schoolName={a.school.name} />
+                      <SchoolCard school={a.school} />
                     </div>
                   )}
                   <div className="my-3 mx-3">
@@ -160,7 +145,7 @@ function Dashboard(props: AuthenticatedComponentProps) {
                     <DisplayModal
                       title="Create New School"
                       show={showNewSchoolModal}
-                      setShow={setShowNewSchoolModal}
+                      onClose={() => setShowNewSchoolModal(false)}
                     >
                       <UserCreateSchool apiKey={props.apiKey}
                         postSubmit={() => {
@@ -187,7 +172,7 @@ function Dashboard(props: AuthenticatedComponentProps) {
                 <div className="d-flex flex-wrap">
                   {data.map((a: CourseMembership) =>
                     <div className="my-3 mx-3">
-                      <CourseTaughtCard courseName={a.course.name} />
+                      <CourseTaughtCard course={a.course} />
                     </div>
                   )}
                   <div className="my-3 mx-3">
@@ -195,7 +180,7 @@ function Dashboard(props: AuthenticatedComponentProps) {
                     <DisplayModal
                       title="Create New Course"
                       show={showNewCourseModal}
-                      setShow={setShowNewCourseModal}
+                      onClose={() => setShowNewCourseModal(false)}
                     >
                       <UserCreateCourse apiKey={props.apiKey}
                         postSubmit={() => {
@@ -222,7 +207,7 @@ function Dashboard(props: AuthenticatedComponentProps) {
                 <div className="d-flex flex-wrap">
                   {data.map((a: CourseMembership) =>
                     <div className="my-3 mx-3">
-                      <CourseEnrolledCard courseName={a.course.name} />
+                      <CourseEnrolledCard course={a.course} />
                     </div>
                   )}
                   <div className="my-3 mx-3">
@@ -230,7 +215,7 @@ function Dashboard(props: AuthenticatedComponentProps) {
                     <DisplayModal
                       title="Create New CourseMembership"
                       show={showNewCourseMembershipModal}
-                      setShow={setShowNewCourseMembershipModal}
+                      onClose={() => setShowNewCourseMembershipModal(false)}
                     >
                     </DisplayModal>
                   </div>

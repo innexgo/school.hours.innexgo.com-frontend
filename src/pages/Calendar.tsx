@@ -28,6 +28,9 @@ type EventCalendarProps = {
   hiddenCourses: number[]
 }
 
+// TODO make it so that selected data and selected modals are equivalent
+// Look at AdminManageAdminships for examples
+
 function EventCalendar(props: EventCalendarProps) {
 
   const [start, setStart] = React.useState(0);
@@ -353,7 +356,7 @@ function EventCalendar(props: EventCalendarProps) {
       <DisplayModal
         title="New Event"
         show={showCreatorPickerModal}
-        setShow={setShowCreatorPickerModal}
+        onClose={() => setShowCreatorPickerModal(false)}
       >
         <Async promiseFn={loadCreatorPickerData} apiKey={props.apiKey}>
           {_ => <>
@@ -403,14 +406,14 @@ function EventCalendar(props: EventCalendarProps) {
           <DisplayModal
             title="Manage Session"
             show={showManageSessionModal}
-            setShow={setShowManageSessionModal}
+            onClose={() => setShowManageSessionModal(false)}
           >
             <UserManageSession session={selectedSession} apiKey={props.apiKey} />
           </DisplayModal>
           <DisplayModal
             title="View Session"
             show={showViewSessionModal}
-            setShow={setShowViewSessionModal}
+            onClose={() => setShowViewSessionModal(false)}
           >
             <ViewSession session={selectedSession} expanded />
           </DisplayModal>
@@ -421,7 +424,7 @@ function EventCalendar(props: EventCalendarProps) {
           <DisplayModal
             title="Review Student Request"
             show={showReviewSessionRequestModal}
-            setShow={setShowReviewSessionRequestModal}
+            onClose={() => setShowReviewSessionRequestModal(false)}
           >
             <UserReviewSessionRequest
               sessionRequest={selectedSessionRequest}
@@ -432,7 +435,7 @@ function EventCalendar(props: EventCalendarProps) {
           <DisplayModal
             title="View Session Request"
             show={showViewSessionRequestModal}
-            setShow={setShowViewSessionRequestModal}
+            onClose={() => setShowViewSessionRequestModal(false)}
           >
             <ViewSessionRequest sessionRequest={selectedSessionRequest} expanded />
           </DisplayModal>
@@ -442,7 +445,7 @@ function EventCalendar(props: EventCalendarProps) {
         <DisplayModal
           title="View Session Request Response"
           show={showViewSessionRequestResponseModal}
-          setShow={setShowViewSessionRequestResponseModal}
+          onClose={() => setShowViewSessionRequestResponseModal(false)}
         >
           <ViewSessionRequestResponse sessionRequestResponse={selectedSessionRequestResponse} expanded />
         </DisplayModal>
@@ -451,7 +454,7 @@ function EventCalendar(props: EventCalendarProps) {
         <DisplayModal
           title="View Committment"
           show={showViewCommittmentModal}
-          setShow={setShowViewCommittmentModal}
+          onClose={() => setShowViewCommittmentModal(false)}
         >
           <ViewCommittment committment={selectedCommittment} expanded />
         </DisplayModal>
@@ -460,7 +463,7 @@ function EventCalendar(props: EventCalendarProps) {
         <DisplayModal
           title="View Attendance"
           show={showViewCommittmentResponseModal}
-          setShow={setShowViewCommittmentResponseModal}
+          onClose={() => setShowViewCommittmentResponseModal(false)}
         >
           <ViewCommittmentResponse committmentResponse={selectedCommittmentResponse} expanded />
         </DisplayModal>
