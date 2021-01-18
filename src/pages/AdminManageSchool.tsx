@@ -54,57 +54,60 @@ function AdminManageSchool(props: AuthenticatedComponentProps) {
             <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
           </Async.Rejected>
           <Async.Fulfilled<School>>{school => <>
-              <div className="mx-3 my-3">
-                <UtilityWrapper title="School Data">
-                  <Popover id="information-tooltip"> Shows basic information about this school. </Popover>
-                  <ViewSchool school={school} expanded />
-                </UtilityWrapper>
-              </div>
+            <div className="mx-3 my-3">
+              <UtilityWrapper title="School Data">
+                <Popover id="information-tooltip"> Shows basic information about this school. </Popover>
+                <ViewSchool school={school} expanded />
+              </UtilityWrapper>
+            </div>
 
-              <div className="mx-3 my-3">
-                <UtilityWrapper title="Administrators">
-                  <Popover id="information-tooltip"> Shows the current administrators of this school. </Popover>
-                  <AdminManageAdminships school={school} apiKey={props.apiKey} />
-                </UtilityWrapper>
-              </div>
+            <div className="mx-3 my-3">
+              <UtilityWrapper title="Administrators">
+                <Popover id="information-tooltip"> Shows the current administrators of this school. </Popover>
+                <AdminManageAdminships school={school} apiKey={props.apiKey} />
+              </UtilityWrapper>
+            </div>
 
-              <div className="mx-3 my-3">
-                <UtilityWrapper title="Courses">
-                  <Popover id="information-tooltip"> Shows the current courses hosted by this school. </Popover>
-                  <Async promiseFn={loadCourses} apiKey={props.apiKey} school={school}>
-                    {({ reload }) => <>
-                      <Async.Pending><Loader /></Async.Pending>
-                      <Async.Rejected>
-                        <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
-                      </Async.Rejected>
-                      <Async.Fulfilled<Course[]>>{data => <>
-                        <Table hover bordered>
-                          <thead>
+            <div className="mx-3 my-3">
+              <UtilityWrapper title="Courses">
+                <Popover id="information-tooltip"> Shows the current courses hosted by this school. </Popover>
+                <Async promiseFn={loadCourses} apiKey={props.apiKey} school={school}>
+                  {({ reload }) => <>
+                    <Async.Pending><Loader /></Async.Pending>
+                    <Async.Rejected>
+                      <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
+                    </Async.Rejected>
+                    <Async.Fulfilled<Course[]>>{data => <>
+                      <Table hover bordered>
+                        <thead>
+                          <tr>
+                            <th>Name</th>
+                            <th>Creator</th>
+                            <th>Date Created</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {data.map((c: Course) =>
                             <tr>
-                              <th>Name</th>
-                              <th>Creator</th>
-                              <th>Date Created</th>
-                              <th>Actions</th>
+                              <td>{c.name}</td>
+                              <td><ViewUser user={c.creator} expanded={false} /></td>
+                              <td>{format(c.creationTime, "MMM do")}</td>
+                              <th>
+                                <a href={`/instructor_manage_course?courseId=${c.courseId}`} className="text-dark">
+                                  <Visibility />
+                                </a>
+                              </th>
                             </tr>
-                          </thead>
-                          <tbody>
-                            {data.map((c: Course) =>
-                              <tr>
-                                <td>{c.name}</td>
-                                <td><ViewUser user={c.creator} expanded={false} /></td>
-                                <td>{format(c.creationTime, "MMM do")}</td>
-                                <th><Delete /> <Visibility /></th>
-                              </tr>
-                            )}
-                          </tbody>
-                        </Table>
-                      </>}
-                      </Async.Fulfilled>
+                          )}
+                        </tbody>
+                      </Table>
                     </>}
-                  </Async>
-                </UtilityWrapper>
-              </div>
-
+                    </Async.Fulfilled>
+                  </>}
+                </Async>
+              </UtilityWrapper>
+            </div>
           </>}
           </Async.Fulfilled>
         </Async>

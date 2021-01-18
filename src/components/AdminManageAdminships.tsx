@@ -69,7 +69,7 @@ function CancelAdminship(props: CancelAdminshipProps) {
         }
         default: {
           fprops.setStatus({
-            failureResult: "An unknown or network error has occured while trying to register.",
+            failureResult: "An unknown or network error has occured while remove adminship.",
             successResult: ""
           });
           break;
@@ -178,7 +178,6 @@ function AdminManageAdminships(props: AdminManageAdminshipsProps) {
                           onClick={() => setConfirmRemoveUser(a.user)}>
                           <Delete />
                         </Button>
-                        <Visibility />
                       </th>
                     </tr>
                   )}
