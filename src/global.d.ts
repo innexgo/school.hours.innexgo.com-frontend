@@ -45,11 +45,13 @@ declare global {
     whole: boolean,
   }
 
+  type SubscriptionKind = "VALID" | "CANCEL";
+
   type Subscription = {
     subscriptionId:number,
     creationTime:number,
     creator:User,
-    duration:number,
+    subscriptionKind:SubscriptionKind,
     maxUses:number
   }
 
@@ -79,9 +81,8 @@ declare global {
     user: User;
     school: School;
     adminshipKind: AdminshipKind;
-    subscription: Subscription | null;
     adminshipSourceKind: AdminshipSourceKind;
-    subscription: AdminshipRequestResponse | null;
+    adminshipRequestResponse: AdminshipRequestResponse | null;
   }
 
   type Location = {

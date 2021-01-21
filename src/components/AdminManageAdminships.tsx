@@ -1,18 +1,16 @@
 import React from 'react';
-import { Button, Tabs, Tab, Form, Table } from 'react-bootstrap';
+import { Button, Form, Table } from 'react-bootstrap';
 import Loader from '../components/Loader';
 import DisplayModal from '../components/DisplayModal';
 import { ViewUser, } from '../components/ViewData';
 
-import { Delete, Visibility, } from '@material-ui/icons'
-import { Formik, FormikHelpers, FormikErrors } from 'formik'
-
-import SearchMultiUser from "../components/SearchMultiUser";
+import { Delete, } from '@material-ui/icons'
+import { Formik, FormikHelpers} from 'formik'
 
 import format from "date-fns/format";
 
 import { Async, AsyncProps } from 'react-async';
-import { viewUser, newAdminship, viewAdminship, isApiErrorCode } from '../utils/utils';
+import { viewAdminship, newCancelAdminship, isApiErrorCode } from '../utils/utils';
 
 
 type CancelAdminshipProps = {
@@ -27,13 +25,12 @@ function CancelAdminship(props: CancelAdminshipProps) {
   type CancelAdminshipValue = {
   }
 
-  const onSubmit = async (values: CancelAdminshipValue,
+  const onSubmit = async (_: CancelAdminshipValue,
     fprops: FormikHelpers<CancelAdminshipValue>) => {
 
-    const maybeAdminship = await newAdminship({
+    const maybeAdminship = await newCancelAdminship({
       schoolId: props.school.schoolId,
       userId: props.user.userId,
-      adminshipKind: "CANCEL",
       apiKey: props.apiKey.key,
     });
 
@@ -105,8 +102,8 @@ function CancelAdminship(props: CancelAdminshipProps) {
           <div hidden={fprops.status.successResult !== ""}>
             <p>Are you sure you want to remove {props.user.name}?</p>
             {props.apiKey.creator.userId === props.user.userId
-                ? <p className="text-danger">You are removing yourself. You won't be able to add yourself back.</p>
-                : <> </>
+              ? <p className="text-danger">You are removing yourself. You won't be able to add yourself back.</p>
+              : <> </>
             }
             <Button type="submit">Confirm Remove</Button>
             <br />
@@ -144,10 +141,6 @@ type AdminManageAdminshipsProps = {
 
 function AdminManageAdminships(props: AdminManageAdminshipsProps) {
 
-  type CreateAdminshipValue = {
-    userIds: number[],
-  }
-
   const [confirmRemoveUser, setConfirmRemoveUser] = React.useState<User | null>(null);
 
   return <>
@@ -158,159 +151,44 @@ function AdminManageAdminships(props: AdminManageAdminshipsProps) {
           <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
         </Async.Rejected>
         <Async.Fulfilled<Adminship[]>>{data => <>
-          <Tabs className="py-4">
-            <Tab eventKey="view" title="Current Administators">
-              <Table hover bordered>
-                <thead>
-                  <tr>
-                    <th>User</th>
-                    <th>Date Joined</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.map((a: Adminship) =>
-                    <tr>
-                      <td><ViewUser user={a.user} expanded={false} /></td>
-                      <td>{format(a.creationTime, "MMM do")}</td>
-                      <th>
-                        <Button variant="link" className="text-dark"
-                          onClick={() => setConfirmRemoveUser(a.user)}>
-                          <Delete />
-                        </Button>
-                      </th>
-                    </tr>
-                  )}
-                </tbody>
-              </Table>
-              {confirmRemoveUser === null ? <> </> :
-                <DisplayModal
-                  title="Confirm Remove"
-                  show={confirmRemoveUser != null}
-                  onClose={() => setConfirmRemoveUser(null)}
-                >
-                  <CancelAdminship {...props}
-                    user={confirmRemoveUser}
-                    postSubmit={() => {
-                        setConfirmRemoveUser(null);
-                        reload();
-                    }}
-                  />
-                </DisplayModal>
-              }
-            </Tab>
-            <Tab eventKey="add" title="Add Administrators">
-              <Formik<CreateAdminshipValue>
-                onSubmit={async (values: CreateAdminshipValue,
-                  fprops: FormikHelpers<CreateAdminshipValue>) => {
-
-                  let errors: FormikErrors<CreateAdminshipValue> = {};
-
-                  // Validate input
-                  let hasError = false;
-                  if (values.userIds.length === 0) {
-                    errors.userIds = "Please select at least one user to appoint.";
-                    hasError = true;
-                  }
-
-                  fprops.setErrors(errors);
-                  if (hasError) {
-                    return;
-                  }
-
-                  // TODO figure out a way to properly display errors and fine grained errors
-
-                  for (const userId of values.userIds) {
-
-                    const maybeAdminship = await newAdminship({
-                      schoolId: props.school.schoolId,
-                      userId: userId,
-                      adminshipKind: "ADMIN",
-                      apiKey: props.apiKey.key,
-                    });
-
-                    if (isApiErrorCode(maybeAdminship)) {
-                      switch (maybeAdminship) {
-                        case "API_KEY_NONEXISTENT": {
-                          fprops.setStatus({
-                            failureResult: "You have been automatically logged out. Please relogin.",
-                            successResult: ""
-                          });
-                          break;
-                        }
-                        case "API_KEY_UNAUTHORIZED": {
-                          fprops.setStatus({
-                            failureResult: "You are not authorized to add a new administrator to this school.",
-                            successResult: ""
-                          });
-                          break;
-                        }
-                        case "USER_NONEXISTENT": {
-                          fprops.setStatus({
-                            failureResult: "This user does not exist.",
-                            successResult: ""
-                          });
-                          break;
-                        }
-                        default: {
-                          fprops.setStatus({
-                            failureResult: "An unknown or network error has occured while trying to register.",
-                            successResult: ""
-                          });
-                          break;
-                        }
-                      }
-                    }
-                  }
-
-                  fprops.setStatus({
-                    failureResult: "",
-                    successResult: "Adminship Created"
-                  });
-
-                  // execute callback
+          <Table hover bordered>
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Date Joined</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((a: Adminship) =>
+                <tr>
+                  <td><ViewUser user={a.user} expanded={false} /></td>
+                  <td>{format(a.creationTime, "MMM do")}</td>
+                  <th>
+                    <Button variant="link" className="text-dark"
+                      onClick={() => setConfirmRemoveUser(a.user)}>
+                      <Delete />
+                    </Button>
+                  </th>
+                </tr>
+              )}
+            </tbody>
+          </Table>
+          {confirmRemoveUser === null ? <> </> :
+            <DisplayModal
+              title="Confirm Remove"
+              show={confirmRemoveUser != null}
+              onClose={() => setConfirmRemoveUser(null)}
+            >
+              <CancelAdminship {...props}
+                user={confirmRemoveUser}
+                postSubmit={() => {
+                  setConfirmRemoveUser(null);
                   reload();
                 }}
-                initialValues={{
-                  userIds: [],
-                }}
-                initialStatus={{
-                  failureResult: "",
-                  successResult: ""
-                }}
-              >
-                {(fprops) => <>
-                  <Form
-                    noValidate
-                    onSubmit={fprops.handleSubmit} >
-                    <div hidden={fprops.status.successResult !== ""}>
-                      <Form.Group >
-                        <Form.Label>User Names</Form.Label>
-                        <SearchMultiUser
-                          name="userIds"
-                          search={async (input: string) => {
-                            // TODO this searches globally
-                            // is there a way to make this a little more scoped?
-                            const maybeUsers = await viewUser({
-                              partialUserName: input,
-                              apiKey: props.apiKey.key,
-                            });
-                            return isApiErrorCode(maybeUsers) ? [] : maybeUsers
-                          }}
-                          isInvalid={!!fprops.errors.userIds}
-                          setFn={(e: User[]) => fprops.setFieldValue("userIds", e.map(u => u.userId))} />
-                        <Form.Control.Feedback type="invalid">{fprops.errors.userIds}</Form.Control.Feedback>
-                      </Form.Group>
-                      <Button type="submit">Submit Form</Button>
-                      <br />
-                      <Form.Text className="text-danger">{fprops.status.failureResult}</Form.Text>
-                    </div>
-                    <Form.Text className="text-success">{fprops.status.successResult}</Form.Text>
-                  </Form>
-                </>}
-              </Formik>
-            </Tab>
-          </Tabs>
+              />
+            </DisplayModal>
+          }
         </>}
         </Async.Fulfilled>
       </>}

@@ -30,10 +30,6 @@ export const ViewSchool = (props: {
             <th>Name</th>
             <td>{props.school.name}</td>
           </tr>
-          <tr>
-            <th>Abbreviation</th>
-            <td>{props.school.abbreviation}</td>
-          </tr>
         </tbody>
       </Table>
       <ToggleExpandButton expand={expanded} setExpand={setExpanded} />

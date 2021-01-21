@@ -14,7 +14,6 @@ function UserCreateSchool(props: UserCreateSchoolProps) {
 
   type CreateSchoolValue = {
     name: string,
-    abbreviation: string,
   }
 
   const onSubmit = async (values: CreateSchoolValue,
@@ -29,10 +28,6 @@ function UserCreateSchool(props: UserCreateSchoolProps) {
       errors.name = "Please enter your school name";
       hasError = true;
     }
-    if (values.abbreviation === "") {
-      errors.abbreviation = "Please enter a unique school abbreviation";
-      hasError = true;
-    }
 
     fprops.setErrors(errors);
     if (hasError) {
@@ -40,7 +35,7 @@ function UserCreateSchool(props: UserCreateSchoolProps) {
     }
 
     const maybeSchool = await newSchool({
-      abbreviation: values.abbreviation,
+      whole: false,
       name: values.name,
       apiKey: props.apiKey.key,
     });
@@ -81,14 +76,12 @@ function UserCreateSchool(props: UserCreateSchoolProps) {
   }
 
   const normalizeSchoolName = (e: string) => e.toUpperCase().replace(/[^A-Z ]+/g, "").replace(/ +(?= )/g,"");
-  const normalizeSchoolAbbreviation = (e: string) => e.toUpperCase().replace(/[^A-Z]+/g, "");
 
   return <>
     <Formik<CreateSchoolValue>
       onSubmit={onSubmit}
       initialValues={{
         name: "",
-        abbreviation: ""
       }}
       initialStatus={{
         failureResult: "",
@@ -112,18 +105,6 @@ function UserCreateSchool(props: UserCreateSchoolProps) {
                 isInvalid={!!fprops.errors.name}
               />
               <Form.Control.Feedback type="invalid">{fprops.errors.name}</Form.Control.Feedback>
-            </Form.Group>
-            <Form.Group >
-              <Form.Label >School Abbreviation</Form.Label>
-              <Form.Control
-                name="abbreviation"
-                type="text"
-                placeholder="School Abbreviation"
-                value={fprops.values.abbreviation}
-                onChange={e => fprops.setFieldValue("abbreviation", normalizeSchoolAbbreviation(e.target.value))}
-                isInvalid={!!fprops.errors.abbreviation}
-              />
-              <Form.Control.Feedback type="invalid">{fprops.errors.abbreviation}</Form.Control.Feedback>
             </Form.Group>
             <Button type="submit">Submit Form</Button>
             <br />

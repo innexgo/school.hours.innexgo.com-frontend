@@ -172,7 +172,7 @@ export async function newPasswordReset(props: NewPasswordResetProps): Promise<Pa
 
 export type NewSubscriptionProps = {
   userId: number,
-  duration:number,
+  subscriptionKind:SubscriptionKind,
   apiKey:string
 }
 
@@ -265,7 +265,6 @@ export async function newKeyCourseMembership(props: NewKeyCourseMembershipProps)
 export type NewSchoolProps = {
   name: string,
   whole: boolean,
-  subscriptionId: number,
   apiKey: string
 }
 
@@ -390,8 +389,9 @@ export type ViewSubscriptionProps = {
   minCreationTime?: number, //
   maxCreationTime?: number, //
   creatorUserId?: number, //
-  duration?: number, //
+  subscriptionKind?: SubscriptionKind, //
   maxUses?: number, //
+  onlyRecent?: boolean, //
   offset?: number,
   count?: number
 }
@@ -588,7 +588,6 @@ export type ViewAdminshipProps = {
   userId?: number, //
   schoolId?: number, //
   adminshipKind?: AdminshipKind, //
-  subscriptionId?: number, //
   adminshipSourceKind?: AdminshipSourceKind, //
   adminshipRequestResponseId?: number, //
   schoolName?: string,

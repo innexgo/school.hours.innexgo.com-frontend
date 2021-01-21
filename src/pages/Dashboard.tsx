@@ -100,7 +100,7 @@ function Dashboard(props: AuthenticatedComponentProps) {
                     <div className="my-3 mx-3">
                       <ResourceCard
                         title={a.school.name}
-                        text={a.school.abbreviation}
+                        text=""
                         href={`/admin_manage_school?schoolId=${a.school.schoolId}`}
                       />
                     </div>

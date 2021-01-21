@@ -15,7 +15,7 @@ import SearchMultiUser from "../components/SearchMultiUser";
 import format from "date-fns/format";
 
 import { Async, AsyncProps } from 'react-async';
-import { viewUser, newAdminship, viewSchool, viewCourse, viewAdminship, isApiErrorCode } from '../utils/utils';
+import { viewUser, viewSchool, viewCourse, viewAdminship, isApiErrorCode } from '../utils/utils';
 
 const loadSchool = async () => {
   const maybeSchools = await viewSchool({
