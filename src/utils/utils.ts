@@ -59,31 +59,58 @@ const ApiErrorCodes = [
   "USER_EMAIL_EMPTY",
   "USER_EMAIL_INVALIDATED",
   "USER_KIND_INVALID",
+
+  "SUBSCRIPTION_NONEXISTENT",
+  "SUBSCRIPTION_EXPIRED",
+  "SUBSCRIPTION_UNAUTHORIZED",
+  "SUBSCRIPTION_LIMITED",
+
   "SCHOOL_NONEXISTENT",
+
+  "ADMINSHIP_REQUEST_NONEXISTENT",
+  "ADMINSHIP_REQUEST_RESPONSE_EXISTENT",
+  "ADMINSHIP_REQUEST_RESPONSE_NONEXISTENT",
+
+  "ADMINSHIP_REQUEST_RESPONSE_CANNOT_USE_OTHERS",
+
+  "ADMINSHIP_CANNOT_LEAVE_EMPTY",
+
   "SESSION_REQUEST_NONEXISTENT",
   "SESSION_REQUEST_RESPONSE_EXISTENT",
   "SESSION_REQUEST_RESPONSE_CANNOT_CANCEL_STUDENT",
+
   "SESSION_CANNOT_CREATE_FOR_OTHERS_STUDENT",
+
   "SESSION_NONEXISTENT",
+
+
   "COMMITTMENT_EXISTENT",
   "COMMITTMENT_NONEXISTENT",
   "COMMITTMENT_CANNOT_CREATE_FOR_OTHERS_STUDENT",
   "COMMITTMENT_CANNOT_CREATE_HIDDEN_STUDENT",
   "COMMITTMENT_CANNOT_CREATE_UNCANCELLABLE_STUDENT",
+
   "COMMITTMENT_RESPONSE_KIND_INVALID",
   "COMMITTMENT_RESPONSE_EXISTENT",
   "COMMITTMENT_RESPONSE_UNCANCELLABLE",
   "COMMITTMENT_RESPONSE_CANNOT_CREATE_FOR_OTHERS_STUDENT",
+
   "COURSE_NONEXISTENT",
+
   "COURSE_KEY_NONEXISTENT",
   "COURSE_KEY_EXPIRED",
   "COURSE_KEY_USED",
+
   "COURSE_MEMBERSHIP_NONEXISTENT",
   "COURSE_MEMBERSHIP_CANNOT_LEAVE_EMPTY",
-  "ADMINSHIP_CANNOT_LEAVE_EMPTY",
+
   "LOCATION_NONEXISTENT",
+
   "NEGATIVE_DURATION",
   "CANNOT_ALTER_PAST",
+
+
+
   "VERIFICATION_CHALLENGE_NONEXISTENT",
   "VERIFICATION_CHALLENGE_TIMED_OUT",
   "PASSWORD_RESET_NONEXISTENT",
@@ -141,6 +168,16 @@ export type NewPasswordResetProps = {
 
 export async function newPasswordReset(props: NewPasswordResetProps): Promise<PasswordReset | ApiErrorCode> {
   return await fetchApi("passwordReset/new/", getFormData(props));
+}
+
+export type NewSubscriptionProps = {
+  userId: number,
+  duration:number,
+  apiKey:string
+}
+
+export async function newSubscription(props: NewSubscriptionProps): Promise<Subscription | ApiErrorCode> {
+  return await fetchApi("subscription/new/", getFormData(props));
 }
 
 export type NewChangePasswordProps = {
@@ -225,25 +262,56 @@ export async function newKeyCourseMembership(props: NewKeyCourseMembershipProps)
   return await fetchApi("courseMembership/newKey/", getFormData(props));
 }
 
-export type NewAdminshipProps = {
-  userId: number,
-  schoolId: number,
-  adminshipKind: AdminshipKind,
-  apiKey: string
-}
-
-export async function newAdminship(props: NewAdminshipProps): Promise<Adminship | ApiErrorCode> {
-  return await fetchApi("adminship/new/", getFormData(props));
-}
-
 export type NewSchoolProps = {
   name: string,
-  abbreviation: string,
+  whole: boolean,
+  subscriptionId: number,
   apiKey: string
 }
 
 export async function newSchool(props: NewSchoolProps): Promise<School | ApiErrorCode> {
   return await fetchApi("school/new/", getFormData(props));
+}
+
+export type NewAdminshipRequestProps = {
+  schoolId: number,
+  message: string,
+  apiKey: string
+}
+
+export async function newAdminshipRequest(props: NewAdminshipRequestProps): Promise<AdminshipRequest | ApiErrorCode> {
+  return await fetchApi("adminshipRequest/new/", getFormData(props));
+}
+
+export type NewAdminshipRequestResponseProps = {
+  adminshipRequestId: number,
+  message: string,
+  accept: boolean,
+  apiKey: string
+}
+
+export async function newAdminshipRequestResponse(props: NewAdminshipRequestResponseProps): Promise<AdminshipRequestResponse | ApiErrorCode> {
+  return await fetchApi("adminshipRequestResponse/new/", getFormData(props));
+}
+
+export type NewCancelAdminshipProps = {
+  userId: number,
+  schoolId: number,
+  apiKey: string
+}
+
+export async function newCancelAdminship(props: NewCancelAdminshipProps ): Promise<Adminship | ApiErrorCode> {
+  return await fetchApi("adminship/newCancel/", getFormData(props));
+}
+
+export type NewValidAdminshipProps = {
+  adminshipRequestResponseId: number,
+  subscriptionId: number,
+  apiKey: string
+}
+
+export async function newValidAdminship(props: NewValidAdminshipProps ): Promise<Adminship | ApiErrorCode> {
+  return await fetchApi("adminship/newValid/", getFormData(props));
 }
 
 export type NewSessionProps = {
@@ -315,6 +383,23 @@ export async function newCommittmentResponse(props: NewCommittmentResponseProps)
   return await fetchApi("committmentResponse/new/", getFormData(props));
 }
 
+
+export type ViewSubscriptionProps = {
+  subscriptionId?: number, //
+  creationTime?: number, //
+  minCreationTime?: number, //
+  maxCreationTime?: number, //
+  creatorUserId?: number, //
+  duration?: number, //
+  maxUses?: number, //
+  offset?: number,
+  count?: number
+}
+
+export async function viewSubscription(props: ViewSubscriptionProps): Promise<Subscription[] | ApiErrorCode> {
+  return await fetchApi("school/", getFormData(props));
+}
+
 export type ViewSchoolProps = {
   schoolId?: number, //
   creationTime?: number, //
@@ -323,7 +408,7 @@ export type ViewSchoolProps = {
   creatorUserId?: number, //
   name?: string, //
   partialName?: string, //
-  abbreviation?: string, //
+  whole?: boolean, //
   offset?: number,
   count?: number
 }
@@ -457,6 +542,43 @@ export async function viewCourseMembership(props: ViewCourseMembershipProps): Pr
   return await fetchApi("courseMembership/", getFormData(props));
 }
 
+export type ViewAdminshipRequestProps = {
+  adminshipRequestId?: number, //
+  creationTime?: number, //
+  minCreationTime?: number, //
+  maxCreationTime?: number, //
+  creatorUserId?: number, //
+  schoolId?: number, //
+  message?: string,
+  responded?: boolean,
+  offset?: number,
+  count?: number,
+  apiKey: string,
+}
+
+export async function viewAdminshipRequest(props: ViewAdminshipRequestProps): Promise<AdminshipRequest[] | ApiErrorCode> {
+  return await fetchApi("adminshipRequest/", getFormData(props));
+}
+
+export type ViewAdminshipRequestResponseProps = {
+  adminshipRequestId?: number, //
+  creationTime?: number, //
+  minCreationTime?: number, //
+  maxCreationTime?: number, //
+  creatorUserId?: number, //
+  message?: string, //
+  accepted?: boolean, //
+  requesterUserId?: number, //
+  schoolId?: number, //
+  offset?: number,
+  count?: number,
+  apiKey: string,
+}
+
+export async function viewAdminshipRequestResponse(props: ViewAdminshipRequestResponseProps): Promise<AdminshipRequestResponse[] | ApiErrorCode> {
+  return await fetchApi("adminshipRequestResponse/", getFormData(props));
+}
+
 export type ViewAdminshipProps = {
   adminshipId?: number, //
   creationTime?: number, //
@@ -466,6 +588,9 @@ export type ViewAdminshipProps = {
   userId?: number, //
   schoolId?: number, //
   adminshipKind?: AdminshipKind, //
+  subscriptionId?: number, //
+  adminshipSourceKind?: AdminshipSourceKind, //
+  adminshipRequestResponseId?: number, //
   schoolName?: string,
   partialSchoolName?: string,
   userName?: string,
@@ -479,7 +604,6 @@ export type ViewAdminshipProps = {
 export async function viewAdminship(props: ViewAdminshipProps): Promise<Adminship[] | ApiErrorCode> {
   return await fetchApi("adminship/", getFormData(props));
 }
-
 
 export type ViewSessionProps = {
   sessionId?: number, //

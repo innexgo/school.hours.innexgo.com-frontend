@@ -42,10 +42,35 @@ declare global {
     creator: User,
     creationTime: number,
     name: string,
-    abbreviation: string,
+    whole: boolean,
+  }
+
+  type Subscription = {
+    subscriptionId:number,
+    creationTime:number,
+    creator:User,
+    duration:number,
+    maxUses:number
+  }
+
+  type AdminshipRequest = {
+    adminshipRequestId:number,
+    creationTime:number,
+    creator:User,
+    school:School,
+    message:string
+  }
+
+  type AdminshipRequestResponse = {
+    adminshipRequest:AdminshipRequest,
+    creationTime:number,
+    creator:User,
+    message:string,
+    accepted:boolean
   }
 
   type AdminshipKind = "ADMIN" | "CANCEL";
+  type AdminshipSourceKind = "REQUEST" | "SET";
 
   type Adminship = {
     adminshipId: number;
@@ -54,6 +79,9 @@ declare global {
     user: User;
     school: School;
     adminshipKind: AdminshipKind;
+    subscription: Subscription | null;
+    adminshipSourceKind: AdminshipSourceKind;
+    subscription: AdminshipRequestResponse | null;
   }
 
   type Location = {
