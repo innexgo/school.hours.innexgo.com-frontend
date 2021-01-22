@@ -243,9 +243,14 @@ function CreateSession(props: CreateSessionProps) {
                     courseId: fprops.values.courseId!,
                     courseMembershipKind:"STUDENT",
                     partialUserName: input,
+                    onlyRecent:true,
                     apiKey: props.apiKey.key,
                   });
-                  return isApiErrorCode(maybeCourseMemberships) ? [] : maybeCourseMemberships.map(x => x.user)
+                  return isApiErrorCode(maybeCourseMemberships)
+                    ? []
+                    : maybeCourseMemberships
+                        .map(cm => cm.user)
+                        .filter(u => !fprops.values.studentList.includes(u.userId))
                 }}
                 setFn={e => {
                   fprops.setFieldValue("studentList", e.map(s => s.userId));

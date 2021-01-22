@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dashboard, Event, Settings } from '@material-ui/icons';
+import { Dashboard, Event, Settings} from '@material-ui/icons';
 
 import InnerLayout from '../components/InnerLayout';
 

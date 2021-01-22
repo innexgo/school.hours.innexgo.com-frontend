@@ -24,64 +24,62 @@ class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
     const setDuration = (x: number | null) => this.props.setFieldValue("duration", x);
     const setSessionId = (x: number | null) => this.props.setFieldValue("sessionId", x);
 
-    return <>
-      <FullCalendar
-        plugins={[timeGridPlugin, interactionPlugin]}
-        initialView="timeGridDay"
-        unselectCancel=".UserReviewSessionRequest"
-        headerToolbar={false}
-        allDaySlot={false}
-        slotMinTime="08:00"
-        slotMaxTime="18:00"
-        selectable={true}
-        selectMirror={true}
-        initialDate={this.props.sessionRequest.startTime}
-        height="auto"
-        select={(dsa: DateSelectArg) => {
-          setStartTime(dsa.start.valueOf());
-          setDuration(dsa.end.valueOf() - dsa.start.valueOf());
-          setSessionId(null);
-        }}
-        unselect={() => {
-          setStartTime(null);
-          setDuration(null);
-        }}
-        eventClick={(eca: EventClickArg) => {
-          eca.view.calendar.unselect();
-          setSessionId(parseInt(eca.event.id.split(':')[1]));
-        }}
-        eventSources={[
-          async (
-            args: {
-              start: Date;
-              end: Date;
-              startStr: string;
-              endStr: string;
-              timeZone: string;
-            }) => {
-            const maybeSessions = await viewSession({
-              courseId: this.props.sessionRequest.course.courseId,
-              minStartTime: args.start.valueOf(),
-              maxStartTime: args.end.valueOf(),
-              apiKey: this.props.apiKey.key
-            });
+    return <FullCalendar
+      plugins={[timeGridPlugin, interactionPlugin]}
+      initialView="timeGridDay"
+      unselectCancel=".UserReviewSessionRequest"
+      headerToolbar={false}
+      allDaySlot={false}
+      slotMinTime="08:00"
+      slotMaxTime="18:00"
+      selectable={true}
+      selectMirror={true}
+      initialDate={this.props.sessionRequest.startTime}
+      height="auto"
+      select={(dsa: DateSelectArg) => {
+        setStartTime(dsa.start.valueOf());
+        setDuration(dsa.end.valueOf() - dsa.start.valueOf());
+        setSessionId(null);
+      }}
+      unselect={() => {
+        setStartTime(null);
+        setDuration(null);
+      }}
+      eventClick={(eca: EventClickArg) => {
+        eca.view.calendar.unselect();
+        setSessionId(parseInt(eca.event.id.split(':')[1]));
+      }}
+      eventSources={[
+        async (
+          args: {
+            start: Date;
+            end: Date;
+            startStr: string;
+            endStr: string;
+            timeZone: string;
+          }) => {
+          const maybeSessions = await viewSession({
+            courseId: this.props.sessionRequest.course.courseId,
+            minStartTime: args.start.valueOf(),
+            maxStartTime: args.end.valueOf(),
+            apiKey: this.props.apiKey.key
+          });
 
-            return isApiErrorCode(maybeSessions) ? [] : maybeSessions.map((x: Session): EventInput => ({
-              id: `Session:${x.sessionId}`,
-              title: x.name,
-              color: x.sessionId === this.props.sessionId ? "#3788D8" : "#6C757D",
-              start: new Date(x.startTime),
-              end: new Date(x.startTime + x.duration),
-            }));
-          },
-          [{
-            start: this.props.sessionRequest.startTime,
-            end: this.props.sessionRequest.startTime + this.props.sessionRequest.duration,
-            display: "background"
-          }],
-        ]}
-      />
-    </>
+          return isApiErrorCode(maybeSessions) ? [] : maybeSessions.map((x: Session): EventInput => ({
+            id: `Session:${x.sessionId}`,
+            title: x.name,
+            color: x.sessionId === this.props.sessionId ? "#3788D8" : "#6C757D",
+            start: new Date(x.startTime),
+            end: new Date(x.startTime + x.duration),
+          }));
+        },
+        [{
+          start: this.props.sessionRequest.startTime,
+          end: this.props.sessionRequest.startTime + this.props.sessionRequest.duration,
+          display: "background"
+        }],
+      ]}
+    />
   }
 }
 
@@ -328,7 +326,6 @@ function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
           />
           <Form.Text className="text-danger">{fprops.errors.newSessionName}</Form.Text>
         </Form.Group>
-        <br />
         <Form.Group hidden={fprops.values.startTime === null || fprops.values.duration === null} >
           <Form.Check
             name="newSessionPublic"
@@ -339,7 +336,6 @@ function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
             feedback={fprops.errors.newSessionPublic}
           />
         </Form.Group>
-        <br />
         <Form.Group>
           <ToggleButton
             key={0}
@@ -362,7 +358,6 @@ function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
           <br />
           <Form.Text className="text-danger">{fprops.errors.accepted}</Form.Text>
         </Form.Group>
-        <br />
         <Button type="submit" >Submit</Button>
         <br />
         <Form.Text className="text-danger">{fprops.status}</Form.Text>

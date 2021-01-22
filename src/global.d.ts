@@ -109,7 +109,7 @@ declare global {
 
   type CourseKeyKind = "VALID" | "CANCEL";
 
-  type CourseKey = {
+  type CancelCourseKey = {
     courseKeyId: number;
     creationTime: number;
     creator: User;
@@ -119,7 +119,9 @@ declare global {
     courseMembershipKind: null;
     duration: null;
     maxUses: null;
-  } | {
+  }
+
+  type ValidCourseKey = {
     courseKeyId: number;
     creationTime: number;
     creator: User;
@@ -129,7 +131,9 @@ declare global {
     courseMembershipKind: CourseMembershipKind ;
     duration: number;
     maxUses: number;
-  };
+  }
+
+  type CourseKey = CancelCourseKey | ValidCourseKey;
 
   type CourseMembership = {
     courseMembershipId: number;

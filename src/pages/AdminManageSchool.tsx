@@ -10,16 +10,15 @@ import { ViewSchool, ViewUser, ViewCourse } from '../components/ViewData';
 import { Delete, Visibility, Settings, Add } from '@material-ui/icons'
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
 
-import SearchMultiUser from "../components/SearchMultiUser";
-
 import format from "date-fns/format";
 
 import { Async, AsyncProps } from 'react-async';
 import { viewUser, viewSchool, viewCourse, viewAdminship, isApiErrorCode } from '../utils/utils';
 
-const loadSchool = async () => {
+const loadSchool = async (props: AsyncProps<School>) => {
   const maybeSchools = await viewSchool({
     schoolId: parseInt(new URLSearchParams(window.location.search).get("schoolId") ?? ""),
+    apiKey: props.apiKey.key
   });
 
   if (isApiErrorCode(maybeSchools)) {

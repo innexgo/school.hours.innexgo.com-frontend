@@ -171,14 +171,14 @@ export const ViewSessionRequest = (props: {
           </tr>
           <tr>
             <th>Request Sent</th>
-            <td>{format(props.sessionRequest.creationTime, "MMM do h:mm a")} </td>
+            <td>{format(props.sessionRequest.creationTime, "MMM do h:mm a")}</td>
           </tr>
           <tr>
             <th>Attendee</th>
             <td><ViewUser user={props.sessionRequest.attendee} expanded={false} /></td>
           </tr>
           <tr>
-            <th>Host</th>
+            <th>Course</th>
             <td><ViewCourse course={props.sessionRequest.course} expanded={false} /></td>
           </tr>
         </tbody>
@@ -208,9 +208,7 @@ export const ViewSessionRequestResponse = (props: {
           </tr>
           <tr>
             <th>Response Time</th>
-            <td>
-              <td>{format(props.sessionRequestResponse.creationTime, "MMM do h:mm a")} </td>
-            </td>
+            <td> {format(props.sessionRequestResponse.creationTime, "MMM do h:mm a")} </td>
           </tr>
           <tr>
             <th>Response Message</th>
@@ -220,8 +218,12 @@ export const ViewSessionRequestResponse = (props: {
             <th>Accepted</th>
             <td>{`${props.sessionRequestResponse.accepted}`}</td>
           </tr>
-          {props.sessionRequestResponse.committment == null ? <> </> :
-            <ViewCommittment committment={props.sessionRequestResponse.committment} expanded />
+          {props.sessionRequestResponse.committment == null
+            ? <> </>
+            : <tr>
+              <th>Committment </th>
+              <td> <ViewCommittment committment={props.sessionRequestResponse.committment} expanded /> </td>
+            </tr>
           }
         </tbody>
       </Table>

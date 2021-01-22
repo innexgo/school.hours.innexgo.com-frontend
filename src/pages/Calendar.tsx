@@ -85,7 +85,7 @@ function EventCalendar(props: EventCalendarProps) {
       attendeeUserId: props.apiKey.creator.userId,
       minStartTime: args.start.valueOf(),
       maxStartTime: args.end.valueOf(),
-      accepted: false,
+      responded: false,
       apiKey: props.apiKey.key
     });
 
@@ -93,6 +93,7 @@ function EventCalendar(props: EventCalendarProps) {
       attendeeUserId: props.apiKey.creator.userId,
       minStartTime: args.start.valueOf(),
       maxStartTime: args.end.valueOf(),
+      fromRequestResponse: false,
       responded: false,
       apiKey: props.apiKey.key
     });

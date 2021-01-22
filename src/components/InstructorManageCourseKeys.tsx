@@ -13,7 +13,7 @@ import format from "date-fns/format";
 import addDays from "date-fns/addDays";
 
 import { Async, AsyncProps } from 'react-async';
-import { viewUser, newCancelCourseKey, newValidCourseKey, viewCourseKey, isApiErrorCode } from '../utils/utils';
+import { INT_MAX, newCancelCourseKey, newValidCourseKey, viewCourseKey, isApiErrorCode } from '../utils/utils';
 
 
 type RevokeCourseKeyProps = {
@@ -167,8 +167,8 @@ function InstructorManageCourseKeys(props: InstructorManageCourseKeysProps) {
                   {data.map((a: CourseKey) =>
                     <tr>
                       <td><code>{a.key}</code></td>
-                      <td>{format(a.creationTime + a.duration!, "MMM dd yyyy")}</td>
-                      <td>{a.maxUses}</td>
+                      <td>{a.duration === INT_MAX ? "Never" : format(a.creationTime + a.duration!, "MMM dd yyyy")}</td>
+                      <td>{a.maxUses != null && a.maxUses == INT_MAX ? "Infinite" : a.maxUses}</td>
                       <td>{a.courseMembershipKind}</td>
                       <td>{a.creationTime + a.duration! > Date.now()
                         ? <Button variant="link" className="text-dark"
@@ -222,8 +222,10 @@ function InstructorManageCourseKeys(props: InstructorManageCourseKeysProps) {
                   // TODO let user choose how many uses and how many
                   const maybeCourseKey = await newValidCourseKey({
                     courseId: props.course.courseId,
-                    duration: addDays(Date.now(), values.expires ? parseInt(values.expiryDays) : 100000).valueOf(),
-                    maxUses: values.infiniteUses ? 100000 : parseInt(values.maxUses),
+                    duration: values.expires
+                      ? addDays(Date.now(), parseInt(values.expiryDays)).valueOf()
+                      : INT_MAX,
+                    maxUses: values.infiniteUses ? INT_MAX : parseInt(values.maxUses),
                     courseMembershipKind: values.instructorPermissions ? "INSTRUCTOR" : "STUDENT",
                     apiKey: props.apiKey.key,
                   });

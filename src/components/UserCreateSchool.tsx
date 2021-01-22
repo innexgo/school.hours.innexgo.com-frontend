@@ -49,9 +49,23 @@ function UserCreateSchool(props: UserCreateSchoolProps) {
           });
           break;
         }
-        case "USER_NONEXISTENT": {
+        case "SUBSCRIPTION_NONEXISTENT": {
           fprops.setStatus({
-            failureResult: "This user does not exist.",
+            failureResult: "You don't have a subscription to create a school.",
+            successResult: ""
+          });
+          break;
+        }
+        case "SUBSCRIPTION_EXPIRED": {
+          fprops.setStatus({
+            failureResult: "Your subscription has expired.",
+            successResult: ""
+          });
+          break;
+        }
+        case "SUBSCRIPTION_LIMITED": {
+          fprops.setStatus({
+            failureResult: "Your subscription does not provide for joining another school.",
             successResult: ""
           });
           break;

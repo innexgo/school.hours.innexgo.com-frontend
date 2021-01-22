@@ -17,6 +17,18 @@ function SessionRequestCard(props: { sessionRequest: SessionRequest }) {
 // Rejected Session Request
 function SessionRequestResponseCard(props: { sessionRequestResponse: SessionRequestResponse }) {
   const sessionRequestResponse = props.sessionRequestResponse;
+
+  if (sessionRequestResponse.accepted) {
+    return (
+      <div className="px-1 py-1 h-100 w-100 bg-primary text-light overflow-hidden" >
+        Appt: {sessionRequestResponse.committment!.session.name}
+      <br />
+        Course: {sessionRequestResponse.committment!.session.course.name}
+      <br/>
+        Message: {sessionRequestResponse.message}
+      </div>
+    )
+  }
   return (
     <div className="px-1 py-1 h-100 w-100 bg-light text-dark overflow-hidden" >
       Course: {sessionRequestResponse.sessionRequest.course.name}
@@ -41,7 +53,7 @@ function CommittmentCard(props: { committment: Committment }) {
   return (
     <div className="px-1 py-1 h-100 w-100 bg-primary text-light overflow-hidden" >
       Appt: {committment.session.name}
-      <br/>
+      <br />
       Course: {committment.session.course.name}
     </div>
   )
@@ -52,9 +64,9 @@ function CommittmentResponseCard(props: { committmentResponse: CommittmentRespon
   return (
     <div className="px-1 py-1 h-100 w-100 bg-success text-light overflow-hidden" >
       Appt: {committmentResponse.committment.session.name}
-      <br/>
+      <br />
       Attendee: {committmentResponse.committment.attendee.name}
-      <br/>
+      <br />
       Status: {committmentResponse.kind}
     </div>
   )

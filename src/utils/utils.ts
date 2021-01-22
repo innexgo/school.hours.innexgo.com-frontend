@@ -171,7 +171,6 @@ export async function newPasswordReset(props: NewPasswordResetProps): Promise<Pa
 }
 
 export type NewSubscriptionProps = {
-  userId: number,
   subscriptionKind:SubscriptionKind,
   apiKey:string
 }
@@ -393,11 +392,12 @@ export type ViewSubscriptionProps = {
   maxUses?: number, //
   onlyRecent?: boolean, //
   offset?: number,
-  count?: number
+  count?: number,
+  apiKey: string,
 }
 
 export async function viewSubscription(props: ViewSubscriptionProps): Promise<Subscription[] | ApiErrorCode> {
-  return await fetchApi("school/", getFormData(props));
+  return await fetchApi("subscription/", getFormData(props));
 }
 
 export type ViewSchoolProps = {
@@ -410,7 +410,8 @@ export type ViewSchoolProps = {
   partialName?: string, //
   whole?: boolean, //
   offset?: number,
-  count?: number
+  count?: number,
+  apiKey: string,
 }
 
 export async function viewSchool(props: ViewSchoolProps): Promise<School[] | ApiErrorCode> {
@@ -672,6 +673,7 @@ export type ViewSessionRequestResponseProps = {
   duration?: number, //
   minDuration?: number, //
   maxDuration?: number, //
+  responded?: boolean, //
   offset?: number,
   count?: number,
   apiKey: string,
@@ -698,6 +700,7 @@ export type ViewCommittmentProps = {
   minDuration?: number, //
   maxDuration?: number, //
   responded?: boolean, //
+  fromRequestResponse?: boolean, //
   offset?: number,
   count?: number,
   apiKey: string
@@ -735,5 +738,7 @@ export async function viewCommittmentResponse(props: ViewCommittmentResponseProp
 export function isApiErrorCode(maybeApiErrorCode: any): maybeApiErrorCode is ApiErrorCode {
   return typeof maybeApiErrorCode === 'string' && ApiErrorCodes.includes(maybeApiErrorCode as any);
 }
+
+export const INT_MAX:number = 999999999999999;
 
 export const isPasswordValid = (pass: string) => pass.length >= 8 && /\d/.test(pass);

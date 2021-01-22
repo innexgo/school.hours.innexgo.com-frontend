@@ -30,10 +30,6 @@ class SimpleLayout extends React.Component {
               <ArrowForward />Register
             </a>
             <br />
-            <a href="https://hours.innexgo.com" className="text-light">
-              <ArrowForward />Not your school?
-            </a>
-            <br />
             <a href="/terms_of_service" className="text-light">
               <ArrowForward />Terms of Service
             </a>
