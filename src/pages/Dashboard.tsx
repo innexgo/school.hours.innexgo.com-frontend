@@ -1,6 +1,6 @@
 import React from 'react'
 import { Container, Card, Form, Tabs, Tab } from 'react-bootstrap';
-import { BarChart, Settings, Add } from '@material-ui/icons'
+import { Add } from '@material-ui/icons'
 import { Async, AsyncProps } from 'react-async';
 
 import DashboardLayout from '../components/DashboardLayout';

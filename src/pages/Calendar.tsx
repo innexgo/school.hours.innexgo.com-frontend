@@ -189,7 +189,7 @@ function EventCalendar(props: EventCalendarProps) {
       case "Session": {
         setSelectedSession(props.session);
 
-        if (props.relation == "INSTRUCTOR") {
+        if (props.relation === "INSTRUCTOR") {
           // if we are an instructor we get the editable view of the course
           setShowCreatorPickerModal(false);
           setShowViewSessionModal(false);
@@ -215,7 +215,7 @@ function EventCalendar(props: EventCalendarProps) {
       case "SessionRequest": {
         setSelectedSessionRequest(props.sessionRequest);
 
-        if (props.relation == "INSTRUCTOR") {
+        if (props.relation === "INSTRUCTOR") {
           // if we are an instructor we get to reivew the request
           setShowCreatorPickerModal(false);
           setShowViewSessionModal(false);
@@ -404,7 +404,7 @@ function EventCalendar(props: EventCalendarProps) {
           </>}
         </Async>
       </DisplayModal>
-      {selectedSession == null ? <> </> :
+      {selectedSession === null ? <> </> :
         <>
           <DisplayModal
             title="Manage Session"
@@ -422,7 +422,7 @@ function EventCalendar(props: EventCalendarProps) {
           </DisplayModal>
         </>
       }
-      {selectedSessionRequest == null ? <> </> :
+      {selectedSessionRequest === null ? <> </> :
         <>
           <DisplayModal
             title="Review Student Request"
@@ -444,7 +444,7 @@ function EventCalendar(props: EventCalendarProps) {
           </DisplayModal>
         </>
       }
-      {selectedSessionRequestResponse == null ? <div /> :
+      {selectedSessionRequestResponse === null ? <div /> :
         <DisplayModal
           title="View Session Request Response"
           show={showViewSessionRequestResponseModal}
@@ -453,7 +453,7 @@ function EventCalendar(props: EventCalendarProps) {
           <ViewSessionRequestResponse sessionRequestResponse={selectedSessionRequestResponse} expanded />
         </DisplayModal>
       }
-      {selectedCommittment == null ? <div /> :
+      {selectedCommittment === null ? <div /> :
         <DisplayModal
           title="View Committment"
           show={showViewCommittmentModal}
@@ -462,7 +462,7 @@ function EventCalendar(props: EventCalendarProps) {
           <ViewCommittment committment={selectedCommittment} expanded />
         </DisplayModal>
       }
-      {selectedCommittmentResponse == null ? <div /> :
+      {selectedCommittmentResponse === null ? <div /> :
         <DisplayModal
           title="View Attendance"
           show={showViewCommittmentResponseModal}
@@ -521,7 +521,7 @@ function Calendar(props: AuthenticatedComponentProps) {
                       </Async.Rejected>
                       <Async.Fulfilled<CourseMembership[]>>{data =>
                         <>
-                          {data.length == 0
+                          {data.length === 0
                             ? <> </>
                             : <Card.Subtitle className="my-2"> Hide Courses </Card.Subtitle>
                           }
@@ -531,7 +531,7 @@ function Calendar(props: AuthenticatedComponentProps) {
                               onChange={_ => setHiddenCourses(
                                 hiddenCourses.includes(cm.course.courseId)
                                   // if its included, remove it
-                                  ? hiddenCourses.filter(ci => ci != cm.course.courseId)
+                                  ? hiddenCourses.filter(ci => ci !== cm.course.courseId)
                                   // if its not included, disinclude it
                                   : [...hiddenCourses, cm.course.courseId]
                               )}

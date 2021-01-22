@@ -2,12 +2,12 @@ import React from 'react';
 import { Button, Tabs, Tab, Form, Table } from 'react-bootstrap';
 import Loader from '../components/Loader';
 import DisplayModal from '../components/DisplayModal';
-import { ViewUser, } from '../components/ViewData';
+//import { ViewUser, } from '../components/ViewData';
 
 import { Delete, } from '@material-ui/icons'
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
 
-import SearchMultiUser from "../components/SearchMultiUser";
+//import SearchMultiUser from "../components/SearchMultiUser";
 
 import format from "date-fns/format";
 import addDays from "date-fns/addDays";
@@ -168,7 +168,7 @@ function InstructorManageCourseKeys(props: InstructorManageCourseKeysProps) {
                     <tr>
                       <td><code>{a.key}</code></td>
                       <td>{a.duration === INT_MAX ? "Never" : format(a.creationTime + a.duration!, "MMM dd yyyy")}</td>
-                      <td>{a.maxUses != null && a.maxUses == INT_MAX ? "Infinite" : a.maxUses}</td>
+                      <td>{a.maxUses != null && a.maxUses === INT_MAX ? "Infinite" : a.maxUses}</td>
                       <td>{a.courseMembershipKind}</td>
                       <td>{a.creationTime + a.duration! > Date.now()
                         ? <Button variant="link" className="text-dark"
@@ -204,11 +204,11 @@ function InstructorManageCourseKeys(props: InstructorManageCourseKeysProps) {
 
                   let errors: FormikErrors<CreateCourseKeyValue> = {};
                   let hasErrors = false;
-                  if (values.expires && values.expiryDays == "") {
+                  if (values.expires && values.expiryDays === "") {
                     errors.expiryDays = "Please enter the number of days after which the key will expire";
                     hasErrors = true;
                   }
-                  if (!values.infiniteUses && values.maxUses == "") {
+                  if (!values.infiniteUses && values.maxUses === "") {
                     errors.maxUses = "Please enter the maximum number of times this key may be used.";
                     hasErrors = true;
                   }
