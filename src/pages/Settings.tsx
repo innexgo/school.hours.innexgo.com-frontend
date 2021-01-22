@@ -11,9 +11,6 @@ import PricingBoxThree from '../components/PricingBoxThree';
 import CreatePassword from '../components/CreatePassword';
 import CreateSubscription from '../components/CreateSubscription';
 
-import { Async, AsyncProps } from 'react-async';
-
-
 
 function Settings(props: AuthenticatedComponentProps) {
 
@@ -22,15 +19,16 @@ function Settings(props: AuthenticatedComponentProps) {
   // Then, when you click on them to change, a modal should pop up
   // IMO this would look better than the tiny boxes we have now
 
-  const [successful, setSuccess] = React.useState(false);
+  const [passwdSuccess, setPasswdSuccess] = React.useState(false);
+  const [subscribeSuccess, setSubscribeSuccess] = React.useState(false);
   return <DashboardLayout {...props}>
     <Container fluid className="py-4 px-4">
       <div className="mx-3 my-3">
         <UtilityWrapper title="Change Password">
           <Popover id="information-tooltip"> Shows basic information about this course. </Popover>
-          {successful
+          {passwdSuccess
             ? <Form.Text className="text-success">Password changed successfully</Form.Text>
-            : <CreatePassword apiKey={props.apiKey} onSuccess={() => setSuccess(true)} />
+            : <CreatePassword apiKey={props.apiKey} onSuccess={() => setPasswdSuccess(true)} />
           }
         </UtilityWrapper>
       </div>
@@ -39,9 +37,9 @@ function Settings(props: AuthenticatedComponentProps) {
         <UtilityWrapper title="Manage Subscription">
           <Popover id="information-tooltip"> Purchase a premium subscription that permits you to manage classes and schools. </Popover>
           <>
-            {successful
+            {subscribeSuccess
               ? <Form.Text className="text-success">Subscription Created Successfully</Form.Text>
-              : <CreateSubscription apiKey={props.apiKey} onSuccess={() => setSuccess(true)} />
+              : <CreateSubscription apiKey={props.apiKey} onSuccess={() => setSubscribeSuccess(true)} />
             }
           </>
         </UtilityWrapper>
