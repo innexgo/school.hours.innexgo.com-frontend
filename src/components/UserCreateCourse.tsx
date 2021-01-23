@@ -68,7 +68,7 @@ function UserCreateCourse(props: UserCreateCourseProps) {
         }
         default: {
           fprops.setStatus({
-            failureResult: "An unknown or network error has occured while trying to register.",
+            failureResult: "An unknown or network error has occured while trying to delete course.",
             successResult: ""
           });
           break;
@@ -85,7 +85,7 @@ function UserCreateCourse(props: UserCreateCourseProps) {
     props.postSubmit();
   }
 
-  const normalizeCourseName = (e: string) => e.toUpperCase().replace(/[^(A-Z 0-9)]+/g, "");
+  const normalizeCourseName = (e: string) => e.toUpperCase().replace(/[^(A-Z0-9:_\-)]+/g, "");
 
   return <>
     <Formik<CreateCourseValue>

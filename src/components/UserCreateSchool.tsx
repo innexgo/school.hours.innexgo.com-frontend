@@ -72,7 +72,7 @@ function UserCreateSchool(props: UserCreateSchoolProps) {
         }
         default: {
           fprops.setStatus({
-            failureResult: "An unknown or network error has occured while trying to register.",
+            failureResult: "An unknown or network error has occured while trying to create school.",
             successResult: ""
           });
           break;

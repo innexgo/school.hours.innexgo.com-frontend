@@ -11,7 +11,7 @@ import { Tab, Tabs, Form, Popover, Container, Row, Col, Card } from 'react-boots
 import { viewSession, viewSessionRequest, isApiErrorCode, viewCourseMembership } from '../utils/utils';
 import { viewSessionRequestResponse, viewCommittment, viewCommittmentResponse } from '../utils/utils';
 
-import { ViewSession, ViewSessionRequest, ViewSessionRequestResponse, ViewCommittment, ViewCommittmentResponse } from '../components/ViewData';
+import { ViewSession, ViewSessionRequestResponse, ViewCommittment, ViewCommittmentResponse } from '../components/ViewData';
 
 import UtilityWrapper from '../components/UtilityWrapper';
 
@@ -19,6 +19,7 @@ import UserCreateSession from '../components/UserCreateSession';
 import StudentCreateSessionRequest from '../components/StudentCreateSessionRequest';
 import UserReviewSessionRequest from '../components/UserReviewSessionRequest';
 import UserManageSession from '../components/UserManageSession';
+import StudentManageSessionRequest from '../components/StudentManageSessionRequest';
 import DisplayModal from '../components/DisplayModal';
 import { sessionToEvent, sessionRequestToEvent, sessionRequestResponseToEvent, committmentToEvent, committmentResponseToEvent } from '../components/ToCalendar';
 
@@ -48,7 +49,7 @@ function EventCalendar(props: EventCalendarProps) {
   // which modals are visible
   const [showManageSessionModal, setShowManageSessionModal] = React.useState(false);
   const [showViewSessionModal, setShowViewSessionModal] = React.useState(false);
-  const [showViewSessionRequestModal, setShowViewSessionRequestModal] = React.useState(false);
+  const [showManageSessionRequestModal, setShowManageSessionRequestModal] = React.useState(false);
   const [showReviewSessionRequestModal, setShowReviewSessionRequestModal] = React.useState(false);
   const [showViewSessionRequestResponseModal, setShowViewSessionRequestResponseModal] = React.useState(false);
   const [showViewCommittmentModal, setShowViewCommittmentModal] = React.useState(false);
@@ -117,6 +118,10 @@ function EventCalendar(props: EventCalendarProps) {
         ? []
         : maybeSessionRequestResponses
           .filter(x => !props.hiddenCourses.includes(x.sessionRequest.course.courseId))
+          // hide things you cancelled yourself
+          .filter(x => {
+              console.log(x);
+              return x.creator.userId != props.apiKey.creator.userId})
           .map(x => sessionRequestResponseToEvent(x, "STUDENT")),
 
       ...isApiErrorCode(maybeCommittments)
@@ -194,7 +199,7 @@ function EventCalendar(props: EventCalendarProps) {
           setShowCreatorPickerModal(false);
           setShowViewSessionModal(false);
           setShowManageSessionModal(true);
-          setShowViewSessionRequestModal(false);
+          setShowManageSessionRequestModal(false);
           setShowReviewSessionRequestModal(false);
           setShowViewSessionRequestResponseModal(false);
           setShowViewCommittmentModal(false);
@@ -204,7 +209,7 @@ function EventCalendar(props: EventCalendarProps) {
           setShowCreatorPickerModal(false);
           setShowViewSessionModal(true);
           setShowManageSessionModal(false);
-          setShowViewSessionRequestModal(false);
+          setShowManageSessionRequestModal(false);
           setShowReviewSessionRequestModal(false);
           setShowViewSessionRequestResponseModal(false);
           setShowViewCommittmentModal(false);
@@ -220,7 +225,7 @@ function EventCalendar(props: EventCalendarProps) {
           setShowCreatorPickerModal(false);
           setShowViewSessionModal(false);
           setShowManageSessionModal(false);
-          setShowViewSessionRequestModal(false);
+          setShowManageSessionRequestModal(false);
           setShowReviewSessionRequestModal(true);
           setShowViewSessionRequestResponseModal(false);
           setShowViewCommittmentModal(false);
@@ -230,7 +235,7 @@ function EventCalendar(props: EventCalendarProps) {
           setShowCreatorPickerModal(false);
           setShowViewSessionModal(false);
           setShowManageSessionModal(false);
-          setShowViewSessionRequestModal(true);
+          setShowManageSessionRequestModal(true);
           setShowReviewSessionRequestModal(false);
           setShowViewSessionRequestResponseModal(false);
           setShowViewCommittmentModal(false);
@@ -245,7 +250,7 @@ function EventCalendar(props: EventCalendarProps) {
         setShowCreatorPickerModal(false);
         setShowViewSessionModal(false);
         setShowManageSessionModal(false);
-        setShowViewSessionRequestModal(false);
+        setShowManageSessionRequestModal(false);
         setShowReviewSessionRequestModal(false);
         setShowViewSessionRequestResponseModal(true);
         setShowViewCommittmentModal(false);
@@ -259,7 +264,7 @@ function EventCalendar(props: EventCalendarProps) {
         setShowCreatorPickerModal(false);
         setShowViewSessionModal(false);
         setShowManageSessionModal(false);
-        setShowViewSessionRequestModal(false);
+        setShowManageSessionRequestModal(false);
         setShowReviewSessionRequestModal(false);
         setShowViewSessionRequestResponseModal(false);
         setShowViewCommittmentModal(true);
@@ -273,7 +278,7 @@ function EventCalendar(props: EventCalendarProps) {
         setShowCreatorPickerModal(false);
         setShowViewSessionModal(false);
         setShowManageSessionModal(false);
-        setShowViewSessionRequestModal(false);
+        setShowManageSessionRequestModal(false);
         setShowReviewSessionRequestModal(false);
         setShowViewSessionRequestResponseModal(false);
         setShowViewCommittmentModal(false);
@@ -436,11 +441,15 @@ function EventCalendar(props: EventCalendarProps) {
             />
           </DisplayModal>
           <DisplayModal
-            title="View Session Request"
-            show={showViewSessionRequestModal}
-            onClose={() => setShowViewSessionRequestModal(false)}
+            title="Manage your Session Request"
+            show={showManageSessionRequestModal}
+            onClose={() => setShowManageSessionRequestModal(false)}
           >
-            <ViewSessionRequest sessionRequest={selectedSessionRequest} expanded />
+            <StudentManageSessionRequest
+              sessionRequest={selectedSessionRequest}
+              apiKey={props.apiKey}
+              postSubmit={() => setShowManageSessionRequestModal(false)}
+            />
           </DisplayModal>
         </>
       }

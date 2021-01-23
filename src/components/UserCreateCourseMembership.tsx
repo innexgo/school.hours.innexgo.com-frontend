@@ -95,6 +95,8 @@ function UserCreateCourseMembership(props: UserCreateCourseMembershipProps) {
     props.postSubmit();
   }
 
+  const normalizeKey = (e: string) => e.replace(/\s+/g, "");
+
   return <>
     <Formik<CreateCourseMembershipValue>
       onSubmit={onSubmit}
@@ -119,7 +121,7 @@ function UserCreateCourseMembership(props: UserCreateCourseMembershipProps) {
                 placeholder="Course Key"
                 as="input"
                 value={fprops.values.key}
-                onChange={e => fprops.setFieldValue("key", e.target.value)}
+                onChange={e => fprops.setFieldValue("key", normalizeKey(e.target.value))}
                 isInvalid={!!fprops.errors.key}
               />
               <Form.Control.Feedback type="invalid">{fprops.errors.key}</Form.Control.Feedback>
