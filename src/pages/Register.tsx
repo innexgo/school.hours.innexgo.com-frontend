@@ -5,7 +5,7 @@ import { Button, Card, Form } from 'react-bootstrap'
 import { newVerificationChallenge, isApiErrorCode, isPasswordValid } from '../utils/utils';
 
 import SimpleLayout from '../components/SimpleLayout';
-import Loader from '../components/Loader';
+//import Loader from '../components/Loader';
 
 type RegisterFormProps = {
   onSuccess: () => void

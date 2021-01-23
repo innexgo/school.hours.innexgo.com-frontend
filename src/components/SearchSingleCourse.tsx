@@ -38,7 +38,7 @@ export default function SearchSingleCourse(props: SearchSingleCourseProps) {
     }
   }
 
-    {/*components={{ DropdownIndicator: () => null, IndicatorSeparator: () => null }} */}
+  /*components={{ DropdownIndicator: () => null, IndicatorSeparator: () => null }} */
   return <AsyncSelect
     placeholder="Start typing to search"
     defaultOptions

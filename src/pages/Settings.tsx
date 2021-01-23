@@ -1,13 +1,9 @@
 import React from 'react';
-import { Popover, Row, Form, Container } from 'react-bootstrap'
+import { Popover, Form, Container } from 'react-bootstrap'
 
 import UtilityWrapper from '../components/UtilityWrapper';
 
 import DashboardLayout from '../components/DashboardLayout';
-import PricingBoxOne from '../components/PricingBoxOne';
-import PricingBoxTwo from '../components/PricingBoxTwo';
-import PricingBoxThree from '../components/PricingBoxThree';
-
 import CreatePassword from '../components/CreatePassword';
 import CreateSubscription from '../components/CreateSubscription';
 

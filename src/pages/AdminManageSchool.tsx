@@ -1,19 +1,19 @@
 
 import React from 'react';
-import { Button, Tabs, Tab, Row, Container, Popover, Form, Table } from 'react-bootstrap';
+import { Container, Popover, Form, Table } from 'react-bootstrap';
 import DashboardLayout from '../components/DashboardLayout';
 import Loader from '../components/Loader';
 import AdminManageAdminships from '../components/AdminManageAdminships';
 import UtilityWrapper from '../components/UtilityWrapper';
-import { ViewSchool, ViewUser, ViewCourse } from '../components/ViewData';
+import { ViewSchool, ViewUser } from '../components/ViewData';
 
-import { Delete, Visibility, Settings, Add } from '@material-ui/icons'
-import { Formik, FormikHelpers, FormikErrors } from 'formik'
+import { Visibility } from '@material-ui/icons'
+//import { Formik, FormikHelpers, FormikErrors } from 'formik'
 
 import format from "date-fns/format";
 
 import { Async, AsyncProps } from 'react-async';
-import { viewUser, viewSchool, viewCourse, viewAdminship, isApiErrorCode } from '../utils/utils';
+import { viewSchool, viewCourse, isApiErrorCode } from '../utils/utils';
 
 const loadSchool = async (props: AsyncProps<School>) => {
   const maybeSchools = await viewSchool({
