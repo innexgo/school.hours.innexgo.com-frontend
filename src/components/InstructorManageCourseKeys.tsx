@@ -164,21 +164,23 @@ function InstructorManageCourseKeys(props: InstructorManageCourseKeysProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.map((a: CourseKey) =>
-                    <tr>
-                      <td><code>{a.key}</code></td>
-                      <td>{a.duration === INT_MAX ? "Never" : format(a.creationTime + a.duration!, "MMM dd yyyy")}</td>
-                      <td>{a.maxUses != null && a.maxUses === INT_MAX ? "Infinite" : a.maxUses}</td>
-                      <td>{a.courseMembershipKind}</td>
-                      <td>{a.creationTime + a.duration! > Date.now()
-                        ? <Button variant="link" className="text-dark"
-                          onClick={() => setConfirmRevokeCourseKey(a)}>
-                          <Delete />
-                        </Button>
-                        : <> </>
-                      }</td>
-                    </tr>
-                  )}
+                  {data.length === 0
+                    ? <tr><td colSpan={5} className="text-center">No currently active keys.</td></tr>
+                    : data.map((a: CourseKey) =>
+                      <tr>
+                        <td><code>{a.key}</code></td>
+                        <td>{a.duration === INT_MAX ? "Never" : format(a.creationTime + a.duration!, "MMM dd yyyy")}</td>
+                        <td>{a.maxUses != null && a.maxUses === INT_MAX ? "Infinite" : a.maxUses}</td>
+                        <td>{a.courseMembershipKind}</td>
+                        <td>{a.creationTime + a.duration! > Date.now()
+                          ? <Button variant="link" className="text-dark"
+                            onClick={() => setConfirmRevokeCourseKey(a)}>
+                            <Delete />
+                          </Button>
+                          : <> </>
+                        }</td>
+                      </tr>
+                    )}
                 </tbody>
               </Table>
               {confirmRevokeCourseKey === null ? <> </> :

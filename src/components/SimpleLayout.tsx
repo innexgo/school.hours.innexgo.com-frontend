@@ -9,8 +9,8 @@ class SimpleLayout extends React.Component {
     return (
       <Container fluid style={{ height: "100vh" }}>
         <Row className="h-100">
-          <Col md="auto" className="px-3 py-3" style={{ backgroundColor: '#990000ff', }}>
-            <Row md={4} className="my-2 text-light">
+          <Col md="auto" className="px-3 py-3" style={{ backgroundColor: '#990000ff'}}>
+            <Row className="my-2 text-light">
               <Col >
                 <img src={transparent} alt="Innexgo Logo" />
               </Col>

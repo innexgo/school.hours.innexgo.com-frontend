@@ -85,7 +85,7 @@ function UserCreateCourse(props: UserCreateCourseProps) {
     props.postSubmit();
   }
 
-  const normalizeCourseName = (e: string) => e.toUpperCase().replace(/[^(A-Z0-9:_\-)]+/g, "");
+  const normalizeCourseName = (e: string) => e.toUpperCase().replace(/[^(A-Z0-9: _\-)]+/g, "").replace(/ +(?= )/g,"");;
 
   return <>
     <Formik<CreateCourseValue>

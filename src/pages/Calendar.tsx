@@ -121,7 +121,7 @@ function EventCalendar(props: EventCalendarProps) {
           // hide things you cancelled yourself
           .filter(x => {
               console.log(x);
-              return x.creator.userId != props.apiKey.creator.userId})
+              return x.creator.userId !== props.apiKey.creator.userId})
           .map(x => sessionRequestResponseToEvent(x, "STUDENT")),
 
       ...isApiErrorCode(maybeCommittments)

@@ -44,7 +44,7 @@ async function fetchApi(url: string, data: FormData) {
   }
 }
 
-const ApiErrorCodes = [
+export const ApiErrorCodes = [
   "OK",
   "NOT_FOUND",
   "NO_CAPABILITY",
@@ -123,7 +123,7 @@ const ApiErrorCodes = [
 ] as const;
 
 // Creates a union type
-export type  ApiErrorCode = typeof ApiErrorCodes[number];
+export type ApiErrorCode = typeof ApiErrorCodes[number];
 
 export type NewValidApiKeyProps = {
   userEmail: string,

@@ -8,8 +8,6 @@ type UserCreateSchoolProps = {
   postSubmit: () => void;
 }
 
-// TODO we need to ensure that the abbreviation is truly unique between schools
-
 function UserCreateSchool(props: UserCreateSchoolProps) {
 
   type CreateSchoolValue = {

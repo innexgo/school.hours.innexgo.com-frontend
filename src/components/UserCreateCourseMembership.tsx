@@ -95,7 +95,7 @@ function UserCreateCourseMembership(props: UserCreateCourseMembershipProps) {
     props.postSubmit();
   }
 
-  const normalizeKey = (e: string) => e.replace(/\s+/g, "");
+  const normalizeKey = (e: string) => e.replace(/[^(A-Za-z0-9_=\-)]/g, "");
 
   return <>
     <Formik<CreateCourseMembershipValue>

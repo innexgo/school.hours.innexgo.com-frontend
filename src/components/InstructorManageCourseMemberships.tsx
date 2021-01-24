@@ -145,18 +145,21 @@ function InternalInstructorManageCourseMemberships(props: InternalInstructorMana
               </tr>
             </thead>
             <tbody>
-              {data.map((a: CourseMembership) =>
-                <tr>
-                  <td><ViewUser user={a.user} expanded={false} /></td>
-                  <td>{format(a.creationTime, "MMM do")}</td>
-                  <th>
-                    <Button variant="link" className="text-dark"
-                      onClick={() => setConfirmRemoveUser(a.user)}>
-                      <Delete />
-                    </Button>
-                  </th>
-                </tr>
-              )}
+              {
+                data.length === 0
+                  ? <tr><td colSpan={3} className="text-center">No current students.</td></tr>
+                  : data.map((a: CourseMembership) =>
+                    <tr>
+                      <td><ViewUser user={a.user} expanded={false} /></td>
+                      <td>{format(a.creationTime, "MMM do")}</td>
+                      <th>
+                        <Button variant="link" className="text-dark"
+                          onClick={() => setConfirmRemoveUser(a.user)}>
+                          <Delete />
+                        </Button>
+                      </th>
+                    </tr>
+                  )}
             </tbody>
           </Table>
           {confirmRemoveUser === null ? <> </> :
@@ -194,7 +197,7 @@ function InstructorManageCourseMemberships(props: InstructorManageCourseMembersh
   return <InternalInstructorManageCourseMemberships
     course={props.course}
     apiKey={props.apiKey}
-    loadMemberships={async (_:AsyncProps<CourseMembership[]>) => {
+    loadMemberships={async (_: AsyncProps<CourseMembership[]>) => {
       const maybeCourseMemberships = await viewCourseMembership({
         courseId: props.course.courseId,
         courseMembershipKind: props.courseMembershipKind,

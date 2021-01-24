@@ -76,7 +76,7 @@ class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
         [{
           start: this.props.sessionRequest.startTime,
           end: this.props.sessionRequest.startTime + this.props.sessionRequest.duration,
-          display: "background"
+          display: "background",
         }],
       ]}
     />
