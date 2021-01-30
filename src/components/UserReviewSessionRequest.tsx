@@ -1,10 +1,11 @@
 import React from "react";
-import FullCalendar, { EventClickArg, EventInput, DateSelectArg } from "@fullcalendar/react"
+import FullCalendar, { EventClickArg, DateSelectArg } from "@fullcalendar/react"
 import interactionPlugin from '@fullcalendar/interaction'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import { Card, Row, Col, Button, Form } from 'react-bootstrap';
 import ToggleButton from "react-bootstrap/ToggleButton";
 import { Formik, FormikHelpers } from 'formik';
+import { sessionToEvent, sessionRequestToEvent, } from '../components/ToCalendar';
 
 import { ViewSessionRequest } from '../components/ViewData';
 import { newAcceptSessionRequestResponse, newRejectSessionRequestResponse, newSession, newCommittment, viewSession, isApiErrorCode } from '../utils/utils';
@@ -30,12 +31,14 @@ class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
       unselectCancel=".UserReviewSessionRequest"
       headerToolbar={false}
       allDaySlot={false}
+      height="auto"
       slotMinTime="08:00"
       slotMaxTime="18:00"
+      slotDuration="00:15:00"
       selectable={true}
       selectMirror={true}
       initialDate={this.props.sessionRequest.startTime}
-      height="auto"
+      datesSet={({ view }) => /* Keeps window size in sync */view.calendar.updateSize()}
       select={(dsa: DateSelectArg) => {
         setStartTime(dsa.start.valueOf());
         setDuration(dsa.end.valueOf() - dsa.start.valueOf());
@@ -65,20 +68,45 @@ class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
             apiKey: this.props.apiKey.key
           });
 
-          return isApiErrorCode(maybeSessions) ? [] : maybeSessions.map((x: Session): EventInput => ({
-            id: `Session:${x.sessionId}`,
-            title: x.name,
-            color: x.sessionId === this.props.sessionId ? "#3788D8" : "#6C757D",
-            start: new Date(x.startTime),
-            end: new Date(x.startTime + x.duration),
-          }));
+          return isApiErrorCode(maybeSessions) ? [] : maybeSessions.map(s => sessionToEvent(s, "INSTRUCTOR"));
         },
         [{
-          start: this.props.sessionRequest.startTime,
-          end: this.props.sessionRequest.startTime + this.props.sessionRequest.duration,
-          display: "background",
+          id: `SessionRequest:${this.props.sessionRequest.sessionRequestId}`,
+          start: new Date(this.props.sessionRequest.startTime),
+          end: new Date(this.props.sessionRequest.startTime + this.props.sessionRequest.duration),
+          color: "#00000000",
+          borderColor: "#00000000",
+          display:"background",
+          sessionRequest: this.props.sessionRequest,
         }],
       ]}
+      eventContent={(eventInfo) => {
+        const props = eventInfo.event.extendedProps;
+        switch (eventInfo.event.id.split(':')[0]) {
+          case "Session": {
+            return <Card
+              bg={this.props.sessionId === props.session.sessionId
+                ? "primary"
+                : "secondary"}
+              className="h-100 w-75 text-light overflow-hidden">
+              <small>{eventInfo.event.extendedProps.session.name}</small>
+            </Card>
+          }
+          case "SessionRequest": {
+            return <div className="h-100 w-100 bg-success" />
+          }
+          default: {
+            return "New Event";
+            /* TODO
+            return <Card
+              bg="primary"
+              className="h-100 w-75 text-light overflow-hidden">
+              <small>New Event</small>
+            </Card>
+            */
+          }
+        }
+      }}
     />
   }
 }
@@ -292,6 +320,51 @@ function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
                 onChange={fprops.handleChange}
               />
             </Form.Group>
+            <br />
+            <Form.Group hidden={fprops.values.startTime === null || fprops.values.duration === null} >
+              <Form.Label>New Session Name</Form.Label>
+              <Form.Control
+                name="newSessionName"
+                type="text"
+                placeholder={`${defaultSessionName} (default)`}
+                value={fprops.values.newSessionName}
+                onChange={fprops.handleChange}
+                isInvalid={!!fprops.errors.newSessionName}
+              />
+              <Form.Text className="text-danger">{fprops.errors.newSessionName}</Form.Text>
+            </Form.Group>
+            <Form.Group hidden={fprops.values.startTime === null || fprops.values.duration === null} >
+              <Form.Check
+                name="newSessionPublic"
+                checked={fprops.values.newSessionPublic}
+                onChange={fprops.handleChange}
+                label="New session visible to all students"
+                isInvalid={!!fprops.errors.newSessionPublic}
+                feedback={fprops.errors.newSessionPublic}
+              />
+            </Form.Group>
+            <Form.Group>
+              <ToggleButton
+                key={0}
+                type="radio"
+                name="radio"
+                value="ACCEPT"
+                checked={fprops.values.accepted === true}
+                onChange={_ => fprops.setFieldValue("accepted", true)}
+                className="btn-success"
+              > Accept </ToggleButton>
+              <ToggleButton
+                key={1}
+                type="radio"
+                name="radio"
+                value="REJECT"
+                checked={fprops.values.accepted === false}
+                onChange={_ => fprops.setFieldValue("accepted", false)}
+                className="btn-danger"
+              > Reject </ToggleButton>
+              <br />
+              <Form.Text className="text-danger">{fprops.errors.accepted}</Form.Text>
+            </Form.Group>
           </Col>
           <Col>
             <Form.Group>
@@ -314,50 +387,6 @@ function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
           </Col>
         </Row>
         <br />
-        <Form.Group hidden={fprops.values.startTime === null || fprops.values.duration === null} >
-          <Form.Label>New Session Name</Form.Label>
-          <Form.Control
-            name="newSessionName"
-            type="text"
-            placeholder={`${defaultSessionName} (default)`}
-            value={fprops.values.newSessionName}
-            onChange={fprops.handleChange}
-            isInvalid={!!fprops.errors.newSessionName}
-          />
-          <Form.Text className="text-danger">{fprops.errors.newSessionName}</Form.Text>
-        </Form.Group>
-        <Form.Group hidden={fprops.values.startTime === null || fprops.values.duration === null} >
-          <Form.Check
-            name="newSessionPublic"
-            checked={fprops.values.newSessionPublic}
-            onChange={fprops.handleChange}
-            label="New session visible to all students"
-            isInvalid={!!fprops.errors.newSessionPublic}
-            feedback={fprops.errors.newSessionPublic}
-          />
-        </Form.Group>
-        <Form.Group>
-          <ToggleButton
-            key={0}
-            type="radio"
-            name="radio"
-            value="ACCEPT"
-            checked={fprops.values.accepted === true}
-            onChange={_ => fprops.setFieldValue("accepted", true)}
-            className="btn-success"
-          > Accept </ToggleButton>
-          <ToggleButton
-            key={1}
-            type="radio"
-            name="radio"
-            value="REJECT"
-            checked={fprops.values.accepted === false}
-            onChange={_ => fprops.setFieldValue("accepted", false)}
-            className="btn-danger"
-          > Reject </ToggleButton>
-          <br />
-          <Form.Text className="text-danger">{fprops.errors.accepted}</Form.Text>
-        </Form.Group>
         <Button type="submit" >Submit</Button>
         <br />
         <Form.Text className="text-danger">{fprops.status}</Form.Text>

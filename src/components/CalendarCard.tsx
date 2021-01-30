@@ -1,16 +1,17 @@
 import React from "react";
+import {Card } from "react-bootstrap";
 import { EventContentArg } from "@fullcalendar/react"
 
 function SessionRequestCard(props: { sessionRequest: SessionRequest }) {
   const sessionRequest = props.sessionRequest;
   return (
-    <div className="px-1 py-1 h-100 w-100 bg-danger text-light overflow-hidden" >
+    <Card className="px-1 py-1 h-100 w-100 bg-danger text-light overflow-hidden" >
       Course: {sessionRequest.course.name}
       <br />
       From: {sessionRequest.attendee.name}
       <br />
       Msg: {sessionRequest.message}
-    </div>
+    </Card>
   )
 }
 
@@ -20,55 +21,55 @@ function SessionRequestResponseCard(props: { sessionRequestResponse: SessionRequ
 
   if (sessionRequestResponse.accepted) {
     return (
-      <div className="px-1 py-1 h-100 w-100 bg-primary text-light overflow-hidden" >
+      <Card className="px-1 py-1 h-100 w-100 bg-primary text-light overflow-hidden" >
         Appt: {sessionRequestResponse.committment!.session.name}
       <br />
         Course: {sessionRequestResponse.committment!.session.course.name}
       <br/>
         Message: {sessionRequestResponse.message}
-      </div>
+      </Card>
     )
   }
   return (
-    <div className="px-1 py-1 h-100 w-100 bg-light text-dark overflow-hidden" >
+    <Card className="px-1 py-1 h-100 w-100 bg-light text-dark overflow-hidden" >
       Course: {sessionRequestResponse.sessionRequest.course.name}
       <br />
       From: {sessionRequestResponse.sessionRequest.course.name}
       <br />
       Response: {sessionRequestResponse.message}
-    </div>
+    </Card>
   )
 }
 
 function SessionCard(props: { session: Session }) {
   const session = props.session;
-  return <div className="px-1 py-1 h-100 w-100 bg-primary text-light overflow-hidden">
+  return <Card className="px-1 py-1 h-100 w-100 bg-primary text-light overflow-hidden">
     {session.name}
-  </div>
+  </Card>
 }
 
 // Committment
 function CommittmentCard(props: { committment: Committment }) {
   const committment = props.committment;
   return (
-    <div className="px-1 py-1 h-100 w-100 bg-primary text-light overflow-hidden" >
+    <Card className="px-1 py-1 h-100 w-100 bg-primary text-light overflow-hidden" >
       Appt: {committment.session.name}
       <br />
       Course: {committment.session.course.name}
-    </div>
+    </Card>
   )
 }
 
 function CommittmentResponseCard(props: { committmentResponse: CommittmentResponse }) {
   const committmentResponse = props.committmentResponse;
   return (
-    <div className="px-1 py-1 h-100 w-100 bg-success text-light overflow-hidden" >
+    <Card className="px-1 py-1 h-100 w-100 bg-success text-light overflow-hidden" >
       Appt: {committmentResponse.committment.session.name}
       <br />
       Attendee: {committmentResponse.committment.attendee.name}
       <br />
       Status: {committmentResponse.kind}
-    </div>
+    </Card>
   )
 }
 

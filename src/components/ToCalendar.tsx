@@ -5,6 +5,7 @@ export const sessionToEvent = (x: Session, relation: CourseMembershipKind): Even
   start: new Date(x.startTime),
   end: new Date(x.startTime + x.duration),
   color: "#00000000",
+  borderColor: "#00000000",
   session: x,
   relation
 });
@@ -14,6 +15,7 @@ export const sessionRequestToEvent = (x: SessionRequest, relation: CourseMembers
   start: new Date(x.startTime),
   end: new Date(x.startTime + x.duration),
   color: "#00000000",
+  borderColor: "#00000000",
   sessionRequest: x,
   relation
 })
@@ -25,6 +27,7 @@ export const sessionRequestResponseToEvent = (x: SessionRequestResponse, relatio
       start: new Date(x.committment!.session.startTime),
       end: new Date(x.committment!.session.startTime + x.committment!.session.duration),
       color: "#00000000",
+      borderColor: "#00000000",
       sessionRequestResponse: x,
       relation
     }
@@ -33,6 +36,7 @@ export const sessionRequestResponseToEvent = (x: SessionRequestResponse, relatio
       start: new Date(x.sessionRequest.startTime),
       end: new Date(x.sessionRequest.startTime + x.sessionRequest.duration),
       color: "#00000000",
+      borderColor: "#00000000",
       sessionRequestResponse: x,
       relation
     }
@@ -42,6 +46,7 @@ export const committmentToEvent = (x: Committment, relation: CourseMembershipKin
   start: new Date(x.session.startTime),
   end: new Date(x.session.startTime + x.session.duration),
   color: "#00000000",
+  borderColor: "#00000000",
   committment: x,
   relation
 })
@@ -51,6 +56,7 @@ export const committmentResponseToEvent = (x: CommittmentResponse, relation: Cou
   start: new Date(x.committment.session.startTime),
   end: new Date(x.committment.session.startTime + x.committment.session.duration),
   color: "#00000000",
+  borderColor: "#00000000",
   committmentResponse: x,
   relation
 })
