@@ -315,8 +315,7 @@ function EventCalendar(props: EventCalendarProps) {
     };
   }
 
-  return (
-    <div>
+  return <>
       <FullCalendar
         {...showAllHoursProps}
         ref={calendarRef}
@@ -327,8 +326,10 @@ function EventCalendar(props: EventCalendarProps) {
           right: 'timeGridDay,timeGridWeek',
         }}
         initialView='timeGridWeek'
-        height={"80vh"}
+        height={"auto"}
+        datesSet={({view}) => /* Keeps window size in sync */view.calendar.updateSize()}
         allDaySlot={false}
+        slotDuration="00:15:00"
         nowIndicator={true}
         editable={false}
         selectable={true}
@@ -337,7 +338,6 @@ function EventCalendar(props: EventCalendarProps) {
         eventContent={CalendarCard}
         unselectCancel=".modal-content"
         eventClick={clickHandler}
-        expandRows={true}
         businessHours={{
           daysOfWeek: [1, 2, 3, 4, 5], // MTWHF
           startTime: "08:00", // 8am
@@ -480,9 +480,7 @@ function EventCalendar(props: EventCalendarProps) {
           <ViewCommittmentResponse committmentResponse={selectedCommittmentResponse} expanded />
         </DisplayModal>
       }
-
-    </div>
-  )
+  </>
 }
 
 function Calendar(props: AuthenticatedComponentProps) {
