@@ -4,7 +4,7 @@ import SearchSingleCourse from '../components/SearchSingleCourse';
 import { Formik, FormikHelpers } from 'formik';
 
 import { Row, Col, Button, Form } from 'react-bootstrap';
-import { newSession, newCommittment, viewCourseMembership, isApiErrorCode } from '../utils/utils';
+import { newSession, newCommittment, viewCourseMembership, viewCourseData, isApiErrorCode } from '../utils/utils';
 import format from 'date-fns/format';
 
 type CreateSessionProps = {
@@ -45,7 +45,6 @@ function CreateSession(props: CreateSessionProps) {
 
     const maybeSession = await newSession({
       name: sessionName,
-      locationId: 0,
       courseId: values.courseId,
       startTime: props.start,
       duration: props.duration,
@@ -205,11 +204,26 @@ function CreateSession(props: CreateSessionProps) {
                     onlyRecent: true,
                     apiKey: props.apiKey.key,
                   });
-                  return isApiErrorCode(maybeCourseMemberships) ? [] : maybeCourseMemberships.map(x => x.course)
+
+                  if(isApiErrorCode(maybeCourseMemberships)) {
+                      return[];
+                  }
+
+                  return (await Promise.all(maybeCourseMemberships.map(async a => {
+                    const maybeCourseData = await viewCourseData({
+                      courseId: a.course.courseId,
+                      onlyRecent: true,
+                      apiKey: props.apiKey.key
+                    });
+                    if (isApiErrorCode(maybeCourseData)) {
+                      return [];
+                    }
+                    return maybeCourseData;
+                  }))).flat();
                 }}
                 isInvalid={fprops.status.courseId !== ""}
-                setFn={(e: Course | null) => {
-                  fprops.setFieldValue("courseId", e?.courseId)
+                setFn={(e: CourseData | null) => {
+                  fprops.setFieldValue("courseId", e?.course.courseId)
                   // set student list to blank to ensure students are in the course
                   fprops.setFieldValue("studentList", []);
                 }} />

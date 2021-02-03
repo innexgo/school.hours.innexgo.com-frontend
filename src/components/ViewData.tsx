@@ -1,6 +1,9 @@
 import React from 'react'
+import { Async, AsyncProps } from 'react-async';
 import { Table } from 'react-bootstrap';
+import Loader from '../components/Loader';
 import format from 'date-fns/format';
+import { isApiErrorCode, viewSchoolData, viewCourseData, viewSessionData } from "../utils/utils";
 
 const ToggleExpandButton = (props: { expand: boolean, setExpand: (b: boolean) => void }) =>
   <button className="btn btn-link px-0 py-0 float-right"
@@ -12,64 +15,136 @@ const ToggleExpandButton = (props: { expand: boolean, setExpand: (b: boolean) =>
     {props.expand ? "Less" : "More"}
   </button>
 
+
+const loadCourseData = async (props: AsyncProps<CourseData>) => {
+  const maybeCourseData = await viewCourseData({
+    courseId: props.courseId,
+    onlyRecent: true,
+    apiKey: props.apiKey.key,
+  });
+
+  if (isApiErrorCode(maybeCourseData)) {
+    throw Error;
+  }
+  // there's an invariant that there must always be one course data per valid course id
+  return maybeCourseData[0];
+}
+
+const loadSchoolData = async (props: AsyncProps<SchoolData>) => {
+  const maybeSchoolData = await viewSchoolData({
+    schoolId: props.schoolId,
+    onlyRecent: true,
+    apiKey: props.apiKey.key,
+  });
+
+  if (isApiErrorCode(maybeSchoolData)) {
+    throw Error;
+  }
+  // there's an invariant that there must always be one school data per valid school id
+  return maybeSchoolData[0];
+}
+
+const loadSessionData = async (props: AsyncProps<SessionData>) => {
+  const maybeSessionData = await viewSessionData({
+    sessionId: props.sessionId,
+    onlyRecent: true,
+    apiKey: props.apiKey.key,
+  });
+
+  if (isApiErrorCode(maybeSessionData)) {
+    throw Error;
+  }
+  // there's an invariant that there must always be one session data per valid session id
+  return maybeSessionData[0];
+}
+
 export const ViewSchool = (props: {
   school: School,
+  apiKey: ApiKey,
   expanded: boolean
 }) => {
   const [expanded, setExpanded] = React.useState(props.expanded);
-  if (!expanded) {
-    return <span>
-      {props.school.name}
-      <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
-    </span>
-  } else {
-    return <div>
-      <Table hover bordered>
-        <tbody>
-          <tr>
-            <th>Name</th>
-            <td>{props.school.name}</td>
-          </tr>
-        </tbody>
-      </Table>
-      <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
-    </div>
-  }
+  return <Async promiseFn={loadSchoolData}
+    apiKey={props.apiKey}
+    schoolId={props.school.schoolId}>
+    {_ => <>
+      <Async.Pending><Loader /></Async.Pending>
+      <Async.Rejected>
+        <span className="text-danger">An unknown error has occured.</span>
+      </Async.Rejected>
+      <Async.Fulfilled<SchoolData>>{schoolData =>
+        expanded
+          ? <span>
+            {schoolData.name}
+            <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
+          </span>
+          : <div>
+            <Table hover bordered>
+              <tbody>
+                <tr>
+                  <th>Name</th>
+                  <td>{schoolData.name}</td>
+                </tr>
+                <tr>
+                  <th>Description</th>
+                  <td>{schoolData.description}</td>
+                </tr>
+              </tbody>
+            </Table>
+            <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
+          </div>
+      }
+      </Async.Fulfilled>
+    </>}
+  </Async>
 }
 
 
 export const ViewCourse = (props: {
   course: Course,
+  apiKey: ApiKey,
   expanded: boolean
 }) => {
   const [expanded, setExpanded] = React.useState(props.expanded);
-  if (!expanded) {
-    return <span>
-      {props.course.name}
-      <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
-    </span>
-  } else {
-    return <div>
-      <Table hover bordered>
-        <tbody>
-          <tr>
-            <th>Name</th>
-            <td>{props.course.name}</td>
-          </tr>
-          <tr>
-            <th>Description</th>
-            <td>{props.course.description}</td>
-          </tr>
-        </tbody>
-      </Table>
-      <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
-    </div>
-  }
+  return <Async promiseFn={loadCourseData}
+    apiKey={props.apiKey}
+    courseId={props.course.courseId}>
+    {_ => <>
+      <Async.Pending><Loader /></Async.Pending>
+      <Async.Rejected>
+        <span className="text-danger">An unknown error has occured.</span>
+      </Async.Rejected>
+      <Async.Fulfilled<CourseData>>{courseData =>
+        expanded ?
+          <span>
+            {courseData.name}
+            <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
+          </span>
+          : <div>
+            <Table hover bordered>
+              <tbody>
+                <tr>
+                  <th>Name</th>
+                  <td>{courseData.name}</td>
+                </tr>
+                <tr>
+                  <th>Description</th>
+                  <td>{courseData.description}</td>
+                </tr>
+              </tbody>
+            </Table>
+            <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
+          </div>
+      }
+      </Async.Fulfilled>
+    </>}
+  </Async>
 }
 
 
 export const ViewUser = (props: {
   user: User,
+  apiKey: ApiKey,
   expanded: boolean
 }) => {
   const [expanded, setExpanded] = React.useState(props.expanded);
@@ -99,55 +174,68 @@ export const ViewUser = (props: {
 
 export const ViewSession = (props: {
   session: Session,
+  apiKey: ApiKey,
   expanded: boolean
 }) => {
   const [expanded, setExpanded] = React.useState(props.expanded);
-  if (!expanded) {
-    return <span>
-      {props.session.name} - {format(props.session.startTime, "MMM do")}
-      <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
-    </span>
-  } else {
-    return <div>
-      <Table hover bordered>
-        <tbody>
-          <tr>
-            <th>Name</th>
-            <td>{props.session.name} </td>
-          </tr>
-          <tr>
-            <th>Date</th>
-            <td>{format(props.session.startTime, "MMM do")} </td>
-          </tr>
-          <tr>
-            <th>Time</th>
-            <td>
-              {format(props.session.startTime, "h:mm a - ")}
-              {format(props.session.startTime + props.session.duration, "h:mm a")}
-            </td>
-          </tr>
-          <tr>
-            <th>Private</th>
-            <td>{`${props.session.hidden}`}</td>
-          </tr>
-          <tr>
-            <th>Course</th>
-            <td><ViewCourse course={props.session.course} expanded={false} /></td>
-          </tr>
-        </tbody>
-      </Table>
-      <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
-    </div>
-  }
+  return <Async promiseFn={loadSessionData}
+    apiKey={props.apiKey}
+    sessionId={props.session.sessionId}>
+    {_ => <>
+      <Async.Pending><Loader /></Async.Pending>
+      <Async.Rejected>
+        <span className="text-danger">An unknown error has occured.</span>
+      </Async.Rejected>
+      <Async.Fulfilled<SessionData>>{sessionData =>
+        expanded
+          ? <span>
+            {sessionData.name} - {format(sessionData.startTime, "MMM do")}
+            <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
+          </span>
+          : <div>
+            <Table hover bordered>
+              <tbody>
+                <tr>
+                  <th>Name</th>
+                  <td>{sessionData.name} </td>
+                </tr>
+                <tr>
+                  <th>Date</th>
+                  <td>{format(sessionData.startTime, "MMM do")} </td>
+                </tr>
+                <tr>
+                  <th>Time</th>
+                  <td>
+                    {format(sessionData.startTime, "h:mm a - ")}
+                    {format(sessionData.startTime + sessionData.duration, "h:mm a")}
+                  </td>
+                </tr>
+                <tr>
+                  <th>Private</th>
+                  <td>{`${sessionData.hidden}`}</td>
+                </tr>
+                <tr>
+                  <th>Course</th>
+                  <td><ViewCourse course={props.session.course} apiKey={props.apiKey} expanded={false} /></td>
+                </tr>
+              </tbody>
+            </Table>
+            <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
+          </div>
+      }
+      </Async.Fulfilled>
+    </>}
+  </Async>
 }
 
 export const ViewSessionRequest = (props: {
   sessionRequest: SessionRequest,
+  apiKey: ApiKey,
   expanded: boolean
 }) => {
   const [expanded, setExpanded] = React.useState(props.expanded);
   if (!expanded) {
-    return <span> {props.sessionRequest.attendee.name} - {props.sessionRequest.course.name} - {format(props.sessionRequest.startTime, "MMM do")}
+    return <span> {props.sessionRequest.attendee.name} - {format(props.sessionRequest.startTime, "MMM do")}
       <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
     </span>
   } else {
@@ -175,11 +263,11 @@ export const ViewSessionRequest = (props: {
           </tr>
           <tr>
             <th>Attendee</th>
-            <td><ViewUser user={props.sessionRequest.attendee} expanded={false} /></td>
+            <td><ViewUser user={props.sessionRequest.attendee} apiKey={props.apiKey} expanded={false} /></td>
           </tr>
           <tr>
             <th>Course</th>
-            <td><ViewCourse course={props.sessionRequest.course} expanded={false} /></td>
+            <td><ViewCourse course={props.sessionRequest.course} apiKey={props.apiKey} expanded={false} /></td>
           </tr>
         </tbody>
       </Table>
@@ -190,12 +278,13 @@ export const ViewSessionRequest = (props: {
 
 export const ViewSessionRequestResponse = (props: {
   sessionRequestResponse: SessionRequestResponse,
+  apiKey: ApiKey,
   expanded: boolean
 }) => {
   const [expanded, setExpanded] = React.useState(props.expanded);
   if (!expanded) {
     return <span>
-      {props.sessionRequestResponse.sessionRequest.attendee.name} - {props.sessionRequestResponse.sessionRequest.course.name} - {format(props.sessionRequestResponse.sessionRequest.startTime, "MMM do")}
+      {props.sessionRequestResponse.sessionRequest.attendee.name} - {props.sessionRequestResponse.accepted ? "ACCEPTED" : "REJECTED"}
       <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
     </span>
   } else {
@@ -204,7 +293,7 @@ export const ViewSessionRequestResponse = (props: {
         <tbody>
           <tr>
             <th>Request</th>
-            <td><ViewSessionRequest sessionRequest={props.sessionRequestResponse.sessionRequest} expanded /></td>
+            <td><ViewSessionRequest sessionRequest={props.sessionRequestResponse.sessionRequest} apiKey={props.apiKey} expanded /></td>
           </tr>
           <tr>
             <th>Response Time</th>
@@ -222,7 +311,7 @@ export const ViewSessionRequestResponse = (props: {
             ? <> </>
             : <tr>
               <th>Committment </th>
-              <td><ViewCommittment committment={props.sessionRequestResponse.committment} expanded={false} /></td>
+              <td><ViewCommittment committment={props.sessionRequestResponse.committment} apiKey={props.apiKey} expanded={false} /></td>
             </tr>
           }
         </tbody>
@@ -235,40 +324,53 @@ export const ViewSessionRequestResponse = (props: {
 
 export const ViewCommittment = (props: {
   committment: Committment,
+  apiKey: ApiKey,
   expanded: boolean
 }) => {
   const [expanded, setExpanded] = React.useState(props.expanded);
-  if (!expanded) {
-    return <span>
-      {format(props.committment.session.startTime, "h:mm a - ")}
-      {format(props.committment.session.startTime + props.committment.session.duration, "h:mm a")}
-      <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
-    </span>
-  } else {
-    return <div>
-      <Table hover bordered>
-        <tbody>
-          <tr>
-            <th>Session</th>
-            <td><ViewSession session={props.committment.session} expanded /></td>
-          </tr>
-          <tr>
-            <th>Attendee</th>
-            <td><ViewUser user={props.committment.attendee} expanded={false} /></td>
-          </tr>
-          <tr>
-            <th>Mandatory</th>
-            <td>{props.committment.cancellable ? "Yes" : "No"}</td>
-          </tr>
-        </tbody>
-      </Table>
-      <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
-    </div>
-  }
+  return <Async promiseFn={loadSessionData}
+    apiKey={props.apiKey}
+    sessionId={props.committment.session.sessionId}>
+    {_ => <>
+      <Async.Pending><Loader /></Async.Pending>
+      <Async.Rejected>
+        <span className="text-danger">An unknown error has occured.</span>
+      </Async.Rejected>
+      <Async.Fulfilled<SessionData>>{sessionData =>
+        expanded
+          ? <span>
+            {format(sessionData.startTime, "h:mm a - ")}
+            {format(sessionData.startTime + sessionData.duration, "h:mm a")}
+            <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
+          </span>
+          : <div>
+            <Table hover bordered>
+              <tbody>
+                <tr>
+                  <th>Session</th>
+                  <td><ViewSession session={props.committment.session} apiKey={props.apiKey} expanded /></td>
+                </tr>
+                <tr>
+                  <th>Attendee</th>
+                  <td><ViewUser user={props.committment.attendee} apiKey={props.apiKey} expanded={false} /></td>
+                </tr>
+                <tr>
+                  <th>Mandatory</th>
+                  <td>{props.committment.cancellable ? "Yes" : "No"}</td>
+                </tr>
+              </tbody>
+            </Table>
+            <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
+          </div>
+      }
+      </Async.Fulfilled>
+    </>}
+  </Async>
 }
 
 export const ViewCommittmentResponse = (props: {
   committmentResponse: CommittmentResponse,
+  apiKey: ApiKey,
   expanded: boolean
 }) => {
   const [expanded, setExpanded] = React.useState(props.expanded);
@@ -276,7 +378,6 @@ export const ViewCommittmentResponse = (props: {
     return <span>
       {props.committmentResponse.kind}
       <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
-
     </span>
   } else {
     return <div>
@@ -284,7 +385,7 @@ export const ViewCommittmentResponse = (props: {
         <tbody>
           <tr>
             <th>Committment</th>
-            <td><ViewCommittment committment={props.committmentResponse.committment} expanded /></td>
+            <td><ViewCommittment committment={props.committmentResponse.committment} apiKey={props.apiKey} expanded /></td>
           </tr>
           <tr>
             <th>Date Taken</th>

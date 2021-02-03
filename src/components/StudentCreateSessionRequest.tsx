@@ -2,7 +2,7 @@ import React from "react"
 import SearchSingleCourse from "../components/SearchSingleCourse";
 import { Formik, FormikHelpers } from "formik";
 import { Row, Col, Button, Form } from "react-bootstrap";
-import { newSessionRequest, viewCourseMembership, isApiErrorCode } from "../utils/utils";
+import { newSessionRequest, viewCourseMembership, viewCourseData, isApiErrorCode } from "../utils/utils";
 import format from "date-fns/format";
 
 type StudentCreateSessionRequestProps = {
@@ -128,16 +128,31 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
                 name="courseId"
                 search={async (input: string) => {
                   const maybeCourseMemberships = await viewCourseMembership({
-                    partialCourseName: input,
-                    courseMembershipKind: "STUDENT",
                     userId: props.apiKey.creator.userId,
+                    courseMembershipKind:"STUDENT",
+                    partialCourseName: input,
                     onlyRecent: true,
                     apiKey: props.apiKey.key,
                   });
-                  return isApiErrorCode(maybeCourseMemberships) ? [] : maybeCourseMemberships.map(x => x.course)
+
+                  if (isApiErrorCode(maybeCourseMemberships)) {
+                    return [];
+                  }
+
+                  return (await Promise.all(maybeCourseMemberships.map(async cm => {
+                    const maybeCourseData = await viewCourseData({
+                      courseId: cm.course.courseId,
+                      onlyRecent: true,
+                      apiKey: props.apiKey.key
+                    });
+                    if (isApiErrorCode(maybeCourseData)) {
+                      return [];
+                    }
+                    return maybeCourseData;
+                  }))).flat();
                 }}
                 isInvalid={fprops.status.courseId !== ""}
-                setFn={(e: Course | null) => fprops.setFieldValue("courseId", e?.courseId)} />
+                setFn={(e: CourseData | null) => fprops.setFieldValue("courseId", e?.course.courseId)} />
               <Form.Text className="text-danger">{fprops.status.courseId}</Form.Text>
             </Col>
           </Form.Group>

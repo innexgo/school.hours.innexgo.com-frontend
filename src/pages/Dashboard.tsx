@@ -10,7 +10,7 @@ import DisplayModal from '../components/DisplayModal';
 import UserCreateSchool from '../components/UserCreateSchool';
 import UserCreateCourse from '../components/UserCreateCourse';
 import UserCreateCourseMembership from '../components/UserCreateCourseMembership';
-import { viewSubscription, viewAdminship, viewCourseMembership, isApiErrorCode } from '../utils/utils';
+import { viewSubscription, viewAdminship, viewSchoolData, viewCourseData, viewCourseMembership, isApiErrorCode } from '../utils/utils';
 
 type ResourceCardProps = {
   title: string,
@@ -33,6 +33,92 @@ function ResourceCard(props: ResourceCardProps) {
   )
 }
 
+const loadCourseData = async (props: AsyncProps<CourseData>) => {
+  const maybeCourseData = await viewCourseData({
+    courseId: props.courseId,
+    onlyRecent: true,
+    apiKey: props.apiKey.key,
+  });
+
+  if (isApiErrorCode(maybeCourseData)) {
+    throw Error;
+  }
+  // there's an invariant that there must always be one course data per valid course id
+  return maybeCourseData[0];
+}
+
+const loadSchoolData = async (props: AsyncProps<SchoolData>) => {
+  const maybeSchoolData = await viewSchoolData({
+    schoolId: props.schoolId,
+    onlyRecent: true,
+    apiKey: props.apiKey.key,
+  });
+
+  if (isApiErrorCode(maybeSchoolData)) {
+    throw Error;
+  }
+  // there's an invariant that there must always be one school data per valid school id
+  return maybeSchoolData[0];
+}
+
+
+type SchoolCardProps = {
+  school: School,
+  apiKey: ApiKey,
+}
+
+
+function SchoolCard(props: SchoolCardProps) {
+  return <Async promiseFn={loadSchoolData}
+    apiKey={props.apiKey}
+    schoolId={props.school.schoolId}>
+    {_ => <>
+      <Async.Pending><Loader /></Async.Pending>
+      <Async.Rejected>
+        <span className="text-danger">An unknown error has occured.</span>
+      </Async.Rejected>
+      <Async.Fulfilled<SchoolData>>{schoolData =>
+        <ResourceCard
+          title={schoolData.name}
+          subtitle=""
+          text={schoolData.description}
+          href={`/admin_manage_school?schoolId=${props.school.schoolId}`}
+        />
+      }
+      </Async.Fulfilled>
+    </>}
+  </Async>
+}
+
+type CourseCardProps = {
+  course: Course,
+  role: CourseMembershipKind,
+  apiKey: ApiKey,
+};
+
+function CourseCard(props: CourseCardProps) {
+  return <Async promiseFn={loadCourseData}
+    apiKey={props.apiKey}
+    courseId={props.course.courseId}>
+    {_ => <>
+      <Async.Pending><Loader /></Async.Pending>
+      <Async.Rejected>
+        <span className="text-danger">An unknown error has occured.</span>
+      </Async.Rejected>
+      <Async.Fulfilled<CourseData>>{courseData =>
+        <ResourceCard
+          title={courseData.name}
+          subtitle={props.role}
+          text={courseData.description}
+          href={props.role === "INSTRUCTOR"
+            ? `/instructor_manage_course?courseId=${props.course.courseId}`
+            : `/student_manage_course?courseId=${props.course.courseId}`}
+        />
+      }
+      </Async.Fulfilled>
+    </>}
+  </Async>
+}
 
 type AddNewCardProps = {
   setShow: (a: boolean) => void,
@@ -120,12 +206,7 @@ function Dashboard(props: AuthenticatedComponentProps) {
                   <div className="d-flex flex-wrap">
                     {ddata.adminships.map((a: Adminship) =>
                       <div className="my-3 mx-3">
-                        <ResourceCard
-                          title={a.school.name}
-                          subtitle=""
-                          text=""
-                          href={`/admin_manage_school?schoolId=${a.school.schoolId}`}
-                        />
+                        <SchoolCard school={a.school} apiKey={props.apiKey} />
                       </div>
                     )}
                     {ddata.subscription === null
@@ -161,23 +242,9 @@ function Dashboard(props: AuthenticatedComponentProps) {
                       <div className="d-flex flex-wrap">
                         {cms
                           .filter(cm => cm.courseMembershipKind !== "CANCEL")
-                          .map((a: CourseMembership) => a.courseMembershipKind === "INSTRUCTOR"
-                            ? <div className="my-3 mx-3">
-                              <ResourceCard
-                                title={a.course.name}
-                                subtitle="Instructor"
-                                text={a.course.description}
-                                href={`/instructor_manage_course?courseId=${a.course.courseId}`}
-                              />
-                            </div>
-                            : <div className="my-3 mx-3">
-                              <ResourceCard
-                                title={a.course.name}
-                                subtitle="Student"
-                                text={a.course.description}
-                                href={`/student_manage_course?courseId=${a.course.courseId}`}
-                              />
-                            </div>)}
+                          .map((a: CourseMembership) =>
+                            <CourseCard course={a.course} role={a.courseMembershipKind} apiKey={props.apiKey} />
+                          )}
                         <div className="my-3 mx-3">
                           <AddNewCard setShow={setShowNewCourseModal} />
                           <DisplayModal

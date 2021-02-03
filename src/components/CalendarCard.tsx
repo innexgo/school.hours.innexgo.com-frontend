@@ -1,74 +1,80 @@
 import React from "react";
-import {Card } from "react-bootstrap";
+import { Card } from "react-bootstrap";
 import { EventContentArg } from "@fullcalendar/react"
 
-function SessionRequestCard(props: { sessionRequest: SessionRequest }) {
-  const sessionRequest = props.sessionRequest;
+function SessionRequestCard(props: { sessionRequest: SessionRequest; courseData: CourseData }) {
   return (
     <Card className="px-1 py-1 h-100 w-100 bg-danger text-light overflow-hidden" >
-      Course: {sessionRequest.course.name}
+      Course: {props.courseData.name}
       <br />
-      From: {sessionRequest.attendee.name}
+      From: {props.sessionRequest.attendee.name}
       <br />
-      Msg: {sessionRequest.message}
+      Msg: {props.sessionRequest.message}
     </Card>
   )
 }
 
-// Rejected Session Request
-function SessionRequestResponseCard(props: { sessionRequestResponse: SessionRequestResponse }) {
-  const sessionRequestResponse = props.sessionRequestResponse;
-
-  if (sessionRequestResponse.accepted) {
-    return (
-      <Card className="px-1 py-1 h-100 w-100 bg-primary text-light overflow-hidden" >
-        Appt: {sessionRequestResponse.committment!.session.name}
+function AcceptedSessionRequestResponseCard(props: {
+  sessionRequestResponse: SessionRequestResponse;
+  courseData: CourseData;
+  sessionData: SessionData
+}) {
+  return (
+    <Card className="px-1 py-1 h-100 w-100 bg-primary text-light overflow-hidden" >
+      Appt: {props.sessionData.name}
       <br />
-        Course: {sessionRequestResponse.committment!.session.course.name}
-      <br/>
-        Message: {sessionRequestResponse.message}
-      </Card>
-    )
-  }
+        Course: {props.courseData.name}
+      <br />
+        Message: {props.sessionRequestResponse.message}
+    </Card>
+  )
+}
+
+function RejectedSessionRequestResponseCard(props: {
+  sessionRequestResponse: SessionRequestResponse;
+  courseData: CourseData
+}) {
   return (
     <Card className="px-1 py-1 h-100 w-100 bg-light text-dark overflow-hidden" >
-      Course: {sessionRequestResponse.sessionRequest.course.name}
+      Course: {props.courseData.name}
       <br />
-      From: {sessionRequestResponse.sessionRequest.course.name}
-      <br />
-      Response: {sessionRequestResponse.message}
+      Response: {props.sessionRequestResponse.message}
     </Card>
   )
 }
 
-function SessionCard(props: { session: Session }) {
-  const session = props.session;
+function SessionCard(props: { sessionData: SessionData }) {
+  const sessionData = props.sessionData;
   return <Card className="px-1 py-1 h-100 w-100 bg-primary text-light overflow-hidden">
-    {session.name}
+    {sessionData.name}
   </Card>
 }
 
 // Committment
-function CommittmentCard(props: { committment: Committment }) {
-  const committment = props.committment;
+function CommittmentCard(props: {
+  courseData: CourseData;
+  sessionData: SessionData
+}) {
   return (
     <Card className="px-1 py-1 h-100 w-100 bg-primary text-light overflow-hidden" >
-      Appt: {committment.session.name}
+      Appt: {props.sessionData.name}
       <br />
-      Course: {committment.session.course.name}
+      Course: {props.courseData.name}
     </Card>
   )
 }
 
-function CommittmentResponseCard(props: { committmentResponse: CommittmentResponse }) {
-  const committmentResponse = props.committmentResponse;
+function CommittmentResponseCard(props: {
+  sessionData: SessionData,
+  committmentResponse: CommittmentResponse
+}) {
   return (
     <Card className="px-1 py-1 h-100 w-100 bg-success text-light overflow-hidden" >
-      Appt: {committmentResponse.committment.session.name}
+      Appt: {props.sessionData.name}
       <br />
-      Attendee: {committmentResponse.committment.attendee.name}
+      Attendee: {props.committmentResponse.committment.attendee.name}
       <br />
-      Status: {committmentResponse.kind}
+      Status: {props.committmentResponse.kind}
     </Card>
   )
 }
@@ -77,15 +83,32 @@ function CalendarCard(eventInfo: EventContentArg) {
   const props = eventInfo.event.extendedProps;
   switch (eventInfo.event.id.split(':')[0]) {
     case "SessionRequest":
-      return <SessionRequestCard sessionRequest={props.sessionRequest} />
+      return <SessionRequestCard sessionRequest={props.sessionRequest}
+        courseData={props.courseData} />
     case "SessionRequestResponse":
-      return <SessionRequestResponseCard sessionRequestResponse={props.sessionRequestResponse} />
+      if (props.sessionRequestResponse.accepted) {
+        return <AcceptedSessionRequestResponseCard
+          sessionRequestResponse={props.sessionRequestResponse}
+          courseData={props.courseData}
+          sessionData={props.sessionData} />
+      } else {
+        return <RejectedSessionRequestResponseCard
+          sessionRequestResponse={props.sessionRequestResponse}
+          courseData={props.courseData}
+        />
+      }
     case "Session":
-      return <SessionCard session={props.session} />
+      return <SessionCard sessionData={props.sessionData} />
     case "CommittmentResponse":
-      return <CommittmentResponseCard committmentResponse={props.committmentResponse} />
+      return <CommittmentResponseCard
+        committmentResponse={props.committmentResponse}
+        sessionData={props.sessionData}
+      />
     case "Committment":
-      return <CommittmentCard committment={props.committment} />
+      return <CommittmentCard
+        courseData={props.courseData}
+        sessionData={props.sessionData}
+      />
   }
 }
 

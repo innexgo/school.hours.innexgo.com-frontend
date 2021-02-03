@@ -93,7 +93,7 @@ function StudentManageSessionRequest(props: StudentManageSessionRequestProps) {
 
   return <Tabs>
     <Tab title="View Request" eventKey="view" className="pt-4">
-      <ViewSessionRequest sessionRequest={props.sessionRequest} expanded />
+      <ViewSessionRequest sessionRequest={props.sessionRequest} apiKey={props.apiKey} expanded />
     </Tab>
     <Tab title="Cancel Request" eventKey="cancel" className="pt-4">
       <Formik<CancelRequestValue>

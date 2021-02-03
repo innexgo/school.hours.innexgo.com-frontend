@@ -5,32 +5,32 @@ import { isApiErrorCode } from '../utils/utils';
 interface SearchSingleSchoolProps {
   name: string,
   disabled?: boolean,
-  search: (input: string) => Promise<School[]>,
+  search: (input: string) => Promise<SchoolData[]>,
   isInvalid: boolean,
-  setFn: (school: School | null) => void
+  setFn: (school: SchoolData | null) => void
 }
 
-type SchoolOption = {
+type SchoolDataOption = {
   label: string,
-  value: School
+  value: SchoolData
 }
 
 export default function SearchSingleSchool(props: SearchSingleSchoolProps) {
-  const promiseOptions = async function(input: string): Promise<SchoolOption[]> {
+  const promiseOptions = async function(input: string): Promise<SchoolDataOption[]> {
     const results = await props.search(input);
 
     if (isApiErrorCode(results)) {
       return [];
     }
 
-    return results.map((x: School): SchoolOption => ({
+    return results.map((x: SchoolData): SchoolDataOption => ({
       label: `${x.name}`,
       value: x
     }));
   };
 
 
-  const onChange = (opt: ValueType<SchoolOption, false>) => {
+  const onChange = (opt: ValueType<SchoolDataOption, false>) => {
     if (opt == null) {
       props.setFn(null);
     } else {

@@ -171,8 +171,8 @@ export async function newPasswordReset(props: NewPasswordResetProps): Promise<Pa
 }
 
 export type NewSubscriptionProps = {
-  subscriptionKind:SubscriptionKind,
-  apiKey:string
+  subscriptionKind: SubscriptionKind,
+  apiKey: string
 }
 
 export async function newSubscription(props: NewSubscriptionProps): Promise<Subscription | ApiErrorCode> {
@@ -220,6 +220,19 @@ export async function newCourse(props: NewCourseProps): Promise<Course | ApiErro
   return await fetchApi("course/new/", getFormData(props));
 }
 
+
+export type NewCourseDataProps = {
+  courseID: number,
+  name: string,
+  description: string,
+  active: boolean,
+  apiKey: string
+}
+
+export async function newCourseData(props: NewCourseDataProps): Promise<CourseData | ApiErrorCode> {
+  return await fetchApi("courseData/new/", getFormData(props));
+}
+
 export type NewValidCourseKeyProps = {
   courseId: number,
   courseMembershipKind: CourseMembershipKind,
@@ -263,12 +276,25 @@ export async function newKeyCourseMembership(props: NewKeyCourseMembershipProps)
 
 export type NewSchoolProps = {
   name: string,
+  description: string,
   whole: boolean,
   apiKey: string
 }
 
 export async function newSchool(props: NewSchoolProps): Promise<School | ApiErrorCode> {
   return await fetchApi("school/new/", getFormData(props));
+}
+
+export type NewSchoolDataProps = {
+  schoolId: number,
+  name: string,
+  description: string,
+  active: boolean,
+  apiKey: string
+}
+
+export async function newSchoolData(props: NewSchoolDataProps): Promise<SchoolData | ApiErrorCode> {
+  return await fetchApi("schoolData/new/", getFormData(props));
 }
 
 export type NewAdminshipRequestProps = {
@@ -298,7 +324,7 @@ export type NewCancelAdminshipProps = {
   apiKey: string
 }
 
-export async function newCancelAdminship(props: NewCancelAdminshipProps ): Promise<Adminship | ApiErrorCode> {
+export async function newCancelAdminship(props: NewCancelAdminshipProps): Promise<Adminship | ApiErrorCode> {
   return await fetchApi("adminship/newCancel/", getFormData(props));
 }
 
@@ -308,14 +334,13 @@ export type NewValidAdminshipProps = {
   apiKey: string
 }
 
-export async function newValidAdminship(props: NewValidAdminshipProps ): Promise<Adminship | ApiErrorCode> {
+export async function newValidAdminship(props: NewValidAdminshipProps): Promise<Adminship | ApiErrorCode> {
   return await fetchApi("adminship/newValid/", getFormData(props));
 }
 
 export type NewSessionProps = {
   name: string,
   courseId: number,
-  locationId: number,
   startTime: number,
   duration: number,
   hidden: boolean,
@@ -325,6 +350,22 @@ export type NewSessionProps = {
 export async function newSession(props: NewSessionProps): Promise<Session | ApiErrorCode> {
   return await fetchApi("session/new/", getFormData(props));
 }
+
+
+export type NewSessionDataProps = {
+  sessionId: number,
+  name: string,
+  startTime: number,
+  duration: number,
+  hidden: boolean,
+  active: boolean,
+  apiKey: string,
+}
+
+export async function newSessionData(props: NewSessionDataProps): Promise<SessionData | ApiErrorCode> {
+  return await fetchApi("sessionData/new/", getFormData(props));
+}
+
 
 export type NewSessionRequestProps = {
   courseId: number,
@@ -406,8 +447,6 @@ export type ViewSchoolProps = {
   minCreationTime?: number, //
   maxCreationTime?: number, //
   creatorUserId?: number, //
-  name?: string, //
-  partialName?: string, //
   whole?: boolean, //
   offset?: number,
   count?: number,
@@ -416,6 +455,28 @@ export type ViewSchoolProps = {
 
 export async function viewSchool(props: ViewSchoolProps): Promise<School[] | ApiErrorCode> {
   return await fetchApi("school/", getFormData(props));
+}
+
+export type ViewSchoolDataProps = {
+  schoolDataId?: number, //
+  creationTime?: number, //
+  minCreationTime?: number, //
+  maxCreationTime?: number, //
+  creatorUserId?: number, //
+  schoolId?: number, //
+  name?: string, //
+  partialName?: string, //
+  description?: string, //
+  partialDescription?: string, //
+  active?: boolean, //
+  onlyRecent?: boolean, //
+  offset?: number,
+  count?: number,
+  apiKey: string,
+}
+
+export async function viewSchoolData(props: ViewSchoolDataProps): Promise<SchoolData[] | ApiErrorCode> {
+  return await fetchApi("schoolData/", getFormData(props));
 }
 
 export type ViewUserProps = {
@@ -482,9 +543,6 @@ export type ViewCourseProps = {
   maxCreationTime?: number, //
   creatorUserId?: number, //
   schoolId?: number, //
-  name?: string, //
-  partialName?: string, //
-  description?: string, //
   offset?: number,
   count?: number,
   apiKey: string,
@@ -492,6 +550,29 @@ export type ViewCourseProps = {
 
 export async function viewCourse(props: ViewCourseProps): Promise<Course[] | ApiErrorCode> {
   return await fetchApi("course/", getFormData(props));
+}
+
+export type ViewCourseDataProps = {
+  courseDataId?: number, //
+  creationTime?: number, //
+  minCreationTime?: number, //
+  maxCreationTime?: number, //
+  creatorUserId?: number, //
+  courseId?: number, //
+  name?: string, //
+  partialName?: string, //
+  description?: string, //
+  partialDescription?: string, //
+  active?: boolean, //
+  onlyRecent?: boolean, //
+  schoolId?: number, //
+  offset?: number,
+  count?: number,
+  apiKey: string,
+}
+
+export async function viewCourseData(props: ViewCourseDataProps): Promise<CourseData[] | ApiErrorCode> {
+  return await fetchApi("courseData/", getFormData(props));
 }
 
 export type ViewCourseKeyProps = {
@@ -612,7 +693,22 @@ export type ViewSessionProps = {
   maxCreationTime?: number, //
   creatorUserId?: number, //
   courseId?: number, //
-  locationId?: number, //
+  offset?: number,
+  count?: number,
+  apiKey: string,
+}
+
+export async function viewSession(props: ViewSessionProps): Promise<Session[] | ApiErrorCode> {
+  return await fetchApi("session/", getFormData(props));
+}
+
+export type ViewSessionDataProps = {
+  sessionDataId?: number, //
+  creationTime?: number, //
+  minCreationTime?: number, //
+  maxCreationTime?: number, //
+  creatorUserId?: number, //
+  sessionId?: number, //
   name?: string, //
   partialName?: string, //
   startTime?: number, //
@@ -622,13 +718,16 @@ export type ViewSessionProps = {
   minDuration?: number, //
   maxDuration?: number, //
   hidden?: boolean, //
+  active?: boolean, //
+  onlyRecent?: boolean, //
+  courseId?: number, //
   offset?: number,
   count?: number,
   apiKey: string,
 }
 
-export async function viewSession(props: ViewSessionProps): Promise<Session[] | ApiErrorCode> {
-  return await fetchApi("session/", getFormData(props));
+export async function viewSessionData(props: ViewSessionDataProps): Promise<SessionData[] | ApiErrorCode> {
+  return await fetchApi("sessionData/", getFormData(props));
 }
 
 export type ViewSessionRequestProps = {
@@ -739,6 +838,6 @@ export function isApiErrorCode(maybeApiErrorCode: any): maybeApiErrorCode is Api
   return typeof maybeApiErrorCode === 'string' && ApiErrorCodes.includes(maybeApiErrorCode as any);
 }
 
-export const INT_MAX:number = 999999999999999;
+export const INT_MAX: number = 999999999999999;
 
 export const isPasswordValid = (pass: string) => pass.length >= 8 && /\d/.test(pass);

@@ -150,7 +150,7 @@ function InternalInstructorManageCourseMemberships(props: InternalInstructorMana
                   ? <tr><td colSpan={3} className="text-center">No current students.</td></tr>
                   : data.map((a: CourseMembership) =>
                     <tr>
-                      <td><ViewUser user={a.user} expanded={false} /></td>
+                      <td><ViewUser user={a.user} apiKey={props.apiKey} expanded={false} /></td>
                       <td>{format(a.creationTime, "MMM do")}</td>
                       <th>
                         <Button variant="link" className="text-dark"

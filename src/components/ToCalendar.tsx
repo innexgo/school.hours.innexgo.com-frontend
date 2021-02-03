@@ -1,63 +1,78 @@
 import { EventInput } from '@fullcalendar/react';
 
-export const sessionToEvent = (x: Session, relation: CourseMembershipKind): EventInput => ({
-  id: `Session:${x.sessionId}`,
-  start: new Date(x.startTime),
-  end: new Date(x.startTime + x.duration),
+export const sessionToEvent = (props: {
+  sessionData: SessionData,
+  relation: CourseMembershipKind
+}): EventInput => ({
+  id: `Session:${props.sessionData.session.sessionId}`,
+  start: new Date(props.sessionData.startTime),
+  end: new Date(props.sessionData.startTime + props.sessionData.duration),
   color: "#00000000",
   borderColor: "#00000000",
-  session: x,
-  relation
+  extendedProps: props
 });
 
-export const sessionRequestToEvent = (x: SessionRequest, relation: CourseMembershipKind): EventInput => ({
-  id: `SessionRequest:${x.sessionRequestId}`,
-  start: new Date(x.startTime),
-  end: new Date(x.startTime + x.duration),
+export const sessionRequestToEvent = (props: {
+  sessionRequest: SessionRequest,
+  relation: CourseMembershipKind
+}): EventInput => ({
+  id: `SessionRequest:${props.sessionRequest.sessionRequestId}`,
+  start: new Date(props.sessionRequest.startTime),
+  end: new Date(props.sessionRequest.startTime + props.sessionRequest.duration),
   color: "#00000000",
   borderColor: "#00000000",
-  sessionRequest: x,
-  relation
+  extendedProps: props
 })
 
-export const sessionRequestResponseToEvent = (x: SessionRequestResponse, relation: CourseMembershipKind): EventInput =>
-  x.accepted
+export const sessionRequestResponseToEvent = (props: {
+  sessionRequestResponse: SessionRequestResponse,
+  courseData: CourseData,
+  sessionData?: SessionData,
+  relation: CourseMembershipKind
+}): EventInput =>
+  props.sessionRequestResponse.accepted
+
     ? {
-      id: `SessionRequestResponse:${x.sessionRequest.sessionRequestId}`,
-      start: new Date(x.committment!.session.startTime),
-      end: new Date(x.committment!.session.startTime + x.committment!.session.duration),
+      id: `SessionRequestResponse:${props.sessionRequestResponse.sessionRequest.sessionRequestId}`,
+      start: new Date(props.sessionData!.startTime),
+      end: new Date(props.sessionData!.startTime + props.sessionData!.duration),
       color: "#00000000",
       borderColor: "#00000000",
-      sessionRequestResponse: x,
-      relation
+      extendedProps: props
     }
     : {
-      id: `SessionRequestResponse:${x.sessionRequest.sessionRequestId}`,
-      start: new Date(x.sessionRequest.startTime),
-      end: new Date(x.sessionRequest.startTime + x.sessionRequest.duration),
+      id: `SessionRequestResponse:${props.sessionRequestResponse.sessionRequest.sessionRequestId}`,
+      start: new Date(props.sessionRequestResponse.sessionRequest.startTime),
+      end: new Date(props.sessionRequestResponse.sessionRequest.startTime + props.sessionRequestResponse.sessionRequest.duration),
       color: "#00000000",
       borderColor: "#00000000",
-      sessionRequestResponse: x,
-      relation
+      extendedProps: props
     }
 
-export const committmentToEvent = (x: Committment, relation: CourseMembershipKind): EventInput => ({
-  id: `Committment:${x.committmentId}`,
-  start: new Date(x.session.startTime),
-  end: new Date(x.session.startTime + x.session.duration),
+export const committmentToEvent = (props: {
+  committment: Committment,
+  courseData: CourseData,
+  sessionData: SessionData,
+  relation: CourseMembershipKind
+}): EventInput => ({
+  id: `Committment:${props.committment.committmentId}`,
+  start: new Date(props.sessionData.startTime),
+  end: new Date(props.sessionData.startTime + props.sessionData.duration),
   color: "#00000000",
   borderColor: "#00000000",
-  committment: x,
-  relation
+  extendedProps: props
 })
 
-export const committmentResponseToEvent = (x: CommittmentResponse, relation: CourseMembershipKind): EventInput => ({
-  id: `CommittmentResponse:${x.committment.committmentId}`,
-  start: new Date(x.committment.session.startTime),
-  end: new Date(x.committment.session.startTime + x.committment.session.duration),
+export const committmentResponseToEvent = (props: {
+  committmentResponse: CommittmentResponse,
+  sessionData: SessionData,
+  relation: CourseMembershipKind
+}): EventInput => ({
+  id: `CommittmentResponse:${props.committmentResponse.committment.committmentId}`,
+  start: new Date(props.sessionData.startTime),
+  end: new Date(props.sessionData.startTime + props.sessionData.duration),
   color: "#00000000",
   borderColor: "#00000000",
-  committmentResponse: x,
-  relation
+  extendedProps: props
 })
 

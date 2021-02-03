@@ -64,7 +64,7 @@ function ManageSessionModal(props: ManageSessionModalProps) {
           <Card>
             <Card.Body>
               <Card.Title>Session</Card.Title>
-              <ViewSession expanded session={props.session} />
+              <ViewSession expanded apiKey={props.apiKey} session={props.session} />
             </Card.Body>
           </Card>
           <br />
@@ -129,7 +129,7 @@ function ManageSessionModal(props: ManageSessionModalProps) {
                       <tbody>
                         {fprops.values.map((c: CreateCommittmentResponseValues, i: number) =>
                           <tr key={c.committment.committmentId}>
-                            <td><ViewUser expanded={false} user={c.committment.attendee} /></td>
+                            <td><ViewUser expanded={false} apiKey={props.apiKey} user={c.committment.attendee} /></td>
                             <td>
                               <Form.Control
                                 as="select"
@@ -155,7 +155,7 @@ function ManageSessionModal(props: ManageSessionModalProps) {
                         )}
                         {
                           data.committmentResponses.map((cr: CommittmentResponse) => <tr>
-                            <td><ViewUser expanded={false} user={cr.committment.attendee} /></td>
+                            <td><ViewUser expanded={false} apiKey={props.apiKey} user={cr.committment.attendee} /></td>
                             <td>{cr.kind}</td>
                           </tr>)
                         }
@@ -173,7 +173,7 @@ function ManageSessionModal(props: ManageSessionModalProps) {
                     const maybeCommittment = await newCommittment({
                       sessionId: props.session.sessionId,
                       attendeeUserId: studentId,
-                      cancellable: !props.session.hidden,
+                      cancellable: true,
                       apiKey: props.apiKey.key
                     });
 

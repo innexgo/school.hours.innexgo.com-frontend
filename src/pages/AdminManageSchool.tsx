@@ -11,7 +11,7 @@ import { Visibility } from '@material-ui/icons'
 import format from "date-fns/format";
 
 import { Async, AsyncProps } from 'react-async';
-import { viewSchool, viewCourse, isApiErrorCode } from '../utils/utils';
+import { viewSchool, viewCourseData, isApiErrorCode } from '../utils/utils';
 
 const loadSchool = async (props: AsyncProps<School>) => {
   const maybeSchools = await viewSchool({
@@ -27,16 +27,17 @@ const loadSchool = async (props: AsyncProps<School>) => {
 }
 
 
-const loadCourses = async (props: AsyncProps<Course[]>) => {
-  const maybeCourses = await viewCourse({
+const loadCourseData = async (props: AsyncProps<CourseData[]>) => {
+  const maybeCourseData = await viewCourseData({
     schoolId: props.school.schoolId,
+    onlyRecent:true,
     apiKey: props.apiKey.key
   });
 
-  if (isApiErrorCode(maybeCourses)) {
+  if (isApiErrorCode(maybeCourseData )) {
     throw Error;
   } else {
-    return maybeCourses;
+    return maybeCourseData ;
   }
 }
 
@@ -54,7 +55,7 @@ function AdminManageSchool(props: AuthenticatedComponentProps) {
             <div className="mx-3 my-3">
               <UtilityWrapper title="School Data">
                 <Popover id="information-tooltip"> Shows basic information about this school. </Popover>
-                <ViewSchool school={school} expanded />
+                <ViewSchool school={school} apiKey={props.apiKey} expanded />
               </UtilityWrapper>
             </div>
 
@@ -68,13 +69,13 @@ function AdminManageSchool(props: AuthenticatedComponentProps) {
             <div className="mx-3 my-3">
               <UtilityWrapper title="Courses">
                 <Popover id="information-tooltip"> Shows the current courses hosted by this school. </Popover>
-                <Async promiseFn={loadCourses} apiKey={props.apiKey} school={school}>
+                <Async promiseFn={loadCourseData} apiKey={props.apiKey} school={school}>
                   {({ reload }) => <>
                     <Async.Pending><Loader /></Async.Pending>
                     <Async.Rejected>
                       <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
                     </Async.Rejected>
-                    <Async.Fulfilled<Course[]>>{data => <>
+                    <Async.Fulfilled<CourseData[]>>{data => <>
                       <Table hover bordered>
                         <thead>
                           <tr>
@@ -85,13 +86,13 @@ function AdminManageSchool(props: AuthenticatedComponentProps) {
                           </tr>
                         </thead>
                         <tbody>
-                          {data.map((c: Course) =>
+                          {data.map((cd: CourseData) =>
                             <tr>
-                              <td>{c.name}</td>
-                              <td><ViewUser user={c.creator} expanded={false} /></td>
-                              <td>{format(c.creationTime, "MMM do")}</td>
+                              <td>{cd.name}</td>
+                              <td><ViewUser user={cd.course.creator} apiKey={props.apiKey} expanded={false} /></td>
+                              <td>{format(cd.course.creationTime, "MMM do")}</td>
                               <th>
-                                <a href={`/instructor_manage_course?courseId=${c.courseId}`} className="text-dark">
+                                <a href={`/instructor_manage_course?courseId=${cd.course.courseId}`} className="text-dark">
                                   <Visibility />
                                 </a>
                               </th>

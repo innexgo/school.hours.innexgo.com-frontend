@@ -12,6 +12,7 @@ function UserCreateSchool(props: UserCreateSchoolProps) {
 
   type CreateSchoolValue = {
     name: string,
+    description: string,
   }
 
   const onSubmit = async (values: CreateSchoolValue,
@@ -26,6 +27,10 @@ function UserCreateSchool(props: UserCreateSchoolProps) {
       errors.name = "Please enter your school name";
       hasError = true;
     }
+    if (values.description === "") {
+      errors.description = "Please enter a description";
+      hasError = true;
+    }
 
     fprops.setErrors(errors);
     if (hasError) {
@@ -35,6 +40,7 @@ function UserCreateSchool(props: UserCreateSchoolProps) {
     const maybeSchool = await newSchool({
       whole: false,
       name: values.name,
+      description: values.description,
       apiKey: props.apiKey.key,
     });
 
@@ -94,6 +100,7 @@ function UserCreateSchool(props: UserCreateSchoolProps) {
       onSubmit={onSubmit}
       initialValues={{
         name: "",
+        description: "",
       }}
       initialStatus={{
         failureResult: "",
@@ -117,6 +124,19 @@ function UserCreateSchool(props: UserCreateSchoolProps) {
                 isInvalid={!!fprops.errors.name}
               />
               <Form.Control.Feedback type="invalid">{fprops.errors.name}</Form.Control.Feedback>
+            </Form.Group>
+            <Form.Group >
+              <Form.Label>School Name</Form.Label>
+              <Form.Control
+                name="description"
+                type="text"
+                placeholder="Description"
+                as="input"
+                value={fprops.values.description}
+                onChange={e => fprops.setFieldValue("description", e.target.value)}
+                isInvalid={!!fprops.errors.description}
+              />
+              <Form.Control.Feedback type="invalid">{fprops.errors.description}</Form.Control.Feedback>
             </Form.Group>
             <Button type="submit">Submit Form</Button>
             <br />

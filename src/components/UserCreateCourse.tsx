@@ -1,7 +1,7 @@
 import React from "react"
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
 import { Button, Form } from "react-bootstrap";
-import { viewAdminship, newCourse, isApiErrorCode } from "../utils/utils";
+import { viewAdminship, viewSchoolData, newCourse, isApiErrorCode } from "../utils/utils";
 
 import SearchSingleSchool from "../components/SearchSingleSchool";
 
@@ -110,17 +110,33 @@ function UserCreateCourse(props: UserCreateCourseProps) {
               <SearchSingleSchool
                 name="courseId"
                 search={async (input: string) => {
+
                   const maybeAdminships = await viewAdminship({
-                    partialSchoolName: input,
-                    adminshipKind: "ADMIN",
                     userId: props.apiKey.creator.userId,
+                    adminshipKind:"ADMIN",
+                    partialSchoolName: input,
                     onlyRecent: true,
                     apiKey: props.apiKey.key,
                   });
-                  return isApiErrorCode(maybeAdminships) ? [] : maybeAdminships.map(x => x.school)
+
+                  if (isApiErrorCode(maybeAdminships)) {
+                    return [];
+                  }
+
+                  return (await Promise.all(maybeAdminships.map(async a => {
+                    const maybeSchoolData = await viewSchoolData({
+                      schoolId: a.school.schoolId,
+                      onlyRecent: true,
+                      apiKey: props.apiKey.key
+                    });
+                    if (isApiErrorCode(maybeSchoolData)) {
+                      return [];
+                    }
+                    return maybeSchoolData;
+                  }))).flat();
                 }}
                 isInvalid={!!fprops.errors.schoolId}
-                setFn={(e: School | null) => fprops.setFieldValue("schoolId", e?.schoolId)} />
+                setFn={(e: SchoolData | null) => fprops.setFieldValue("schoolId", e?.school.schoolId)} />
               <Form.Control.Feedback type="invalid">{fprops.errors.schoolId}</Form.Control.Feedback>
             </Form.Group>
             <Form.Group >

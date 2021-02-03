@@ -39,7 +39,7 @@ function InstructorManageCourse(props: AuthenticatedComponentProps) {
             <div className="mx-3 my-3">
               <UtilityWrapper title="Course Data">
                 <Popover id="information-tooltip"> Shows basic information about this course. </Popover>
-                <ViewCourse course={course} expanded />
+                <ViewCourse course={course} apiKey={props.apiKey} expanded />
               </UtilityWrapper>
             </div>
 

@@ -1,4 +1,5 @@
 import React from "react";
+import { Async, AsyncProps } from 'react-async';
 import FullCalendar, { EventClickArg, DateSelectArg } from "@fullcalendar/react"
 import interactionPlugin from '@fullcalendar/interaction'
 import timeGridPlugin from '@fullcalendar/timegrid'
@@ -6,9 +7,10 @@ import { Card, Row, Col, Button, Form } from 'react-bootstrap';
 import ToggleButton from "react-bootstrap/ToggleButton";
 import { Formik, FormikHelpers } from 'formik';
 import { sessionToEvent, sessionRequestToEvent, } from '../components/ToCalendar';
+import Loader from "../components/Loader";
 
 import { ViewSessionRequest } from '../components/ViewData';
-import { newAcceptSessionRequestResponse, newRejectSessionRequestResponse, newSession, newCommittment, viewSession, isApiErrorCode } from '../utils/utils';
+import { newAcceptSessionRequestResponse, newRejectSessionRequestResponse, newSession, newCommittment, viewSessionData, viewCourseData, isApiErrorCode } from '../utils/utils';
 
 
 type CalendarWidgetProps = {
@@ -61,14 +63,20 @@ class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
             endStr: string;
             timeZone: string;
           }) => {
-          const maybeSessions = await viewSession({
+
+          const maybeSessionData = await viewSessionData({
             courseId: this.props.sessionRequest.course.courseId,
             minStartTime: args.start.valueOf(),
             maxStartTime: args.end.valueOf(),
             apiKey: this.props.apiKey.key
           });
 
-          return isApiErrorCode(maybeSessions) ? [] : maybeSessions.map(s => sessionToEvent(s, "INSTRUCTOR"));
+          return isApiErrorCode(maybeSessionData)
+            ? []
+            : maybeSessionData.map(s => sessionToEvent({
+              sessionData: s,
+              relation: "INSTRUCTOR"
+            }));
         },
         [{
           id: `SessionRequest:${this.props.sessionRequest.sessionRequestId}`,
@@ -76,7 +84,7 @@ class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
           end: new Date(this.props.sessionRequest.startTime + this.props.sessionRequest.duration),
           color: "#00000000",
           borderColor: "#00000000",
-          display:"background",
+          display: "background",
           sessionRequest: this.props.sessionRequest,
         }],
       ]}
@@ -111,13 +119,14 @@ class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
   }
 }
 
-type UserReviewSessionRequestProps = {
+type IUserReviewSessionRequestProps = {
   postSubmit: () => void;
   sessionRequest: SessionRequest;
+  courseData: CourseData,
   apiKey: ApiKey;
 }
 
-function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
+function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
 
   type ReviewSessionRequestValues = {
     sessionId: number | null,
@@ -129,7 +138,7 @@ function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
     message: string,
   }
 
-  const defaultSessionName = `${props.sessionRequest.course.name} - ${props.sessionRequest.attendee.name}`;
+  const defaultSessionName = `${props.courseData.name} - ${props.sessionRequest.attendee.name}`;
 
   const onSubmit = async (values: ReviewSessionRequestValues,
     { setStatus, setErrors, }: FormikHelpers<ReviewSessionRequestValues>) => {
@@ -195,7 +204,6 @@ function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
       const maybeSession = await newSession({
         name: sessionName,
         courseId: props.sessionRequest.course.courseId,
-        locationId: 0,
         startTime: values.startTime,
         duration: values.duration,
         hidden: !values.newSessionPublic,
@@ -306,7 +314,7 @@ function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
             <Card>
               <Card.Body>
                 <Card.Title>Appointment Request</Card.Title>
-                <ViewSessionRequest sessionRequest={props.sessionRequest} expanded />
+                <ViewSessionRequest apiKey={props.apiKey} sessionRequest={props.sessionRequest} expanded />
               </Card.Body>
             </Card>
             <br />
@@ -393,6 +401,51 @@ function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
       </Form>}
     </Formik>
   </>
+}
+
+
+type UserReviewSessionRequestProps = {
+  postSubmit: () => void;
+  sessionRequest: SessionRequest;
+  apiKey: ApiKey;
+}
+
+const loadCourseData = async (props: AsyncProps<CourseData>) => {
+  const maybeCourseData = await viewCourseData({
+    courseId: props.courseId,
+    onlyRecent: true,
+    apiKey: props.apiKey.key,
+  });
+
+  if (isApiErrorCode(maybeCourseData)) {
+    throw Error;
+  }
+  // there's an invariant that there must always be one course data per valid course id
+  return maybeCourseData[0];
+}
+
+
+function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
+  return <Async promiseFn={loadCourseData}
+    apiKey={props.apiKey}
+    courseId={props.sessionRequest.course.courseId}>
+    {_ => <>
+      <Async.Pending><Loader /></Async.Pending>
+      <Async.Rejected>
+        <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
+      </Async.Rejected>
+      <Async.Fulfilled<CourseData>>{data =>
+        <IUserReviewSessionRequest
+          courseData={data}
+          postSubmit={props.postSubmit}
+          sessionRequest={props.sessionRequest}
+          apiKey={props.apiKey}
+        />
+      }
+      </Async.Fulfilled>
+    </>}
+  </Async>
+
 }
 
 export default UserReviewSessionRequest;

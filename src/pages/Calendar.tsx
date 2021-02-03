@@ -1,15 +1,15 @@
 import React from 'react'
 import { Async, AsyncProps } from 'react-async';
 import Loader from '../components/Loader';
-import FullCalendar, { DateSelectArg, EventClickArg } from '@fullcalendar/react'
+import FullCalendar, { EventInput, DateSelectArg, EventClickArg } from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import DashboardLayout from '../components/DashboardLayout';
 import CalendarCard from '../components/CalendarCard';
 
 import { Tab, Tabs, Form, Popover, Container, Row, Col, Card } from 'react-bootstrap';
-import { viewSession, viewSessionRequest, isApiErrorCode, viewCourseMembership } from '../utils/utils';
-import { viewSessionRequestResponse, viewCommittment, viewCommittmentResponse } from '../utils/utils';
+import { viewSessionData, viewSessionRequest, isApiErrorCode, viewCourseMembership } from '../utils/utils';
+import { viewSessionRequestResponse, viewCommittment, viewCourseData, viewCommittmentResponse } from '../utils/utils';
 
 import { ViewSession, ViewSessionRequestResponse, ViewCommittment, ViewCommittmentResponse } from '../components/ViewData';
 
@@ -26,7 +26,7 @@ import { sessionToEvent, sessionRequestToEvent, sessionRequestResponseToEvent, c
 type EventCalendarProps = {
   apiKey: ApiKey,
   showAllHours: boolean,
-  hiddenCourses: number[]
+  activeCourseDatas: CourseData[]
 }
 
 // TODO make it so that selected data and selected modals are equivalent
@@ -46,21 +46,14 @@ function EventCalendar(props: EventCalendarProps) {
     }
   }
 
-  // which modals are visible
-  const [showManageSessionModal, setShowManageSessionModal] = React.useState(false);
-  const [showViewSessionModal, setShowViewSessionModal] = React.useState(false);
-  const [showManageSessionRequestModal, setShowManageSessionRequestModal] = React.useState(false);
-  const [showReviewSessionRequestModal, setShowReviewSessionRequestModal] = React.useState(false);
-  const [showViewSessionRequestResponseModal, setShowViewSessionRequestResponseModal] = React.useState(false);
-  const [showViewCommittmentModal, setShowViewCommittmentModal] = React.useState(false);
-  const [showViewCommittmentResponseModal, setShowViewCommittmentResponseModal] = React.useState(false);
-
   // the currently selected data
-  const [selectedSession, setSelectedSession] = React.useState<Session | null>(null);
-  const [selectedSessionRequest, setSelectedSessionRequest] = React.useState<SessionRequest | null>(null);
-  const [selectedSessionRequestResponse, setSelectedSessionRequestResponse] = React.useState<SessionRequestResponse | null>(null);
-  const [selectedCommittment, setSelectedCommittment] = React.useState<Committment | null>(null);
-  const [selectedCommittmentResponse, setSelectedCommittmentResponse] = React.useState<CommittmentResponse | null>(null);
+  const [selectedManageSession, setSelectedManageSession] = React.useState<Session | null>(null);
+  const [selectedViewSession, setSelectedViewSession] = React.useState<Session | null>(null);
+  const [selectedManageSessionRequest, setSelectedManageSessionRequest] = React.useState<SessionRequest | null>(null);
+  const [selectedReviewSessionRequest, setSelectedReviewSessionRequest] = React.useState<SessionRequest | null>(null);
+  const [selectedViewSessionRequestResponse, setSelectedViewSessionRequestResponse] = React.useState<SessionRequestResponse | null>(null);
+  const [selectedViewCommittment, setSelectedViewCommittment] = React.useState<Committment | null>(null);
+  const [selectedViewCommittmentResponse, setSelectedViewCommittmentResponse] = React.useState<CommittmentResponse | null>(null);
 
   const calendarRef = React.useRef<FullCalendar | null>(null);
 
@@ -111,30 +104,126 @@ function EventCalendar(props: EventCalendarProps) {
       ...isApiErrorCode(maybeSessionRequests)
         ? []
         : maybeSessionRequests
-          .filter(x => !props.hiddenCourses.includes(x.course.courseId))
-          .map(x => sessionRequestToEvent(x, "STUDENT")),
+          .map(x => {
+            const courseData = props.activeCourseDatas
+              .find(cd => cd.course.courseId == x.course.courseId);
+            // means that course is hidden
+            if (courseData === undefined) {
+              return null;
+            }
+            return sessionRequestToEvent({
+              sessionRequest: x,
+              relation: "STUDENT"
+            });
+          })
+          // remove nulls
+          .filter((x): x is EventInput => x !== null)
+      ,
 
       ...isApiErrorCode(maybeSessionRequestResponses)
         ? []
-        : maybeSessionRequestResponses
-          .filter(x => !props.hiddenCourses.includes(x.sessionRequest.course.courseId))
+        : (await Promise.all(maybeSessionRequestResponses
           // hide things you cancelled yourself
-          .filter(x => {
-              console.log(x);
-              return x.creator.userId !== props.apiKey.creator.userId})
-          .map(x => sessionRequestResponseToEvent(x, "STUDENT")),
+          .filter(x => x.creator.userId !== props.apiKey.creator.userId)
+          .map(async x => {
+            const courseData = props.activeCourseDatas
+              .find(cd => cd.course.courseId == x.sessionRequest.course.courseId);
+            // means that course is hidden
+            if (courseData === undefined) {
+              return null;
+            }
+
+            if (!x.accepted) {
+              return sessionRequestResponseToEvent({
+                sessionRequestResponse: x,
+                courseData: courseData,
+                relation: "STUDENT"
+              });
+            }
+
+            // if accepted, we need to get the location of the committment
+            const maybeSessionData = await viewSessionData({
+              sessionId: x.committment.session.sessionId,
+              onlyRecent: true,
+              apiKey: props.apiKey.key
+            });
+            if (isApiErrorCode(maybeSessionData)) {
+              return null;
+            }
+
+            // we have an invariant that any session must have at least one session data, so its ok
+            return sessionRequestResponseToEvent({
+              sessionRequestResponse: x,
+              sessionData: maybeSessionData[0],
+              courseData: courseData,
+              relation: "STUDENT"
+            });
+          })))
+          // remove nulls
+          .filter((x): x is EventInput => x !== null)
+      ,
 
       ...isApiErrorCode(maybeCommittments)
         ? []
-        : maybeCommittments
-          .filter(x => !props.hiddenCourses.includes(x.session.course.courseId))
-          .map(x => committmentToEvent(x, "STUDENT")),
+        : (await Promise.all(maybeCommittments
+          .map(async x => {
+            const courseData = props.activeCourseDatas
+              .find(cd => cd.course.courseId == x.session.course.courseId);
+            // means that course is hidden
+            if (courseData === undefined) {
+              return null;
+            }
+
+            const maybeSessionData = await viewSessionData({
+              sessionId: x.session.sessionId,
+              onlyRecent: true,
+              apiKey: props.apiKey.key
+            });
+            if (isApiErrorCode(maybeSessionData)) {
+              return null;
+            }
+
+            // we have an invariant that any session must have at least one session data, so its ok
+            return committmentToEvent({
+              committment: x,
+              sessionData: maybeSessionData[0],
+              courseData: courseData,
+              relation: "STUDENT"
+            });
+          })))
+          .filter((x): x is EventInput => x !== null)
+      ,
 
       ...isApiErrorCode(maybeCommittmentResponses)
         ? []
-        : maybeCommittmentResponses
-          .filter(x => !props.hiddenCourses.includes(x.committment.session.course.courseId))
-          .map(x => committmentResponseToEvent(x, "STUDENT")),
+        : (await Promise.all(maybeCommittmentResponses
+          .map(async x => {
+            const courseData = props.activeCourseDatas
+              .find(cd => cd.course.courseId == x.committment.session.course.courseId);
+            // means that course is hidden
+            if (courseData === undefined) {
+              return null;
+            }
+
+            const maybeSessionData = await viewSessionData({
+              sessionId: x.committment.session.sessionId,
+              onlyRecent: true,
+              apiKey: props.apiKey.key
+            });
+            if (isApiErrorCode(maybeSessionData)) {
+              return null;
+            }
+
+            // we have an invariant that any session must have at least one session data, so its ok
+            return committmentResponseToEvent({
+              committmentResponse: x,
+              sessionData: maybeSessionData[0],
+              relation: "STUDENT"
+            });
+          })))
+          .filter((x): x is EventInput => x !== null)
+      ,
+
     ];
 
     // get all the course memberships I have where i am an instructor
@@ -148,19 +237,21 @@ function EventCalendar(props: EventCalendarProps) {
     const instructorEvents = isApiErrorCode(maybeInstructorCourseMemberships) ? [] :
       // promise all waits on an array of promises
       (await Promise.all(maybeInstructorCourseMemberships
-        .flatMap(async (x: CourseMembership) => {
+        .map(async (x: CourseMembership) => {
           // for each membership i have:
 
-          // check its not hidden
-          if (props.hiddenCourses.includes(x.course.courseId)) {
+          // if no matches
+          if (!props.activeCourseDatas.map(cd => cd.course.courseId).includes(x.course.courseId)) {
             return [];
           }
 
-          const maybeSessions = await viewSession({
+          const maybeSessionData = await viewSessionData({
             courseId: x.course.courseId,
             minStartTime: args.start.valueOf(),
             maxStartTime: args.end.valueOf(),
-            apiKey: props.apiKey.key
+            onlyRecent: true,
+            active: true,
+            apiKey: props.apiKey.key,
           });
 
           const maybeSessionRequests = await viewSessionRequest({
@@ -176,10 +267,16 @@ function EventCalendar(props: EventCalendarProps) {
           return [
             ...isApiErrorCode(maybeSessionRequests)
               ? []
-              : maybeSessionRequests.map(x => sessionRequestToEvent(x, "INSTRUCTOR")),
-            ...isApiErrorCode(maybeSessions)
+              : maybeSessionRequests.map(x => sessionRequestToEvent({
+                sessionRequest: x,
+                relation: "INSTRUCTOR"
+              })),
+            ...isApiErrorCode(maybeSessionData)
               ? []
-              : maybeSessions.map(x => sessionToEvent(x, "INSTRUCTOR")),
+              : maybeSessionData.map(x => sessionToEvent({
+                sessionData: x,
+                relation: "INSTRUCTOR"
+              })),
           ];
         }))).flat();
 
@@ -192,97 +289,35 @@ function EventCalendar(props: EventCalendarProps) {
     // we switch on what type it is
     switch (eca.event.id.split(':')[0]) {
       case "Session": {
-        setSelectedSession(props.session);
-
         if (props.relation === "INSTRUCTOR") {
           // if we are an instructor we get the editable view of the course
-          setShowCreatorPickerModal(false);
-          setShowViewSessionModal(false);
-          setShowManageSessionModal(true);
-          setShowManageSessionRequestModal(false);
-          setShowReviewSessionRequestModal(false);
-          setShowViewSessionRequestResponseModal(false);
-          setShowViewCommittmentModal(false);
-          setShowViewCommittmentResponseModal(false);
+          setSelectedManageSession(props.sessionData.session);
         } else {
           // otherwise get the view only version
-          setShowCreatorPickerModal(false);
-          setShowViewSessionModal(true);
-          setShowManageSessionModal(false);
-          setShowManageSessionRequestModal(false);
-          setShowReviewSessionRequestModal(false);
-          setShowViewSessionRequestResponseModal(false);
-          setShowViewCommittmentModal(false);
-          setShowViewCommittmentResponseModal(false);
+          setSelectedViewSession(props.sessionData.session);
         }
         break;
       }
       case "SessionRequest": {
-        setSelectedSessionRequest(props.sessionRequest);
-
         if (props.relation === "INSTRUCTOR") {
           // if we are an instructor we get to reivew the request
-          setShowCreatorPickerModal(false);
-          setShowViewSessionModal(false);
-          setShowManageSessionModal(false);
-          setShowManageSessionRequestModal(false);
-          setShowReviewSessionRequestModal(true);
-          setShowViewSessionRequestResponseModal(false);
-          setShowViewCommittmentModal(false);
-          setShowViewCommittmentResponseModal(false);
+          setSelectedReviewSessionRequest(props.sessionRequest);
         } else {
-          // otherwise we can just view it
-          setShowCreatorPickerModal(false);
-          setShowViewSessionModal(false);
-          setShowManageSessionModal(false);
-          setShowManageSessionRequestModal(true);
-          setShowReviewSessionRequestModal(false);
-          setShowViewSessionRequestResponseModal(false);
-          setShowViewCommittmentModal(false);
-          setShowViewCommittmentResponseModal(false);
+          // otherwise we can manage it
+          setSelectedManageSessionRequest(props.sessionRequest);
         }
-
         break;
       }
       case "SessionRequestResponse": {
-        setSelectedSessionRequestResponse(props.sessionRequestResponse);
-
-        setShowCreatorPickerModal(false);
-        setShowViewSessionModal(false);
-        setShowManageSessionModal(false);
-        setShowManageSessionRequestModal(false);
-        setShowReviewSessionRequestModal(false);
-        setShowViewSessionRequestResponseModal(true);
-        setShowViewCommittmentModal(false);
-        setShowViewCommittmentResponseModal(false);
-
+        setSelectedViewSessionRequestResponse(props.sessionRequestResponse);
         break;
       }
       case "Committment": {
-        setSelectedCommittment(props.committment);
-
-        setShowCreatorPickerModal(false);
-        setShowViewSessionModal(false);
-        setShowManageSessionModal(false);
-        setShowManageSessionRequestModal(false);
-        setShowReviewSessionRequestModal(false);
-        setShowViewSessionRequestResponseModal(false);
-        setShowViewCommittmentModal(true);
-        setShowViewCommittmentResponseModal(false);
-
+        setSelectedViewCommittment(props.committment);
         break;
       }
       case "CommittmentResponse": {
-        setSelectedCommittmentResponse(props.committmentResponse);
-
-        setShowCreatorPickerModal(false);
-        setShowViewSessionModal(false);
-        setShowManageSessionModal(false);
-        setShowManageSessionRequestModal(false);
-        setShowReviewSessionRequestModal(false);
-        setShowViewSessionRequestResponseModal(false);
-        setShowViewCommittmentModal(false);
-        setShowViewCommittmentResponseModal(true);
+        setSelectedViewCommittmentResponse(props.committmentResponse);
         break;
       }
     }
@@ -316,170 +351,182 @@ function EventCalendar(props: EventCalendarProps) {
   }
 
   return <>
-      <FullCalendar
-        {...showAllHoursProps}
-        ref={calendarRef}
-        plugins={[timeGridPlugin, interactionPlugin]}
-        headerToolbar={{
-          left: 'prev,next today',
-          center: '',
-          right: 'timeGridDay,timeGridWeek',
-        }}
-        initialView='timeGridWeek'
-        height={"auto"}
-        datesSet={({view}) => /* Keeps window size in sync */view.calendar.updateSize()}
-        allDaySlot={false}
-        slotDuration="00:15:00"
-        nowIndicator={true}
-        editable={false}
-        selectable={true}
-        selectMirror={true}
-        events={eventSource}
-        eventContent={CalendarCard}
-        unselectCancel=".modal-content"
-        eventClick={clickHandler}
-        businessHours={{
-          daysOfWeek: [1, 2, 3, 4, 5], // MTWHF
-          startTime: "08:00", // 8am
-          endTime: "18:00", // 6pm
-          startRecur: new Date()
-        }}
-        selectConstraint="businessHours"
-        select={(dsa: DateSelectArg) => {
-          // only open modal if this date is in the future
-          if (dsa.start.valueOf() > Date.now()) {
-            setStart(dsa.start.valueOf());
-            setDuration(dsa.end.valueOf() - dsa.start.valueOf());
-            setShowCreatorPickerModal(true);
-          } else {
-            if (calendarRef.current != null) {
-              calendarRef.current.getApi().unselect();
-            }
+    <FullCalendar
+      {...showAllHoursProps}
+      ref={calendarRef}
+      plugins={[timeGridPlugin, interactionPlugin]}
+      headerToolbar={{
+        left: 'prev,next today',
+        center: '',
+        right: 'timeGridDay,timeGridWeek',
+      }}
+      initialView='timeGridWeek'
+      height={"auto"}
+      datesSet={({ view }) => /* Keeps window size in sync */view.calendar.updateSize()}
+      allDaySlot={false}
+      slotDuration="00:15:00"
+      nowIndicator={true}
+      editable={false}
+      selectable={true}
+      selectMirror={true}
+      events={eventSource}
+      eventContent={CalendarCard}
+      unselectCancel=".modal-content"
+      eventClick={clickHandler}
+      businessHours={{
+        daysOfWeek: [1, 2, 3, 4, 5], // MTWHF
+        startTime: "08:00", // 8am
+        endTime: "18:00", // 6pm
+        startRecur: new Date()
+      }}
+      selectConstraint="businessHours"
+      select={(dsa: DateSelectArg) => {
+        // only open modal if this date is in the future
+        if (dsa.start.valueOf() > Date.now()) {
+          setStart(dsa.start.valueOf());
+          setDuration(dsa.end.valueOf() - dsa.start.valueOf());
+          setShowCreatorPickerModal(true);
+        } else {
+          if (calendarRef.current != null) {
+            calendarRef.current.getApi().unselect();
           }
-        }}
-        unselect={() => {
-          setShowCreatorPickerModal(false);
-        }}
-      />
-      <DisplayModal
-        title="New Event"
-        show={showCreatorPickerModal}
-        onClose={() => setShowCreatorPickerModal(false)}
-      >
-        <Async promiseFn={loadCreatorPickerData} apiKey={props.apiKey}>
-          {_ => <>
-            <Async.Pending><Loader /></Async.Pending>
-            <Async.Rejected>
-              <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
-            </Async.Rejected>
-            <Async.Fulfilled<CreatorPickerData>>{data => <>
-              <Tabs className="py-3">
-                {data.courseMemberships.filter(x => x.courseMembershipKind === "INSTRUCTOR").length === 0 ? <> </> :
-                  <Tab eventKey="session" title="Create Session">
-                    <UserCreateSession
-                      apiKey={props.apiKey}
-                      start={start}
-                      duration={duration}
-                      postSubmit={() => setShowCreatorPickerModal(false)}
-                    />
-                  </Tab>
-                }
-                {data.courseMemberships.filter(x => x.courseMembershipKind === "STUDENT").length === 0 ? <> </> :
-                  <Tab eventKey="profile" title="Create Request">
-                    <StudentCreateSessionRequest
-                      apiKey={props.apiKey}
-                      start={start}
-                      duration={duration}
-                      postSubmit={() => setShowCreatorPickerModal(false)}
-                    />
-                  </Tab>
-                }
-                {data.courseMemberships.filter(x => x.courseMembershipKind !== "CANCEL").length > 0 ? <> </> :
-                  <Tab eventKey="joincourse" title="Join a Course">
-                    <p>You need to join a course in order to create an event.</p>
-                    <ul>
-                      <li>If you're a student, you can join a course <a href="/add_course">here</a>.</li>
-                      <li>If you're an instructor, create a course <a href="/add_course">here</a>.</li>
-                    </ul>
-                  </Tab>
-                }
-              </Tabs>
-            </>}
-            </Async.Fulfilled>
+        }
+      }}
+      unselect={() => {
+        setShowCreatorPickerModal(false);
+      }}
+    />
+    <DisplayModal
+      title="New Event"
+      show={showCreatorPickerModal}
+      onClose={() => setShowCreatorPickerModal(false)}
+    >
+      <Async promiseFn={loadCreatorPickerData} apiKey={props.apiKey}>
+        {_ => <>
+          <Async.Pending><Loader /></Async.Pending>
+          <Async.Rejected>
+            <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
+          </Async.Rejected>
+          <Async.Fulfilled<CreatorPickerData>>{data => <>
+            <Tabs className="py-3">
+              {data.courseMemberships.filter(x => x.courseMembershipKind === "INSTRUCTOR").length === 0 ? <> </> :
+                <Tab eventKey="session" title="Create Session">
+                  <UserCreateSession
+                    apiKey={props.apiKey}
+                    start={start}
+                    duration={duration}
+                    postSubmit={() => setShowCreatorPickerModal(false)}
+                  />
+                </Tab>
+              }
+              {data.courseMemberships.filter(x => x.courseMembershipKind === "STUDENT").length === 0 ? <> </> :
+                <Tab eventKey="profile" title="Create Request">
+                  <StudentCreateSessionRequest
+                    apiKey={props.apiKey}
+                    start={start}
+                    duration={duration}
+                    postSubmit={() => setShowCreatorPickerModal(false)}
+                  />
+                </Tab>
+              }
+              {data.courseMemberships.filter(x => x.courseMembershipKind !== "CANCEL").length > 0 ? <> </> :
+                <Tab eventKey="joincourse" title="Join a Course">
+                  <p>You need to join a course in order to create an event.</p>
+                  <ul>
+                    <li>If you're a student, you can join a course <a href="/add_course">here</a>.</li>
+                    <li>If you're an instructor, create a course <a href="/add_course">here</a>.</li>
+                  </ul>
+                </Tab>
+              }
+            </Tabs>
           </>}
-        </Async>
+          </Async.Fulfilled>
+        </>}
+      </Async>
+    </DisplayModal>
+    {selectedManageSession === null ? <> </> :
+        <DisplayModal
+          title="Manage Session"
+          show={selectedManageSession !== null}
+          onClose={() => setSelectedManageSession(null)}
+        >
+          <UserManageSession session={selectedManageSession} apiKey={props.apiKey} />
+        </DisplayModal>
+    }
+    {selectedViewSession === null ? <> </> :
+        <DisplayModal
+          title="View Session"
+          show={selectedManageSession !== null}
+          onClose={() => setSelectedViewSession(null)}
+        >
+          <ViewSession session={selectedViewSession} expanded apiKey={props.apiKey} />
+        </DisplayModal>
+    }
+    {selectedReviewSessionRequest === null ? <> </> :
+        <DisplayModal
+          title="Review Student Request"
+          show={selectedReviewSessionRequest !== null}
+          onClose={() => setSelectedReviewSessionRequest(null)}
+        >
+          <UserReviewSessionRequest
+            sessionRequest={selectedReviewSessionRequest}
+            apiKey={props.apiKey}
+            postSubmit={() => setSelectedReviewSessionRequest(null)}
+          />
+        </DisplayModal>
+    }
+    {selectedManageSessionRequest === null ? <> </> :
+        <DisplayModal
+          title="Manage your Session Request"
+          show={selectedManageSessionRequest !== null}
+          onClose={() => setSelectedManageSessionRequest(null)}
+        >
+          <StudentManageSessionRequest
+            sessionRequest={selectedManageSessionRequest}
+            apiKey={props.apiKey}
+            postSubmit={() => setSelectedManageSessionRequest(null)}
+          />
+        </DisplayModal>
+    }
+    {selectedViewSessionRequestResponse === null ? <> </> :
+      <DisplayModal
+        title="View Session Request Response"
+        show={selectedViewSessionRequestResponse !== null}
+        onClose={() => setSelectedViewSessionRequestResponse(null)}
+      >
+        <ViewSessionRequestResponse
+          sessionRequestResponse={selectedViewSessionRequestResponse}
+          apiKey={props.apiKey}
+          expanded
+        />
       </DisplayModal>
-      {selectedSession === null ? <> </> :
-        <>
-          <DisplayModal
-            title="Manage Session"
-            show={showManageSessionModal}
-            onClose={() => setShowManageSessionModal(false)}
-          >
-            <UserManageSession session={selectedSession} apiKey={props.apiKey} />
-          </DisplayModal>
-          <DisplayModal
-            title="View Session"
-            show={showViewSessionModal}
-            onClose={() => setShowViewSessionModal(false)}
-          >
-            <ViewSession session={selectedSession} expanded />
-          </DisplayModal>
-        </>
-      }
-      {selectedSessionRequest === null ? <> </> :
-        <>
-          <DisplayModal
-            title="Review Student Request"
-            show={showReviewSessionRequestModal}
-            onClose={() => setShowReviewSessionRequestModal(false)}
-          >
-            <UserReviewSessionRequest
-              sessionRequest={selectedSessionRequest}
-              apiKey={props.apiKey}
-              postSubmit={() => setShowReviewSessionRequestModal(false)}
-            />
-          </DisplayModal>
-          <DisplayModal
-            title="Manage your Session Request"
-            show={showManageSessionRequestModal}
-            onClose={() => setShowManageSessionRequestModal(false)}
-          >
-            <StudentManageSessionRequest
-              sessionRequest={selectedSessionRequest}
-              apiKey={props.apiKey}
-              postSubmit={() => setShowManageSessionRequestModal(false)}
-            />
-          </DisplayModal>
-        </>
-      }
-      {selectedSessionRequestResponse === null ? <div /> :
-        <DisplayModal
-          title="View Session Request Response"
-          show={showViewSessionRequestResponseModal}
-          onClose={() => setShowViewSessionRequestResponseModal(false)}
-        >
-          <ViewSessionRequestResponse sessionRequestResponse={selectedSessionRequestResponse} expanded />
-        </DisplayModal>
-      }
-      {selectedCommittment === null ? <div /> :
-        <DisplayModal
-          title="View Committment"
-          show={showViewCommittmentModal}
-          onClose={() => setShowViewCommittmentModal(false)}
-        >
-          <ViewCommittment committment={selectedCommittment} expanded />
-        </DisplayModal>
-      }
-      {selectedCommittmentResponse === null ? <div /> :
-        <DisplayModal
-          title="View Attendance"
-          show={showViewCommittmentResponseModal}
-          onClose={() => setShowViewCommittmentResponseModal(false)}
-        >
-          <ViewCommittmentResponse committmentResponse={selectedCommittmentResponse} expanded />
-        </DisplayModal>
-      }
+    }
+    {selectedViewCommittment === null ? <> </> :
+      <DisplayModal
+        title="View Committment"
+        show={selectedViewCommittment !== null}
+        onClose={() => setSelectedViewCommittment(null)}
+      >
+        <ViewCommittment
+          committment={selectedViewCommittment}
+          apiKey={props.apiKey}
+          expanded
+        />
+      </DisplayModal>
+    }
+    {selectedViewCommittmentResponse === null ? <> </> :
+      <DisplayModal
+        title="View Attendance"
+        show={selectedViewCommittmentResponse !== null}
+        onClose={() => setSelectedViewCommittmentResponse(null)}
+      >
+        <ViewCommittmentResponse
+          committmentResponse={selectedViewCommittmentResponse}
+          apiKey={props.apiKey}
+          expanded
+        />
+      </DisplayModal>
+    }
   </>
 }
 
@@ -487,7 +534,7 @@ function Calendar(props: AuthenticatedComponentProps) {
   const [showAllHours, setShowAllHours] = React.useState(false);
   const [hiddenCourses, setHiddenCourses] = React.useState<number[]>([]);
 
-  const loadCourseHiderData = async (props: AsyncProps<CourseMembership[]>) => {
+  const loadCourseData = async (props: AsyncProps<CourseData[]>) => {
     const maybeCourseMemberships = await viewCourseMembership({
       userId: props.apiKey.creator.userId,
       onlyRecent: true,
@@ -497,7 +544,18 @@ function Calendar(props: AuthenticatedComponentProps) {
     if (isApiErrorCode(maybeCourseMemberships)) {
       throw Error;
     }
-    return maybeCourseMemberships
+
+    return (await Promise.all(maybeCourseMemberships.map(async cm => {
+      const maybeCourseData = await viewCourseData({
+        courseId: cm.course.courseId,
+        onlyRecent: true,
+        apiKey: props.apiKey.key
+      });
+      if (isApiErrorCode(maybeCourseData)) {
+        throw Error;
+      }
+      return maybeCourseData;
+    }))).flat();
   }
 
 
@@ -509,7 +567,7 @@ function Calendar(props: AuthenticatedComponentProps) {
             This screen shows all future appointments.
             You can click any date to add an appointment on that date,
             or click an existing appointment to delete it.
-              </Popover>
+          </Popover>
           <Row>
             <Col sm>
               <Card className="my-3 mx-3">
@@ -520,44 +578,54 @@ function Calendar(props: AuthenticatedComponentProps) {
                     onChange={_ => setShowAllHours(!showAllHours)}
                     label="Show All Hours"
                   />
-                  <Async promiseFn={loadCourseHiderData} apiKey={props.apiKey}>
+                  <Async promiseFn={loadCourseData} apiKey={props.apiKey}>
                     {_ => <>
                       <Async.Pending><Loader /></Async.Pending>
                       <Async.Rejected>
                         <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
                       </Async.Rejected>
-                      <Async.Fulfilled<CourseMembership[]>>{data =>
+                      <Async.Fulfilled<CourseData[]>>{data =>
                         <>
                           {data.length === 0
                             ? <> </>
                             : <Card.Subtitle className="my-2"> Hide Courses </Card.Subtitle>
                           }
-                          {data.map((cm: CourseMembership) =>
+                          {data.map((cd: CourseData) =>
                             <Form.Check
-                              checked={hiddenCourses.includes(cm.course.courseId)}
+                              checked={hiddenCourses.includes(cd.course.courseId)}
                               onChange={_ => setHiddenCourses(
-                                hiddenCourses.includes(cm.course.courseId)
+                                hiddenCourses.includes(cd.course.courseId)
                                   // if its included, remove it
-                                  ? hiddenCourses.filter(ci => ci !== cm.course.courseId)
+                                  ? hiddenCourses.filter(ci => ci !== cd.course.courseId)
                                   // if its not included, disinclude it
-                                  : [...hiddenCourses, cm.course.courseId]
+                                  : [...hiddenCourses, cd.course.courseId]
                               )}
-                              label={`Hide ${cm.course.name}`}
+                              label={`Hide ${cd.name}`}
                             />
                           )}
                         </>}
                       </Async.Fulfilled>
                     </>}
                   </Async>
-
                 </Card.Body>
               </Card>
             </Col>
             <Col lg={10}>
-              <EventCalendar
-                hiddenCourses={hiddenCourses}
-                apiKey={props.apiKey}
-                showAllHours={showAllHours} />
+              <Async promiseFn={loadCourseData} apiKey={props.apiKey}>
+                {_ => <>
+                  <Async.Pending><Loader /></Async.Pending>
+                  <Async.Rejected>
+                    <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
+                  </Async.Rejected>
+                  <Async.Fulfilled<CourseData[]>>{data =>
+                    <EventCalendar
+                      activeCourseDatas={data.filter(cm => !hiddenCourses.includes(cm.course.courseId))}
+                      apiKey={props.apiKey}
+                      showAllHours={showAllHours} />
+                  }
+                  </Async.Fulfilled>
+                </>}
+              </Async>
             </Col>
           </Row>
         </UtilityWrapper>

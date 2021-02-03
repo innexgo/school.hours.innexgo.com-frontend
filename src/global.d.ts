@@ -41,8 +41,17 @@ declare global {
     schoolId: number,
     creator: User,
     creationTime: number,
-    name: string,
     whole: boolean,
+  }
+
+  type SchoolData = {
+    schoolDataId:number,
+    creator:User,
+    creationTime:number,
+    school:School,
+    name:string,
+    description:string,
+    active:boolean,
   }
 
   type SubscriptionKind = "VALID" | "CANCEL";
@@ -97,11 +106,19 @@ declare global {
 
   type Course = {
     courseId: number;
-    creationTime: number;
     creator: User;
+    creationTime: number;
     school: School;
+  }
+
+  type CourseData = {
+    courseDataId:number,
+    creationTime:number,
+    creator:User,
+    course:Course,
     name: string;
     description: string;
+    active:boolean
   }
 
   type CourseMembershipKind = "STUDENT" | "INSTRUCTOR" | "CANCEL";
@@ -171,11 +188,16 @@ declare global {
     creationTime: number,
     creator: User,
     course: Course,
+  }
+
+  type SessionData = {
+    session:Session,
     location: Location,
     name: string,
     startTime: number,
     duration: number,
     hidden: boolean,
+    active: boolean,
   }
 
   type SessionRequest = {
@@ -194,8 +216,15 @@ declare global {
     creationTime: number,
     creator: User,
     message: string,
-    accepted: boolean,
-    committment: Committment | null,
+    accepted: false,
+    committment: null,
+  } | {
+    sessionRequest: SessionRequest,
+    creationTime: number,
+    creator: User,
+    message: string,
+    accepted: true,
+    committment: Committment,
   }
 
   type Committment = {
