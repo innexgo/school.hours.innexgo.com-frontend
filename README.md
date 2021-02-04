@@ -1,6 +1,22 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# hours Frontend
 
-## Available Scripts
+This is the frontend of hours. 
+It will only work if you have pointed it at a functioning hours backend. 
+This can be done by altering the `proxy` field of package.json.
+It is designed as a Typescript React App.
+
+## Setup Instructions
+
+Once you have cloned the repository, run `yarn`. 
+This will automatically install all dependencies.
+
+## Run Instructions
+
+Run `yarn start` to start the frontend. 
+It will compile and automatically start a local server where you can view your code.
+
+
+## Create React App Boilerplate
 
 In the project directory, you can run:
 
