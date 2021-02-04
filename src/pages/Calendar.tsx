@@ -26,6 +26,7 @@ import { sessionToEvent, sessionRequestToEvent, sessionRequestResponseToEvent, c
 type EventCalendarProps = {
   apiKey: ApiKey,
   showAllHours: boolean,
+  courseMemberships: CourseMembership[],
   activeCourseDatas: CourseData[]
 }
 
@@ -34,13 +35,10 @@ type EventCalendarProps = {
 
 function EventCalendar(props: EventCalendarProps) {
 
-  const [start, setStart] = React.useState(0);
-  const [duration, setDuration] = React.useState(0);
-
   // Closing it should also unselect anything using it
-  const [showCreatorPickerModal, setShowCreatorPickerModalRaw] = React.useState(false);
-  const setShowCreatorPickerModal = (a: boolean) => {
-    setShowCreatorPickerModalRaw(a)
+  const [selectedSpan, setSelectedSpanRaw] = React.useState<{ start: number, duration: number } | null>(null);
+  const setSelectedSpan = (a: { start: number, duration: number } | null) => {
+    setSelectedSpanRaw(a)
     if (!a && calendarRef.current != null) {
       calendarRef.current.getApi().unselect();
     }
@@ -106,13 +104,14 @@ function EventCalendar(props: EventCalendarProps) {
         : maybeSessionRequests
           .map(x => {
             const courseData = props.activeCourseDatas
-              .find(cd => cd.course.courseId == x.course.courseId);
+              .find(cd => cd.course.courseId === x.course.courseId);
             // means that course is hidden
             if (courseData === undefined) {
               return null;
             }
             return sessionRequestToEvent({
               sessionRequest: x,
+              courseData:courseData,
               relation: "STUDENT"
             });
           })
@@ -127,7 +126,7 @@ function EventCalendar(props: EventCalendarProps) {
           .filter(x => x.creator.userId !== props.apiKey.creator.userId)
           .map(async x => {
             const courseData = props.activeCourseDatas
-              .find(cd => cd.course.courseId == x.sessionRequest.course.courseId);
+              .find(cd => cd.course.courseId === x.sessionRequest.course.courseId);
             // means that course is hidden
             if (courseData === undefined) {
               return null;
@@ -168,7 +167,7 @@ function EventCalendar(props: EventCalendarProps) {
         : (await Promise.all(maybeCommittments
           .map(async x => {
             const courseData = props.activeCourseDatas
-              .find(cd => cd.course.courseId == x.session.course.courseId);
+              .find(cd => cd.course.courseId === x.session.course.courseId);
             // means that course is hidden
             if (courseData === undefined) {
               return null;
@@ -199,7 +198,7 @@ function EventCalendar(props: EventCalendarProps) {
         : (await Promise.all(maybeCommittmentResponses
           .map(async x => {
             const courseData = props.activeCourseDatas
-              .find(cd => cd.course.courseId == x.committment.session.course.courseId);
+              .find(cd => cd.course.courseId === x.committment.session.course.courseId);
             // means that course is hidden
             if (courseData === undefined) {
               return null;
@@ -226,22 +225,15 @@ function EventCalendar(props: EventCalendarProps) {
 
     ];
 
-    // get all the course memberships I have where i am an instructor
-    const maybeInstructorCourseMemberships = await viewCourseMembership({
-      userId: props.apiKey.creator.userId,
-      courseMembershipKind: "INSTRUCTOR",
-      onlyRecent: true,
-      apiKey: props.apiKey.key
-    });
-
-    const instructorEvents = isApiErrorCode(maybeInstructorCourseMemberships) ? [] :
-      // promise all waits on an array of promises
-      (await Promise.all(maybeInstructorCourseMemberships
+    const instructorEvents = // promise all waits on an array of promises
+      (await Promise.all(props.courseMemberships
+        .filter(x => x.courseMembershipKind === "INSTRUCTOR")
         .map(async (x: CourseMembership) => {
           // for each membership i have:
 
           // if no matches
-          if (!props.activeCourseDatas.map(cd => cd.course.courseId).includes(x.course.courseId)) {
+          const courseData = props.activeCourseDatas.find(cd => cd.course.courseId === x.course.courseId);
+          if (courseData === undefined) {
             return [];
           }
 
@@ -269,6 +261,7 @@ function EventCalendar(props: EventCalendarProps) {
               ? []
               : maybeSessionRequests.map(x => sessionRequestToEvent({
                 sessionRequest: x,
+                courseData:courseData,
                 relation: "INSTRUCTOR"
               })),
             ...isApiErrorCode(maybeSessionData)
@@ -329,27 +322,6 @@ function EventCalendar(props: EventCalendarProps) {
     weekends: false
   }
 
-
-  type CreatorPickerData = {
-    courseMemberships: CourseMembership[]
-  }
-
-  const loadCreatorPickerData = async (props: AsyncProps<CreatorPickerData>) => {
-    const maybeCourseMemberships = await viewCourseMembership({
-      userId: props.apiKey.creator.userId,
-      onlyRecent: true,
-      apiKey: props.apiKey.key,
-    });
-
-    if (isApiErrorCode(maybeCourseMemberships)) {
-      throw Error;
-    }
-
-    return {
-      courseMemberships: maybeCourseMemberships
-    };
-  }
-
   return <>
     <FullCalendar
       {...showAllHoursProps}
@@ -380,113 +352,107 @@ function EventCalendar(props: EventCalendarProps) {
         startRecur: new Date()
       }}
       selectConstraint="businessHours"
+      unselect={() => {
+        setSelectedSpan(null);
+      }}
       select={(dsa: DateSelectArg) => {
         // only open modal if this date is in the future
         if (dsa.start.valueOf() > Date.now()) {
-          setStart(dsa.start.valueOf());
-          setDuration(dsa.end.valueOf() - dsa.start.valueOf());
-          setShowCreatorPickerModal(true);
+          setSelectedSpan({
+            start: dsa.start.valueOf(),
+            duration: dsa.end.valueOf() - dsa.start.valueOf()
+          });
         } else {
           if (calendarRef.current != null) {
             calendarRef.current.getApi().unselect();
           }
         }
       }}
-      unselect={() => {
-        setShowCreatorPickerModal(false);
-      }}
     />
-    <DisplayModal
-      title="New Event"
-      show={showCreatorPickerModal}
-      onClose={() => setShowCreatorPickerModal(false)}
-    >
-      <Async promiseFn={loadCreatorPickerData} apiKey={props.apiKey}>
-        {_ => <>
-          <Async.Pending><Loader /></Async.Pending>
-          <Async.Rejected>
-            <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
-          </Async.Rejected>
-          <Async.Fulfilled<CreatorPickerData>>{data => <>
-            <Tabs className="py-3">
-              {data.courseMemberships.filter(x => x.courseMembershipKind === "INSTRUCTOR").length === 0 ? <> </> :
-                <Tab eventKey="session" title="Create Session">
-                  <UserCreateSession
-                    apiKey={props.apiKey}
-                    start={start}
-                    duration={duration}
-                    postSubmit={() => setShowCreatorPickerModal(false)}
-                  />
-                </Tab>
-              }
-              {data.courseMemberships.filter(x => x.courseMembershipKind === "STUDENT").length === 0 ? <> </> :
-                <Tab eventKey="profile" title="Create Request">
-                  <StudentCreateSessionRequest
-                    apiKey={props.apiKey}
-                    start={start}
-                    duration={duration}
-                    postSubmit={() => setShowCreatorPickerModal(false)}
-                  />
-                </Tab>
-              }
-              {data.courseMemberships.filter(x => x.courseMembershipKind !== "CANCEL").length > 0 ? <> </> :
-                <Tab eventKey="joincourse" title="Join a Course">
-                  <p>You need to join a course in order to create an event.</p>
-                  <ul>
-                    <li>If you're a student, you can join a course <a href="/add_course">here</a>.</li>
-                    <li>If you're an instructor, create a course <a href="/add_course">here</a>.</li>
-                  </ul>
-                </Tab>
-              }
-            </Tabs>
-          </>}
-          </Async.Fulfilled>
-        </>}
-      </Async>
-    </DisplayModal>
+
+
+    {selectedSpan === null ? <> </> :
+      <DisplayModal
+        title="New Event"
+        show={selectedSpan !== null}
+        onClose={() => setSelectedSpan(null)}
+      >
+        <Tabs className="py-3">
+          {props.courseMemberships.filter(x => x.courseMembershipKind === "INSTRUCTOR").length === 0 ? <> </> :
+            <Tab eventKey="session" title="Create Session">
+              <UserCreateSession
+                apiKey={props.apiKey}
+                start={selectedSpan.start}
+                duration={selectedSpan.duration}
+                postSubmit={() => setSelectedSpan(null)}
+              />
+            </Tab>
+          }
+          {props.courseMemberships.filter(x => x.courseMembershipKind === "STUDENT").length === 0 ? <> </> :
+            <Tab eventKey="profile" title="Create Request">
+              <StudentCreateSessionRequest
+                apiKey={props.apiKey}
+                start={selectedSpan.start}
+                duration={selectedSpan.duration}
+                postSubmit={() => setSelectedSpan(null)}
+              />
+            </Tab>
+          }
+          {props.courseMemberships.filter(x => x.courseMembershipKind !== "CANCEL").length > 0 ? <> </> :
+            <Tab eventKey="joincourse" title="Join a Course">
+              <p>You need to join a course in order to create an event.</p>
+              <ul>
+                <li>If you're a student, you can join a course <a href="/add_course">here</a>.</li>
+                <li>If you're an instructor, create a course <a href="/add_course">here</a>.</li>
+              </ul>
+            </Tab>
+          }
+        </Tabs>
+      </DisplayModal>
+    }
     {selectedManageSession === null ? <> </> :
-        <DisplayModal
-          title="Manage Session"
-          show={selectedManageSession !== null}
-          onClose={() => setSelectedManageSession(null)}
-        >
-          <UserManageSession session={selectedManageSession} apiKey={props.apiKey} />
-        </DisplayModal>
+      <DisplayModal
+        title="Manage Session"
+        show={selectedManageSession !== null}
+        onClose={() => setSelectedManageSession(null)}
+      >
+        <UserManageSession session={selectedManageSession} apiKey={props.apiKey} />
+      </DisplayModal>
     }
     {selectedViewSession === null ? <> </> :
-        <DisplayModal
-          title="View Session"
-          show={selectedManageSession !== null}
-          onClose={() => setSelectedViewSession(null)}
-        >
-          <ViewSession session={selectedViewSession} expanded apiKey={props.apiKey} />
-        </DisplayModal>
+      <DisplayModal
+        title="View Session"
+        show={selectedManageSession !== null}
+        onClose={() => setSelectedViewSession(null)}
+      >
+        <ViewSession session={selectedViewSession} expanded apiKey={props.apiKey} />
+      </DisplayModal>
     }
     {selectedReviewSessionRequest === null ? <> </> :
-        <DisplayModal
-          title="Review Student Request"
-          show={selectedReviewSessionRequest !== null}
-          onClose={() => setSelectedReviewSessionRequest(null)}
-        >
-          <UserReviewSessionRequest
-            sessionRequest={selectedReviewSessionRequest}
-            apiKey={props.apiKey}
-            postSubmit={() => setSelectedReviewSessionRequest(null)}
-          />
-        </DisplayModal>
+      <DisplayModal
+        title="Review Student Request"
+        show={selectedReviewSessionRequest !== null}
+        onClose={() => setSelectedReviewSessionRequest(null)}
+      >
+        <UserReviewSessionRequest
+          sessionRequest={selectedReviewSessionRequest}
+          apiKey={props.apiKey}
+          postSubmit={() => setSelectedReviewSessionRequest(null)}
+        />
+      </DisplayModal>
     }
     {selectedManageSessionRequest === null ? <> </> :
-        <DisplayModal
-          title="Manage your Session Request"
-          show={selectedManageSessionRequest !== null}
-          onClose={() => setSelectedManageSessionRequest(null)}
-        >
-          <StudentManageSessionRequest
-            sessionRequest={selectedManageSessionRequest}
-            apiKey={props.apiKey}
-            postSubmit={() => setSelectedManageSessionRequest(null)}
-          />
-        </DisplayModal>
+      <DisplayModal
+        title="Manage your Session Request"
+        show={selectedManageSessionRequest !== null}
+        onClose={() => setSelectedManageSessionRequest(null)}
+      >
+        <StudentManageSessionRequest
+          sessionRequest={selectedManageSessionRequest}
+          apiKey={props.apiKey}
+          postSubmit={() => setSelectedManageSessionRequest(null)}
+        />
+      </DisplayModal>
     }
     {selectedViewSessionRequestResponse === null ? <> </> :
       <DisplayModal
@@ -530,44 +496,55 @@ function EventCalendar(props: EventCalendarProps) {
   </>
 }
 
-function Calendar(props: AuthenticatedComponentProps) {
+const loadCourseMemberships = async (props: AsyncProps<CourseMembership[]>) => {
+  const maybeCourseMembership = await viewCourseMembership({
+    userId: props.apiKey.creator.userId,
+    onlyRecent: true,
+    apiKey: props.apiKey.key,
+  });
+  if (isApiErrorCode(maybeCourseMembership)) {
+    throw Error;
+  }
+  return maybeCourseMembership;
+}
+
+
+const loadCourseData = async (props: AsyncProps<CourseData[]>) => {
+  const maybeCourseData = await viewCourseData({
+    recentMemberUserId: props.apiKey.creator.userId,
+    onlyRecent: true,
+    apiKey: props.apiKey.key,
+  });
+
+  if (isApiErrorCode(maybeCourseData)) {
+    throw Error;
+  }
+  // there's an invariant that there must always be one course data per valid course id
+  return maybeCourseData;
+}
+
+
+
+function CalendarWidget(props: AuthenticatedComponentProps) {
   const [showAllHours, setShowAllHours] = React.useState(false);
   const [hiddenCourses, setHiddenCourses] = React.useState<number[]>([]);
 
-  const loadCourseData = async (props: AsyncProps<CourseData[]>) => {
-    const maybeCourseMemberships = await viewCourseMembership({
-      userId: props.apiKey.creator.userId,
-      onlyRecent: true,
-      apiKey: props.apiKey.key,
-    });
 
-    if (isApiErrorCode(maybeCourseMemberships)) {
-      throw Error;
-    }
-
-    return (await Promise.all(maybeCourseMemberships.map(async cm => {
-      const maybeCourseData = await viewCourseData({
-        courseId: cm.course.courseId,
-        onlyRecent: true,
-        apiKey: props.apiKey.key
-      });
-      if (isApiErrorCode(maybeCourseData)) {
-        throw Error;
-      }
-      return maybeCourseData;
-    }))).flat();
-  }
-
-
-  return (
-    <DashboardLayout {...props} >
-      <Container fluid className="py-3 px-3">
-        <UtilityWrapper title="Upcoming Appointments">
-          <Popover id="information-tooltip">
-            This screen shows all future appointments.
-            You can click any date to add an appointment on that date,
-            or click an existing appointment to delete it.
-          </Popover>
+  return <UtilityWrapper title="Upcoming Appointments">
+    <Popover id="information-tooltip">
+      This screen shows all future appointments.
+      You can click any date to add an appointment on that date,
+      or click an existing appointment to delete it.
+    </Popover>
+    <Async promiseFn={loadCourseData} apiKey={props.apiKey}>
+      {_ => <>
+        <Async.Pending>
+          <Loader />
+        </Async.Pending>
+        <Async.Rejected>
+          <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
+        </Async.Rejected>
+        <Async.Fulfilled<CourseData[]>>{cds =>
           <Row>
             <Col sm>
               <Card className="my-3 mx-3">
@@ -578,60 +555,59 @@ function Calendar(props: AuthenticatedComponentProps) {
                     onChange={_ => setShowAllHours(!showAllHours)}
                     label="Show All Hours"
                   />
-                  <Async promiseFn={loadCourseData} apiKey={props.apiKey}>
-                    {_ => <>
-                      <Async.Pending><Loader /></Async.Pending>
-                      <Async.Rejected>
-                        <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
-                      </Async.Rejected>
-                      <Async.Fulfilled<CourseData[]>>{data =>
-                        <>
-                          {data.length === 0
-                            ? <> </>
-                            : <Card.Subtitle className="my-2"> Hide Courses </Card.Subtitle>
-                          }
-                          {data.map((cd: CourseData) =>
-                            <Form.Check
-                              checked={hiddenCourses.includes(cd.course.courseId)}
-                              onChange={_ => setHiddenCourses(
-                                hiddenCourses.includes(cd.course.courseId)
-                                  // if its included, remove it
-                                  ? hiddenCourses.filter(ci => ci !== cd.course.courseId)
-                                  // if its not included, disinclude it
-                                  : [...hiddenCourses, cd.course.courseId]
-                              )}
-                              label={`Hide ${cd.name}`}
-                            />
-                          )}
-                        </>}
-                      </Async.Fulfilled>
-                    </>}
-                  </Async>
+                  {cds.length === 0
+                    ? <> </>
+                    : <Card.Subtitle className="my-2"> Hide Courses </Card.Subtitle>
+                  }
+                  {cds.map((cd: CourseData) =>
+                    <Form.Check
+                      checked={hiddenCourses.includes(cd.course.courseId)}
+                      onChange={_ => setHiddenCourses(
+                        hiddenCourses.includes(cd.course.courseId)
+                          // if its included, remove it
+                          ? hiddenCourses.filter(ci => ci !== cd.course.courseId)
+                          // if its not included, disinclude it
+                          : [...hiddenCourses, cd.course.courseId]
+                      )}
+                      label={`Hide ${cd.name}`}
+                    />)}
                 </Card.Body>
               </Card>
             </Col>
             <Col lg={10}>
-              <Async promiseFn={loadCourseData} apiKey={props.apiKey}>
+              <Async promiseFn={loadCourseMemberships} apiKey={props.apiKey}>
                 {_ => <>
-                  <Async.Pending><Loader /></Async.Pending>
+                  <Async.Pending>
+                    <Loader />
+                  </Async.Pending>
                   <Async.Rejected>
                     <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
                   </Async.Rejected>
-                  <Async.Fulfilled<CourseData[]>>{data =>
+                  <Async.Fulfilled<CourseMembership[]>>{cms =>
                     <EventCalendar
-                      activeCourseDatas={data.filter(cm => !hiddenCourses.includes(cm.course.courseId))}
+                      activeCourseDatas={cds.filter(cm => !hiddenCourses.includes(cm.course.courseId))}
                       apiKey={props.apiKey}
-                      showAllHours={showAllHours} />
+                      showAllHours={showAllHours}
+                      courseMemberships={cms}
+                    />
                   }
                   </Async.Fulfilled>
                 </>}
               </Async>
             </Col>
-          </Row>
-        </UtilityWrapper>
-      </Container>
-    </DashboardLayout>
-  )
+          </Row>}
+        </Async.Fulfilled>
+      </>}
+    </Async>
+  </UtilityWrapper>
 };
+
+function Calendar(props: AuthenticatedComponentProps) {
+  return <DashboardLayout {...props} >
+    <Container fluid className="py-3 px-3">
+      <CalendarWidget {...props} />
+    </Container>
+  </DashboardLayout>
+}
 
 export default Calendar;

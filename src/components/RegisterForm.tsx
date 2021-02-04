@@ -10,7 +10,8 @@ type RegisterFormProps = {
 function RegisterForm(props: RegisterFormProps) {
 
   type RegistrationValue = {
-    name: string,
+    firstName: string,
+    lastName: string,
     email: string,
     password1: string,
     password2: string,
@@ -21,8 +22,12 @@ function RegisterForm(props: RegisterFormProps) {
     // Validate input
     let errors: FormikErrors<RegistrationValue> = {};
     let hasError = false;
-    if (values.name === "") {
-      errors.name = "Please enter what you'd like us to call you.";
+    if (values.firstName === "") {
+      errors.firstName= "Please enter your first name.";
+      hasError = true;
+    }
+    if (values.lastName === "") {
+      errors.lastName= "Please enter your last name.";
       hasError = true;
     }
     if (!values.email.includes("@")) {
@@ -48,7 +53,7 @@ function RegisterForm(props: RegisterFormProps) {
     }
 
     const maybeVerificationChallenge = newVerificationChallenge({
-      userName: values.name,
+      userName: values.firstName+ " " + values.lastName,
       userEmail: values.email,
       userPassword: values.password1,
     });
@@ -64,7 +69,8 @@ function RegisterForm(props: RegisterFormProps) {
         }
         case "USER_NAME_EMPTY": {
           fprops.setErrors({
-            name: "Please enter what you'd like us to call you."
+            firstName: "Please enter your first name.",
+            lastName: "Please enter your last name."
           });
           break;
         }
@@ -110,7 +116,7 @@ function RegisterForm(props: RegisterFormProps) {
     // execute callback
     props.onSuccess();
   }
-  const normalizeInput = (e: string) => e.replace(/[^A-Za-z0-9]+/g, "");
+  const normalizeInput = (e: string) => e.toUpperCase().replace(/[^A-Z]+/g, "");
 
   return (
     <Formik
@@ -120,7 +126,8 @@ function RegisterForm(props: RegisterFormProps) {
         successMessage: "",
       }}
       initialValues={{
-        name: "",
+        firstName: "",
+        lastName: "",
         email: "",
         password1: "",
         password2: "",
@@ -133,16 +140,28 @@ function RegisterForm(props: RegisterFormProps) {
           onSubmit={fprops.handleSubmit} >
           <div hidden={fprops.status.successMessage !== ""}>
             <Form.Group >
-              <Form.Label >Name</Form.Label>
+              <Form.Label >First Name</Form.Label>
               <Form.Control
-                name="name"
+                name="firstName"
                 type="text"
-                placeholder="Name"
-                value={fprops.values.name}
-                onChange={e => fprops.setFieldValue("name", normalizeInput(e.target.value))}
-                isInvalid={!!fprops.errors.name}
+                placeholder="First Name"
+                value={fprops.values.firstName}
+                onChange={e => fprops.setFieldValue("firstName", normalizeInput(e.target.value))}
+                isInvalid={!!fprops.errors.firstName}
               />
-              <Form.Control.Feedback type="invalid">{fprops.errors.name}</Form.Control.Feedback>
+              <Form.Control.Feedback type="invalid">{fprops.errors.firstName}</Form.Control.Feedback>
+            </Form.Group>
+            <Form.Group >
+              <Form.Label >Last Name</Form.Label>
+              <Form.Control
+                name="lastName"
+                type="text"
+                placeholder="Last Name"
+                value={fprops.values.lastName}
+                onChange={e => fprops.setFieldValue("lastName", normalizeInput(e.target.value))}
+                isInvalid={!!fprops.errors.lastName}
+              />
+              <Form.Control.Feedback type="invalid">{fprops.errors.lastName}</Form.Control.Feedback>
             </Form.Group>
             <Form.Group >
               <Form.Label >Email</Form.Label>

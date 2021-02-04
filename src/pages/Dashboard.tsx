@@ -243,7 +243,9 @@ function Dashboard(props: AuthenticatedComponentProps) {
                         {cms
                           .filter(cm => cm.courseMembershipKind !== "CANCEL")
                           .map((a: CourseMembership) =>
-                            <CourseCard course={a.course} role={a.courseMembershipKind} apiKey={props.apiKey} />
+                            <div className="my-3 mx-3">
+                              <CourseCard course={a.course} role={a.courseMembershipKind} apiKey={props.apiKey} />
+                            </div>
                           )}
                         <div className="my-3 mx-3">
                           <AddNewCard setShow={setShowNewCourseModal} />

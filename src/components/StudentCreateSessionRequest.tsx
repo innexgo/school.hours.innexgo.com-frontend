@@ -126,30 +126,15 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
             <Col>
               <SearchSingleCourse
                 name="courseId"
-                search={async (input: string) => {
-                  const maybeCourseMemberships = await viewCourseMembership({
-                    userId: props.apiKey.creator.userId,
-                    courseMembershipKind:"STUDENT",
-                    partialCourseName: input,
+                search={async input => {
+                  const maybeCourseData = await viewCourseData({
+                    recentStudentUserId: props.apiKey.creator.userId,
+                    partialName: input,
                     onlyRecent: true,
                     apiKey: props.apiKey.key,
                   });
 
-                  if (isApiErrorCode(maybeCourseMemberships)) {
-                    return [];
-                  }
-
-                  return (await Promise.all(maybeCourseMemberships.map(async cm => {
-                    const maybeCourseData = await viewCourseData({
-                      courseId: cm.course.courseId,
-                      onlyRecent: true,
-                      apiKey: props.apiKey.key
-                    });
-                    if (isApiErrorCode(maybeCourseData)) {
-                      return [];
-                    }
-                    return maybeCourseData;
-                  }))).flat();
+                  return isApiErrorCode(maybeCourseData) ? [] : maybeCourseData;
                 }}
                 isInvalid={fprops.status.courseId !== ""}
                 setFn={(e: CourseData | null) => fprops.setFieldValue("courseId", e?.course.courseId)} />

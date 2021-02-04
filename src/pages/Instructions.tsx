@@ -78,11 +78,11 @@ function Instructions() {
           <p>
            1. Register at yourschoolname.hours.innexgo.com. <br/>
            2. Once logged in, you should see this homepage: <br/>
-           <img src={teachersetupone} width='30%' height='auto'/> <br/>
+           <img src={teachersetupone} width='30%' height='auto' alt="A screenshot of the homepage"/> <br/>
            3. Go to settings (the gear symbol on the left sidebar). You should see a Manage Subscription box: <br/>
-           <img src={teachersetuptwo} width='30%' height='auto'/><br/>
+           <img src={teachersetuptwo} width='30%' height='auto' alt="A screenshot of the settings page"/><br/>
            4. Type your subscription code into the box and hit 'Change Subscription' button. If it is a valid code, you should see this: <br/>
-           <img src={teachersetupthree}/><br/>
+           <img src={teachersetupthree} alt="Success message if code is correct"/><br/>
            5. Click on the dashboard icon (the four rectangles symbol on the sidebar) to return to the dashboard. You should see a new section: <br/>
            <img src={teachersetupfour} width='30%' height='auto'/><br/>
            6. Hit the plus button under 'My Schools' to add a new school, and enter the name of your school (it will automatically be capitalized). <br/>

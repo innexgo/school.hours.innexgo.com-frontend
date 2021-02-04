@@ -14,6 +14,7 @@ export const sessionToEvent = (props: {
 
 export const sessionRequestToEvent = (props: {
   sessionRequest: SessionRequest,
+  courseData: CourseData,
   relation: CourseMembershipKind
 }): EventInput => ({
   id: `SessionRequest:${props.sessionRequest.sessionRequestId}`,

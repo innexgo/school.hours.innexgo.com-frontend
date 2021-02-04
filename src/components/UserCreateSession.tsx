@@ -192,34 +192,19 @@ function CreateSession(props: CreateSessionProps) {
             </Col>
           </Form.Group>
           <Form.Group as={Row}>
-            <Form.Label column sm={2}>Course Name</Form.Label>
+            <Form.Label column sm={2}>Course</Form.Label>
             <Col>
               <SearchSingleCourse
                 name="courseId"
                 search={async (input: string) => {
-                  const maybeCourseMemberships = await viewCourseMembership({
-                    partialCourseName: input,
-                    courseMembershipKind: "INSTRUCTOR",
-                    userId: props.apiKey.creator.userId,
+                 const maybeCourseData = await viewCourseData({
+                    recentMemberUserId: props.apiKey.creator.userId,
+                    partialName: input,
                     onlyRecent: true,
                     apiKey: props.apiKey.key,
                   });
 
-                  if(isApiErrorCode(maybeCourseMemberships)) {
-                      return[];
-                  }
-
-                  return (await Promise.all(maybeCourseMemberships.map(async a => {
-                    const maybeCourseData = await viewCourseData({
-                      courseId: a.course.courseId,
-                      onlyRecent: true,
-                      apiKey: props.apiKey.key
-                    });
-                    if (isApiErrorCode(maybeCourseData)) {
-                      return [];
-                    }
-                    return maybeCourseData;
-                  }))).flat();
+                  return isApiErrorCode(maybeCourseData) ? [] : maybeCourseData;
                 }}
                 isInvalid={fprops.status.courseId !== ""}
                 setFn={(e: CourseData | null) => {
@@ -255,7 +240,7 @@ function CreateSession(props: CreateSessionProps) {
                 search={async (input: string) => {
                   const maybeCourseMemberships = await viewCourseMembership({
                     courseId: fprops.values.courseId!,
-                    courseMembershipKind:"STUDENT",
+                    courseMembershipKind: "STUDENT",
                     partialUserName: input,
                     onlyRecent:true,
                     apiKey: props.apiKey.key,

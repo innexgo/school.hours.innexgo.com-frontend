@@ -110,30 +110,15 @@ function UserCreateCourse(props: UserCreateCourseProps) {
               <SearchSingleSchool
                 name="courseId"
                 search={async (input: string) => {
-
-                  const maybeAdminships = await viewAdminship({
-                    userId: props.apiKey.creator.userId,
-                    adminshipKind:"ADMIN",
-                    partialSchoolName: input,
+                  const maybeSchoolData = await viewSchoolData({
+                    partialName: input,
                     onlyRecent: true,
+                    recentAdminUserId: props.apiKey.creator.userId,
                     apiKey: props.apiKey.key,
                   });
 
-                  if (isApiErrorCode(maybeAdminships)) {
-                    return [];
-                  }
+                  return isApiErrorCode(maybeSchoolData) ? [] : maybeSchoolData;
 
-                  return (await Promise.all(maybeAdminships.map(async a => {
-                    const maybeSchoolData = await viewSchoolData({
-                      schoolId: a.school.schoolId,
-                      onlyRecent: true,
-                      apiKey: props.apiKey.key
-                    });
-                    if (isApiErrorCode(maybeSchoolData)) {
-                      return [];
-                    }
-                    return maybeSchoolData;
-                  }))).flat();
                 }}
                 isInvalid={!!fprops.errors.schoolId}
                 setFn={(e: SchoolData | null) => fprops.setFieldValue("schoolId", e?.school.schoolId)} />

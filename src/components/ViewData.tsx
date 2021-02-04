@@ -5,14 +5,14 @@ import Loader from '../components/Loader';
 import format from 'date-fns/format';
 import { isApiErrorCode, viewSchoolData, viewCourseData, viewSessionData } from "../utils/utils";
 
-const ToggleExpandButton = (props: { expand: boolean, setExpand: (b: boolean) => void }) =>
+const ToggleExpandButton = (props: { expanded: boolean, setExpanded: (b: boolean) => void }) =>
   <button className="btn btn-link px-0 py-0 float-right"
     style={{
       fontWeight: "normal" as const,
       fontSize: "0.875rem"
     }}
-    onClick={_ => props.setExpand(!props.expand)}>
-    {props.expand ? "Less" : "More"}
+    onClick={_ => props.setExpanded(!props.expanded)}>
+    {props.expanded ? "Less" : "More"}
   </button>
 
 
@@ -76,7 +76,7 @@ export const ViewSchool = (props: {
         expanded
           ? <span>
             {schoolData.name}
-            <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
+            <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
           </span>
           : <div>
             <Table hover bordered>
@@ -91,7 +91,7 @@ export const ViewSchool = (props: {
                 </tr>
               </tbody>
             </Table>
-            <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
+            <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
           </div>
       }
       </Async.Fulfilled>
@@ -118,7 +118,7 @@ export const ViewCourse = (props: {
         expanded ?
           <span>
             {courseData.name}
-            <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
+            <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
           </span>
           : <div>
             <Table hover bordered>
@@ -133,7 +133,7 @@ export const ViewCourse = (props: {
                 </tr>
               </tbody>
             </Table>
-            <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
+            <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
           </div>
       }
       </Async.Fulfilled>
@@ -151,7 +151,7 @@ export const ViewUser = (props: {
   if (!expanded) {
     return <span>
       {props.user.name}
-      <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
+      <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
     </span>
   } else {
     return <div>
@@ -167,7 +167,7 @@ export const ViewUser = (props: {
           </tr>
         </tbody>
       </Table>
-      <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
+      <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
     </div>
   }
 }
@@ -190,7 +190,7 @@ export const ViewSession = (props: {
         expanded
           ? <span>
             {sessionData.name} - {format(sessionData.startTime, "MMM do")}
-            <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
+            <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
           </span>
           : <div>
             <Table hover bordered>
@@ -220,7 +220,7 @@ export const ViewSession = (props: {
                 </tr>
               </tbody>
             </Table>
-            <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
+            <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
           </div>
       }
       </Async.Fulfilled>
@@ -236,7 +236,7 @@ export const ViewSessionRequest = (props: {
   const [expanded, setExpanded] = React.useState(props.expanded);
   if (!expanded) {
     return <span> {props.sessionRequest.attendee.name} - {format(props.sessionRequest.startTime, "MMM do")}
-      <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
+      <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
     </span>
   } else {
     return <div>
@@ -271,7 +271,7 @@ export const ViewSessionRequest = (props: {
           </tr>
         </tbody>
       </Table>
-      <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
+      <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
     </div>
   }
 }
@@ -285,7 +285,7 @@ export const ViewSessionRequestResponse = (props: {
   if (!expanded) {
     return <span>
       {props.sessionRequestResponse.sessionRequest.attendee.name} - {props.sessionRequestResponse.accepted ? "ACCEPTED" : "REJECTED"}
-      <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
+      <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
     </span>
   } else {
     return <div>
@@ -316,7 +316,7 @@ export const ViewSessionRequestResponse = (props: {
           }
         </tbody>
       </Table>
-      <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
+      <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
     </div>
   }
 }
@@ -341,7 +341,7 @@ export const ViewCommittment = (props: {
           ? <span>
             {format(sessionData.startTime, "h:mm a - ")}
             {format(sessionData.startTime + sessionData.duration, "h:mm a")}
-            <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
+            <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
           </span>
           : <div>
             <Table hover bordered>
@@ -360,7 +360,7 @@ export const ViewCommittment = (props: {
                 </tr>
               </tbody>
             </Table>
-            <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
+            <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
           </div>
       }
       </Async.Fulfilled>
@@ -377,7 +377,7 @@ export const ViewCommittmentResponse = (props: {
   if (!expanded) {
     return <span>
       {props.committmentResponse.kind}
-      <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
+      <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
     </span>
   } else {
     return <div>
@@ -397,7 +397,7 @@ export const ViewCommittmentResponse = (props: {
           </tr>
         </tbody>
       </Table>
-      <ToggleExpandButton expand={expanded} setExpand={setExpanded} />
+      <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
     </div>
   }
 }

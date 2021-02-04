@@ -27,6 +27,7 @@ class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
     const setDuration = (x: number | null) => this.props.setFieldValue("duration", x);
     const setSessionId = (x: number | null) => this.props.setFieldValue("sessionId", x);
 
+
     return <FullCalendar
       plugins={[timeGridPlugin, interactionPlugin]}
       initialView="timeGridDay"
@@ -73,48 +74,14 @@ class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
 
           return isApiErrorCode(maybeSessionData)
             ? []
-            : maybeSessionData.map(s => sessionToEvent({
-              sessionData: s,
-              relation: "INSTRUCTOR"
+            : maybeSessionData.map(s => ({
+              id: `Session:${s.session.sessionId}`,
+              start: new Date(s.startTime),
+              end: new Date(s.startTime + s.duration),
+              color: s.session.sessionId === this.props.sessionId ? "#3788D8" : "#6C757D",
             }));
         },
-        [{
-          id: `SessionRequest:${this.props.sessionRequest.sessionRequestId}`,
-          start: new Date(this.props.sessionRequest.startTime),
-          end: new Date(this.props.sessionRequest.startTime + this.props.sessionRequest.duration),
-          color: "#00000000",
-          borderColor: "#00000000",
-          display: "background",
-          sessionRequest: this.props.sessionRequest,
-        }],
       ]}
-      eventContent={(eventInfo) => {
-        const props = eventInfo.event.extendedProps;
-        switch (eventInfo.event.id.split(':')[0]) {
-          case "Session": {
-            return <Card
-              bg={this.props.sessionId === props.session.sessionId
-                ? "primary"
-                : "secondary"}
-              className="h-100 w-75 text-light overflow-hidden">
-              <small>{eventInfo.event.extendedProps.session.name}</small>
-            </Card>
-          }
-          case "SessionRequest": {
-            return <div className="h-100 w-100 bg-success" />
-          }
-          default: {
-            return "New Event";
-            /* TODO
-            return <Card
-              bg="primary"
-              className="h-100 w-75 text-light overflow-hidden">
-              <small>New Event</small>
-            </Card>
-            */
-          }
-        }
-      }}
     />
   }
 }
@@ -374,8 +341,33 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
               <Form.Text className="text-danger">{fprops.errors.accepted}</Form.Text>
             </Form.Group>
           </Col>
+          <Col xs={2}>
+            <Form.Label>Requested Duration</Form.Label>
+            <FullCalendar
+              plugins={[timeGridPlugin, interactionPlugin]}
+              initialView="timeGridDay"
+              unselectCancel=".UserReviewSessionRequest"
+              headerToolbar={false}
+              allDaySlot={false}
+              height="auto"
+              slotMinTime="08:00"
+              slotMaxTime="18:00"
+              slotDuration="00:15:00"
+              selectable={false}
+              initialDate={props.sessionRequest.startTime}
+              datesSet={({ view }) => /* Keeps window size in sync */view.calendar.updateSize()}
+              events={[{
+                id: `SessionRequest:${props.sessionRequest.sessionRequestId}`,
+                start: new Date(props.sessionRequest.startTime),
+                end: new Date(props.sessionRequest.startTime + props.sessionRequest.duration),
+                display: "background",
+                sessionRequest: props.sessionRequest,
+              }]}
+            />
+          </Col>
           <Col>
             <Form.Group>
+              <Form.Label>Select or Create Session</Form.Label>
               <CalendarWidget
                 {...props}
                 setFieldValue={fprops.setFieldValue}

@@ -470,6 +470,7 @@ export type ViewSchoolDataProps = {
   partialDescription?: string, //
   active?: boolean, //
   onlyRecent?: boolean, //
+  recentAdminUserId?:number, //
   offset?: number,
   count?: number,
   apiKey: string,
@@ -566,6 +567,9 @@ export type ViewCourseDataProps = {
   active?: boolean, //
   onlyRecent?: boolean, //
   schoolId?: number, //
+  recentMemberUserId?: number, //
+  recentStudentUserId?: number, //
+  recentInstructorUserId?: number, //
   offset?: number,
   count?: number,
   apiKey: string,
@@ -610,8 +614,6 @@ export type ViewCourseMembershipProps = {
   courseMembershipKind?: CourseMembershipKind, //
   courseMembershipSourceKind?: CourseMembershipSourceKind, //
   courseKeyId?: number, //
-  courseName?: string,
-  partialCourseName?: string,
   userName?: string,
   partialUserName?: string,
   onlyRecent?: boolean,
@@ -672,8 +674,6 @@ export type ViewAdminshipProps = {
   adminshipKind?: AdminshipKind, //
   adminshipSourceKind?: AdminshipSourceKind, //
   adminshipRequestResponseId?: number, //
-  schoolName?: string,
-  partialSchoolName?: string,
   userName?: string,
   partialUserName?: string,
   onlyRecent?: boolean,
