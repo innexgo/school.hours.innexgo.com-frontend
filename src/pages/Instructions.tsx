@@ -35,15 +35,15 @@ function Instructions() {
       <div className="px-3 py-3">
         <h5>Quick links</h5>
         <h6>Setup Instructions</h6>
-        <div style={{float: 'left', width: '40%'}}>
+        <div style={{ float: 'left', width: '40%' }}>
           <ul>
             <li><a href="#teachers" style={{ color: 'black' }}>Teacher setup</a></li>
             <li><a href="#students" style={{ color: 'black' }}>Student setup</a></li>
           </ul>
         </div>
-        <div style={{content: "", display: 'table', clear: 'both'}}/>
+        <div style={{ content: "", display: 'table', clear: 'both' }} />
         <h6>Using Innexgo Hours</h6>
-        <div style={{float: 'left', width: '40%'}}>
+        <div style={{ float: 'left', width: '40%' }}>
           <ul>
             <li><a href="#one" style={{ color: 'black' }}>Create an appointment</a></li>
             <li><a href="#two" style={{ color: 'black' }}>Create group appointment</a></li>
@@ -52,15 +52,15 @@ function Instructions() {
             <li><a href="#five" style={{ color: 'black' }}>Reject appointment</a></li>
           </ul>
         </div>
-        <div style={{float: 'left', width: '40%'}}>
+        <div style={{ float: 'left', width: '40%' }}>
           <ul>
-          <li><a href="#six" style={{ color: 'black' }}>Invite students</a></li>
-          <li><a href="#seven" style={{ color: 'black' }}>Track attendance</a></li>
-          <li><a href="#eight" style={{ color: 'black' }}>Day/week view</a></li>
-          <li><a href="#nine" style={{ color: 'black' }}>Past/future</a></li>
+            <li><a href="#six" style={{ color: 'black' }}>Invite students</a></li>
+            <li><a href="#seven" style={{ color: 'black' }}>Track attendance</a></li>
+            <li><a href="#eight" style={{ color: 'black' }}>Day/week view</a></li>
+            <li><a href="#nine" style={{ color: 'black' }}>Past/future</a></li>
           </ul>
         </div>
-        <div style={{content: "", display: 'table', clear: 'both'}}/>
+        <div style={{ content: "", display: 'table', clear: 'both' }} />
         <div>
           <h3 style={{ marginTop: '30px', marginBottom: '20px' }}>
             Innexgo Hours
@@ -74,51 +74,48 @@ function Instructions() {
 
           <hr id="teachers" style={{ marginTop: '20px', marginBottom: '20px' }} />
           <h5 style={{ marginBottom: '20px' }}>Teacher setup</h5>
-          <br />
-          <p>
-           1. Register at yourschoolname.hours.innexgo.com. <br/>
-           2. Once logged in, you should see this homepage: <br/>
-           <img src={teachersetupone} width='30%' height='auto' alt="A screenshot of the homepage"/> <br/>
-           3. Go to settings (the gear symbol on the left sidebar). You should see a Manage Subscription box: <br/>
-           <img src={teachersetuptwo} width='30%' height='auto' alt="A screenshot of the settings page"/><br/>
-           4. Type your subscription code into the box and hit 'Change Subscription' button. If it is a valid code, you should see this: <br/>
-           <img src={teachersetupthree} alt="Success message if code is correct"/><br/>
-           5. Click on the dashboard icon (the four rectangles symbol on the sidebar) to return to the dashboard. You should see a new section: <br/>
-           <img src={teachersetupfour} width='30%' height='auto'/><br/>
-           6. Hit the plus button under 'My Schools' to add a new school, and enter the name of your school (it will automatically be capitalized). <br/>
-           <img src={teachersetupfive} width='30%' height='auto'/><br/>
-           7. Hit 'Submit Form' and you should now see: <br/>
-           <img src={teachersetupsix}/><br/>
-           8. Now, click the button beneath 'My Courses' and make sure you're on the 'Create Course' tab. Fill in the information for the course. <br/>
-           <img src={teachersetupseven} width='30%' height='auto'/><br/>
-           9. Once you hit 'Submit Form', you should see your course on your homepage: <br/>
-           <img src={teachersetupeight} width='30%' height='auto'/><br/>
-           10. Click on the course you just created. You should be able to see a page with data, instructors, students, and course keys: <br/>
-           <img src={teachersetupnine} width='30%' height='auto'/><br/>
-           11. Click on the 'Add Course Keys' tab at the bottom to add students/instructors to your course. Configure the code and hit 'Submit Form'. (Do not enable 'Key promotes to instructor' if you are adding students.) <br/>
-           <img src={teachersetupten} width='40%' height='auto'/><br/>
-           12. Once you've clicked the 'Submit Form' button, you should see the course key. (The text in the key will be different for each user; don't worry if it isn't exactly the same). <br/>
-           <img src={teachersetupeleven} width='40%' height='auto'/><br/>
-           13. Share the key/code with your students, and have them join your course. (You can easily remove students, and keys using the trash can symbol on the right.)<br/>
-           14. Once students have joined your course, you should be able to see them on the course page: <br/>
-           <img src={teachersetuptwelve}/><br/>
-           15. Click on the calendar icon to get started using Innexgo Hours.
-          </p>
+          <ol>
+            <li>Register at yourschoolname.hours.innexgo.com.</li>
+            <li>Once logged in, you should see this homepage: </li>
+            <img src={teachersetupone} width='30%' height='auto' />
+            <li>Go to settings (the gear symbol on the left sidebar). You should see a Manage Subscription box: </li>
+            <img src={teachersetuptwo} width='30%' height='auto' />
+            <li>Type your subscription code into the box and hit 'Change Subscription' button. If it is a valid code, you should see this:</li>
+            <img src={teachersetupthree} /><br />
+            <li>Click on the dashboard icon (the four rectangles symbol on the sidebar) to return to the dashboard. You should see a new section: </li>
+            <img src={teachersetupfour} width='30%' height='auto' /><br />
+            <li>Hit the plus button under 'My Schools' to add a new school, and enter the name of your school (it will automatically be capitalized). </li>
+            <img src={teachersetupfive} width='30%' height='auto' /><br />
+            <li>Hit 'Submit Form' and you should now see: </li>
+            <img src={teachersetupsix} /><br />
+            <li>Now, click the button beneath 'My Courses' and make sure you're on the 'Create Course' tab. Fill in the information for the course. </li>
+            <img src={teachersetupseven} width='30%' height='auto' /><br />
+            <li>Once you hit 'Submit Form', you should see your course on your homepage: </li>
+            <img src={teachersetupeight} width='30%' height='auto' /><br />
+            <li>Click on the course you just created. You should be able to see a page with data, instructors, students, and course keys: </li>
+            <img src={teachersetupnine} width='30%' height='auto' /><br />
+            <li>Click on the 'Add Course Keys' tab at the bottom to add students/instructors to your course. Configure the code and hit 'Submit Form'. (Do not enable 'Key promotes to instructor' if you are adding students.) </li>
+            <img src={teachersetupten} width='40%' height='auto' /><br />
+            <li>Once you've clicked the 'Submit Form' button, you should see the course key. (The text in the key will be different for each user; don't worry if it isn't exactly the same). </li>
+            <img src={teachersetupeleven} width='40%' height='auto' /><br />
+            <li>Share the key/code with your students, and have them join your course. (You can easily remove students, and keys using the trash can symbol on the right.)</li>
+            <li>Once students have joined your course, you should be able to see them on the course page: </li>
+            <img src={teachersetuptwelve} /><br />
+            <li>Click on the calendar icon to get started using Innexgo Hours.</li>
+          </ol>
 
           <hr id="students" style={{ marginTop: '20px', marginBottom: '20px' }} />
           <h5 style={{ marginBottom: '20px' }}>Student setup</h5>
-          <br />
-          <p>
-            1. Register at yourschoolname.hours.innexgo.com <br/>
-            2. Once you've logged in, you should see your homepage: <br/>
-            <img src={studentsetupone} width='30%' height='auto'/> <br/>
-            3. Hit the plus button under 'My Courses', and enter a course key from your teacher to join their course. <br/>
-            <img src={studentsetuptwo} width='30%' height='auto'/> <br/>
-            4. Hit the 'Join' button, and you should be able to see the course on your homepage. <br/>
-            <img src={studentsetupthree} width='40%' height='auto'/> <br/>
-            5. Click on the calendar icon on the left sidebar to get started using Innexgo Hours.
-
-          </p>
+          <ol>
+            <li>Register at yourschoolname.hours.innexgo.com </li>
+            <li>Once you've logged in, you should see your homepage: </li>
+            <img src={studentsetupone} width='30%' height='auto' /> <br />
+            <li>Hit the plus button under 'My Courses', and enter a course key from your teacher to join their course. </li>
+            <img src={studentsetuptwo} width='30%' height='auto' /> <br />
+            <li>Hit the 'Join' button, and you should be able to see the course on your homepage. </li>
+            <img src={studentsetupthree} width='40%' height='auto' /> <br />
+            <li>Click on the calendar icon on the left sidebar to get started using Innexgo Hours.</li>
+          </ol>
 
           <hr id="one" style={{ marginTop: '20px', marginBottom: '20px' }} />
           <h5 style={{ marginBottom: '20px' }}>Create an appointment</h5>
@@ -164,7 +161,7 @@ function Instructions() {
           <br />
           <p>
             Appointment requests from students will appear in a different color. Click to view a popup that allows you to choose a time slot for
-            the appointment - either the highlighted region (which is the time the student requested) or a new one. Drag in the calendar to adjust 
+            the appointment - either the highlighted region (which is the time the student requested) or a new one. Drag in the calendar to adjust
             the duration of the appointment. Hit accept, then submit to accept it.
           </p>
 
@@ -222,7 +219,7 @@ function Instructions() {
           </video>
           <br />
           <p>
-            Use the arrows in the top left to navigate between past and future weeks/days, depending on the selected view. 
+            Use the arrows in the top left to navigate between past and future weeks/days, depending on the selected view.
             Use the 'today' button to go back to the current day/week. Attendance can only be taken for current and future
             appointments.
           </p>
