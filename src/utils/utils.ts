@@ -773,6 +773,7 @@ export type ViewSessionRequestResponseProps = {
   minDuration?: number, //
   maxDuration?: number, //
   responded?: boolean, //
+  sessionId?: number, //
   offset?: number,
   count?: number,
   apiKey: string,
