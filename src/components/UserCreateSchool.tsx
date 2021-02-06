@@ -126,7 +126,7 @@ function UserCreateSchool(props: UserCreateSchoolProps) {
               <Form.Control.Feedback type="invalid">{fprops.errors.name}</Form.Control.Feedback>
             </Form.Group>
             <Form.Group >
-              <Form.Label>School Name</Form.Label>
+              <Form.Label>Description</Form.Label>
               <Form.Control
                 name="description"
                 type="text"

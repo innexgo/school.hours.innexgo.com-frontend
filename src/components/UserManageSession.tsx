@@ -19,13 +19,13 @@ type UserManageSessionData = {
 }
 
 const loadData = async (props: AsyncProps<UserManageSessionData>) => {
-  
+
   const maybeRequestResponses = await viewSessionRequestResponse({
     sessionId: props.session.sessionId,
     apiKey: props.apiKey.key
   })
-  
-  if(isApiErrorCode(maybeRequestResponses)){
+
+  if (isApiErrorCode(maybeRequestResponses)) {
     throw Error;
   }
 
@@ -80,11 +80,25 @@ function ManageSessionModal(props: ManageSessionModalProps) {
           <Card>
             <Card.Body>
               <Card.Title>Session</Card.Title>
-              <ViewSession expanded apiKey={props.apiKey} session={props.session} /> <br></br>
-              <ViewSessionRequestResponse expanded={false} apiKey={props.apiKey} sessionRequestResponse={data.requestResponses[0]} />
+              <ViewSession expanded apiKey={props.apiKey} session={props.session} />
             </Card.Body>
           </Card>
           <br />
+          {data.requestResponses.length == 0 ? <> </> :
+            <>
+              <Card>
+                <Card.Body>
+                  <Card.Title>Initial Response</Card.Title>
+                  {data.requestResponses.map(srr =>
+                    <>
+                      <ViewSessionRequestResponse expanded={false} apiKey={props.apiKey} sessionRequestResponse={srr} />
+                    </>
+                  )}
+                </Card.Body>
+              </Card>
+              <br />
+            </>
+          }
           <h5>Students Attending</h5>
           <Tabs defaultActiveKey="manage">
             <Tab eventKey="manage" title="Current Students">
@@ -262,14 +276,14 @@ function ManageSessionModal(props: ManageSessionModalProps) {
                               courseId: props.session.course.courseId,
                               courseMembershipKind: "STUDENT",
                               partialUserName: input,
-                              onlyRecent:true,
+                              onlyRecent: true,
                               apiKey: props.apiKey.key,
                             });
                             return isApiErrorCode(maybeCourseMemberships)
-                               ? []
-                               : maybeCourseMemberships
-                                  .map(cm => cm.user)
-                                  .filter(u => !fprops.values.studentList.includes(u.userId))
+                              ? []
+                              : maybeCourseMemberships
+                                .map(cm => cm.user)
+                                .filter(u => !fprops.values.studentList.includes(u.userId))
                           }}
                           setFn={e => fprops.setFieldValue("studentList", e.map(s => s.userId))} />
                         <Form.Text className="text-danger">{fprops.status.studentList}</Form.Text>
