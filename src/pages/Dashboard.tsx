@@ -10,7 +10,7 @@ import DisplayModal from '../components/DisplayModal';
 import UserCreateSchool from '../components/UserCreateSchool';
 import UserCreateCourse from '../components/UserCreateCourse';
 import UserCreateCourseMembership from '../components/UserCreateCourseMembership';
-import { viewSubscription, viewAdminship, viewSchoolData, viewCourseData, viewCourseMembership, isApiErrorCode } from '../utils/utils';
+import { viewSubscription, viewSchoolData, viewCourseData, isApiErrorCode } from '../utils/utils';
 
 type ResourceCardProps = {
   title: string,
@@ -33,93 +33,6 @@ function ResourceCard(props: ResourceCardProps) {
   )
 }
 
-const loadCourseData = async (props: AsyncProps<CourseData>) => {
-  const maybeCourseData = await viewCourseData({
-    courseId: props.courseId,
-    onlyRecent: true,
-    apiKey: props.apiKey.key,
-  });
-
-  if (isApiErrorCode(maybeCourseData)) {
-    throw Error;
-  }
-  // there's an invariant that there must always be one course data per valid course id
-  return maybeCourseData[0];
-}
-
-const loadSchoolData = async (props: AsyncProps<SchoolData>) => {
-  const maybeSchoolData = await viewSchoolData({
-    schoolId: props.schoolId,
-    onlyRecent: true,
-    apiKey: props.apiKey.key,
-  });
-
-  if (isApiErrorCode(maybeSchoolData)) {
-    throw Error;
-  }
-  // there's an invariant that there must always be one school data per valid school id
-  return maybeSchoolData[0];
-}
-
-
-type SchoolCardProps = {
-  school: School,
-  apiKey: ApiKey,
-}
-
-
-function SchoolCard(props: SchoolCardProps) {
-  return <Async promiseFn={loadSchoolData}
-    apiKey={props.apiKey}
-    schoolId={props.school.schoolId}>
-    {_ => <>
-      <Async.Pending><Loader /></Async.Pending>
-      <Async.Rejected>
-        <span className="text-danger">An unknown error has occured.</span>
-      </Async.Rejected>
-      <Async.Fulfilled<SchoolData>>{schoolData =>
-        <ResourceCard
-          title={schoolData.name}
-          subtitle=""
-          text={schoolData.description}
-          href={`/admin_manage_school?schoolId=${props.school.schoolId}`}
-        />
-      }
-      </Async.Fulfilled>
-    </>}
-  </Async>
-}
-
-type CourseCardProps = {
-  course: Course,
-  role: CourseMembershipKind,
-  apiKey: ApiKey,
-};
-
-function CourseCard(props: CourseCardProps) {
-  return <Async promiseFn={loadCourseData}
-    apiKey={props.apiKey}
-    courseId={props.course.courseId}>
-    {_ => <>
-      <Async.Pending><Loader /></Async.Pending>
-      <Async.Rejected>
-        <span className="text-danger">An unknown error has occured.</span>
-      </Async.Rejected>
-      <Async.Fulfilled<CourseData>>{courseData =>
-        <ResourceCard
-          title={courseData.name}
-          subtitle={props.role}
-          text={courseData.description}
-          href={props.role === "INSTRUCTOR"
-            ? `/instructor_manage_course?courseId=${props.course.courseId}`
-            : `/student_manage_course?courseId=${props.course.courseId}`}
-        />
-      }
-      </Async.Fulfilled>
-    </>}
-  </Async>
-}
-
 type AddNewCardProps = {
   setShow: (a: boolean) => void,
 };
@@ -138,56 +51,64 @@ function AddNewCard(props: AddNewCardProps) {
 }
 
 type DashboardData = {
-  adminships: Adminship[],
   subscription: Subscription | null,
+  schoolData: SchoolData[],
+  instructorCourseData: CourseData[],
+  studentCourseData: CourseData[],
 }
 
 const loadDashboardData = async (props: AsyncProps<DashboardData>) => {
   const maybeSubscriptions = await viewSubscription({
     creatorUserId: props.apiKey.creator.userId,
     onlyRecent: true,
+    subscriptionKind: "VALID",
     apiKey: props.apiKey.key
   });
 
-  const maybeAdminships = await viewAdminship({
-    userId: props.apiKey.creator.userId,
-    adminshipKind: "ADMIN",
+  const maybeSchoolData = await viewSchoolData({
+    recentAdminUserId: props.apiKey.creator.userId,
     onlyRecent: true,
     apiKey: props.apiKey.key
   });
 
-  if (isApiErrorCode(maybeSubscriptions)) {
-    throw Error;
-  }
+  const maybeInstructorCourseData = await viewCourseData({
+    recentInstructorUserId: props.apiKey.creator.userId,
+    onlyRecent: true,
+    apiKey: props.apiKey.key
+  });
 
-  if (isApiErrorCode(maybeAdminships)) {
+  const maybeStudentCourseData = await viewCourseData({
+    recentStudentUserId: props.apiKey.creator.userId,
+    onlyRecent: true,
+    apiKey: props.apiKey.key
+  });
+
+
+  if (
+    isApiErrorCode(maybeSubscriptions) ||
+    isApiErrorCode(maybeSchoolData) ||
+    isApiErrorCode(maybeInstructorCourseData) ||
+    isApiErrorCode(maybeStudentCourseData)
+  ) {
     throw Error;
   }
 
   return {
-    adminships: maybeAdminships,
-    subscription: maybeSubscriptions.length === 0 ? null : maybeSubscriptions[0]
-  }
-}
-
-const loadCourseMemberships = async (props: AsyncProps<CourseMembership[]>) => {
-  const maybeCourseMemberships = await viewCourseMembership({
-    userId: props.apiKey.creator.userId,
-    onlyRecent: true,
-    apiKey: props.apiKey.key
-  });
-
-  if (isApiErrorCode(maybeCourseMemberships)) {
-    throw Error;
-  } else {
-    return maybeCourseMemberships;
+    subscription: maybeSubscriptions.length === 0 ? null : maybeSubscriptions[0],
+    schoolData: maybeSchoolData,
+    instructorCourseData: maybeInstructorCourseData,
+    studentCourseData: maybeStudentCourseData,
   }
 }
 
 function Dashboard(props: AuthenticatedComponentProps) {
 
+  // which modal to display
   const [showNewSchoolModal, setShowNewSchoolModal] = React.useState(false);
   const [showNewCourseModal, setShowNewCourseModal] = React.useState(false);
+
+  const [showHiddenSchools, setShowHiddenSchools] = React.useState(false);
+  const [showHiddenCourses, setShowHiddenCourses] = React.useState(false);
 
   return (
     <DashboardLayout {...props}>
@@ -199,16 +120,27 @@ function Dashboard(props: AuthenticatedComponentProps) {
               <Form.Text className="text-danger">An unknown error has occured while loading data.</Form.Text>
             </Async.Rejected>
             <Async.Fulfilled<DashboardData>>{ddata => <>
-
-              {ddata.adminships.length === 0 && ddata.subscription == null
+              {ddata.schoolData.length === 0 && ddata.subscription == null
                 ? <> </>
                 : <Section id="my_schools" name="My Schools">
+                  <Form.Check
+                    checked={showHiddenSchools}
+                    onChange={_ => setShowHiddenSchools(!showHiddenSchools)}
+                    label="Show Hidden Schools"
+                  />
                   <div className="d-flex flex-wrap">
-                    {ddata.adminships.map((a: Adminship) =>
-                      <div className="my-3 mx-3">
-                        <SchoolCard school={a.school} apiKey={props.apiKey} />
-                      </div>
-                    )}
+                    {ddata.schoolData
+                      .filter(sd => showHiddenSchools || sd.active)
+                      .map((sd: SchoolData) =>
+                        <div className="my-3 mx-3">
+                          <ResourceCard
+                            title={sd.name}
+                            subtitle=""
+                            text={sd.description}
+                            href={`/admin_manage_school?schoolId=${sd.school.schoolId}`}
+                          />
+                        </div>
+                      )}
                     {ddata.subscription === null
                       ? <> </>
                       : <div className="my-3 mx-3">
@@ -230,59 +162,69 @@ function Dashboard(props: AuthenticatedComponentProps) {
                   </div>
                 </Section>
               }
-
-              <Async promiseFn={loadCourseMemberships} apiKey={props.apiKey}>
-                {({ reload: reloadCourseMemberships }) => <>
-                  <Async.Pending><Loader /></Async.Pending>
-                  <Async.Rejected>
-                    <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
-                  </Async.Rejected>
-                  <Async.Fulfilled<CourseMembership[]>>{cms => <>
-                    <Section id="my_courses" name="My Courses">
-                      <div className="d-flex flex-wrap">
-                        {cms
-                          .filter(cm => cm.courseMembershipKind !== "CANCEL")
-                          .map((a: CourseMembership) =>
-                            <div className="my-3 mx-3">
-                              <CourseCard course={a.course} role={a.courseMembershipKind} apiKey={props.apiKey} />
-                            </div>
-                          )}
-                        <div className="my-3 mx-3">
-                          <AddNewCard setShow={setShowNewCourseModal} />
-                          <DisplayModal
-                            title="Add Course"
-                            show={showNewCourseModal}
-                            onClose={() => setShowNewCourseModal(false)}
-                          >
-                            <Tabs>
-                              {ddata.subscription === null
-                                ? <> </>
-                                : <Tab title="Create Course" eventKey="course_create" className="py-4">
-                                  <UserCreateCourse apiKey={props.apiKey}
-                                    postSubmit={() => {
-                                      setShowNewCourseModal(false);
-                                      reloadCourseMemberships();
-                                    }}
-                                  />
-                                </Tab>
-                              }
-                              <Tab title="Join Course" eventKey="course_join" className="py-4">
-                                <UserCreateCourseMembership apiKey={props.apiKey}
-                                  postSubmit={() => {
-                                    setShowNewCourseModal(false);
-                                    reloadCourseMemberships();
-                                  }}
-                                />
-                              </Tab>
-                            </Tabs>
-                          </DisplayModal>
-                        </div>
+              <Section id="my_courses" name="My Courses">
+                <Form.Check
+                  checked={showHiddenCourses}
+                  onChange={_ => setShowHiddenCourses(!showHiddenCourses)}
+                  label="Show Hidden Courses"
+                />
+                <div className="d-flex flex-wrap">
+                  {ddata.instructorCourseData
+                    .filter(cd => showHiddenCourses || cd.active)
+                    .map(cd =>
+                      <div className="my-3 mx-3">
+                        <ResourceCard
+                          title={cd.name}
+                          subtitle={"INSTRUCTOR"}
+                          text={cd.description}
+                          href={`/instructor_manage_course?courseId=${cd.course.courseId}`}
+                        />
                       </div>
-                    </Section>
-                  </>}
-                  </Async.Fulfilled>
-                </>}
-              </Async>
+                    )}
+                  {ddata.studentCourseData
+                    .filter(cd => showHiddenCourses || cd.active)
+                    .map(cd =>
+                      <div className="my-3 mx-3">
+                        <ResourceCard
+                          title={cd.name}
+                          subtitle={"STUDENT"}
+                          text={cd.description}
+                          href={`/student_manage_course?courseId=${cd.course.courseId}`}
+                        />
+                      </div>
+                    )}
+                  <div className="my-3 mx-3">
+                    <AddNewCard setShow={setShowNewCourseModal} />
+                    <DisplayModal
+                      title="Add Course"
+                      show={showNewCourseModal}
+                      onClose={() => setShowNewCourseModal(false)}
+                    >
+                      <Tabs>
+                        {ddata.subscription === null
+                          ? <> </>
+                          : <Tab title="Create Course" eventKey="course_create" className="py-4">
+                            <UserCreateCourse apiKey={props.apiKey}
+                              postSubmit={() => {
+                                setShowNewCourseModal(false);
+                                reloadDashboardData();
+                              }}
+                            />
+                          </Tab>
+                        }
+                        <Tab title="Join Course" eventKey="course_join" className="py-4">
+                          <UserCreateCourseMembership apiKey={props.apiKey}
+                            postSubmit={() => {
+                              setShowNewCourseModal(false);
+                              reloadDashboardData();
+                            }}
+                          />
+                        </Tab>
+                      </Tabs>
+                    </DisplayModal>
+                  </div>
+                </div>
+              </Section>
             </>}
             </Async.Fulfilled>
           </>}

@@ -111,7 +111,7 @@ function EventCalendar(props: EventCalendarProps) {
             }
             return sessionRequestToEvent({
               sessionRequest: x,
-              courseData:courseData,
+              courseData: courseData,
               relation: "STUDENT"
             });
           })
@@ -261,7 +261,7 @@ function EventCalendar(props: EventCalendarProps) {
               ? []
               : maybeSessionRequests.map(x => sessionRequestToEvent({
                 sessionRequest: x,
-                courseData:courseData,
+                courseData: courseData,
                 relation: "INSTRUCTOR"
               })),
             ...isApiErrorCode(maybeSessionData)
@@ -537,67 +537,63 @@ function CalendarWidget(props: AuthenticatedComponentProps) {
       or click an existing appointment to delete it.
     </Popover>
     <Async promiseFn={loadCourseData} apiKey={props.apiKey}>
-      {_ => <>
-        <Async.Pending>
-          <Loader />
-        </Async.Pending>
-        <Async.Rejected>
-          <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
-        </Async.Rejected>
-        <Async.Fulfilled<CourseData[]>>{cds =>
-          <Row>
-            <Col sm>
-              <Card className="my-3 mx-3">
-                <Card.Body>
-                  <Card.Title> View Settings </Card.Title>
+      <Async.Pending>
+        <Loader />
+      </Async.Pending>
+      <Async.Rejected>
+        <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
+      </Async.Rejected>
+      <Async.Fulfilled<CourseData[]>>{cds =>
+        <Row>
+          <Col sm>
+            <Card className="my-3 mx-3">
+              <Card.Body>
+                <Card.Title> View Settings </Card.Title>
+                <Form.Check
+                  checked={showAllHours}
+                  onChange={_ => setShowAllHours(!showAllHours)}
+                  label="Show All Hours"
+                />
+                {cds.length === 0
+                  ? <> </>
+                  : <Card.Subtitle className="my-2"> Hide Courses </Card.Subtitle>
+                }
+                {cds.map((cd: CourseData) =>
                   <Form.Check
-                    checked={showAllHours}
-                    onChange={_ => setShowAllHours(!showAllHours)}
-                    label="Show All Hours"
-                  />
-                  {cds.length === 0
-                    ? <> </>
-                    : <Card.Subtitle className="my-2"> Hide Courses </Card.Subtitle>
-                  }
-                  {cds.map((cd: CourseData) =>
-                    <Form.Check
-                      checked={hiddenCourses.includes(cd.course.courseId)}
-                      onChange={_ => setHiddenCourses(
-                        hiddenCourses.includes(cd.course.courseId)
-                          // if its included, remove it
-                          ? hiddenCourses.filter(ci => ci !== cd.course.courseId)
-                          // if its not included, disinclude it
-                          : [...hiddenCourses, cd.course.courseId]
-                      )}
-                      label={`Hide ${cd.name}`}
-                    />)}
-                </Card.Body>
-              </Card>
-            </Col>
-            <Col lg={10}>
-              <Async promiseFn={loadCourseMemberships} apiKey={props.apiKey}>
-                {_ => <>
-                  <Async.Pending>
-                    <Loader />
-                  </Async.Pending>
-                  <Async.Rejected>
-                    <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
-                  </Async.Rejected>
-                  <Async.Fulfilled<CourseMembership[]>>{cms =>
-                    <EventCalendar
-                      activeCourseDatas={cds.filter(cm => !hiddenCourses.includes(cm.course.courseId))}
-                      apiKey={props.apiKey}
-                      showAllHours={showAllHours}
-                      courseMemberships={cms}
-                    />
-                  }
-                  </Async.Fulfilled>
-                </>}
-              </Async>
-            </Col>
-          </Row>}
-        </Async.Fulfilled>
-      </>}
+                    checked={hiddenCourses.includes(cd.course.courseId)}
+                    onChange={_ => setHiddenCourses(
+                      hiddenCourses.includes(cd.course.courseId)
+                        // if its included, remove it
+                        ? hiddenCourses.filter(ci => ci !== cd.course.courseId)
+                        // if its not included, disinclude it
+                        : [...hiddenCourses, cd.course.courseId]
+                    )}
+                    label={`Hide ${cd.name}`}
+                  />)}
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col lg={10}>
+            <Async promiseFn={loadCourseMemberships} apiKey={props.apiKey}>
+              <Async.Pending>
+                <Loader />
+              </Async.Pending>
+              <Async.Rejected>
+                <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
+              </Async.Rejected>
+              <Async.Fulfilled<CourseMembership[]>>{cms =>
+                <EventCalendar
+                  activeCourseDatas={cds.filter(cm => !hiddenCourses.includes(cm.course.courseId))}
+                  apiKey={props.apiKey}
+                  showAllHours={showAllHours}
+                  courseMemberships={cms}
+                />
+              }
+              </Async.Fulfilled>
+            </Async>
+          </Col>
+        </Row>}
+      </Async.Fulfilled>
     </Async>
   </UtilityWrapper>
 };
