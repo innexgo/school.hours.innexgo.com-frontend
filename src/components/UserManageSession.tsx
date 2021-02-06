@@ -3,9 +3,9 @@ import { Async, AsyncProps } from 'react-async';
 import { Row, Col, Card, Tabs, Tab, Table, Form, Button, } from 'react-bootstrap';
 import { Formik, FormikHelpers, } from 'formik';
 import Loader from '../components/Loader';
-import { ViewSession, ViewUser } from '../components/ViewData';
+import { ViewSession, ViewUser, ViewSessionRequestResponse } from '../components/ViewData';
 import SearchMultiUser from '../components/SearchMultiUser';
-import { newCommittment, newCommittmentResponse, viewCommittment, viewCommittmentResponse, viewCourseMembership, isApiErrorCode } from '../utils/utils';
+import { newCommittment, newCommittmentResponse, viewCommittment, viewCommittmentResponse, viewCourseMembership, isApiErrorCode, viewSessionRequestResponse } from '../utils/utils';
 
 type ManageSessionModalProps = {
   session: Session;
@@ -13,20 +13,34 @@ type ManageSessionModalProps = {
 }
 
 type UserManageSessionData = {
+  requestResponses: SessionRequestResponse[],
   committments: Committment[],
   committmentResponses: CommittmentResponse[]
 }
 
 const loadData = async (props: AsyncProps<UserManageSessionData>) => {
+  
+  const maybeRequestResponses = await viewSessionRequestResponse({
+    sessionId: props.session.sessionId,
+    apiKey: props.apiKey.key
+  })
+  
+  if(isApiErrorCode(maybeRequestResponses)){
+    throw Error;
+  }
+
   const maybeCommittments = await viewCommittment({
     sessionId: props.session.sessionId,
     responded: false,
     apiKey: props.apiKey.key
   });
 
+
+
   if (isApiErrorCode(maybeCommittments)) {
     throw Error;
   }
+
 
   const maybeCommittmentResponses = await viewCommittmentResponse({
     sessionId: props.session.sessionId,
@@ -37,6 +51,7 @@ const loadData = async (props: AsyncProps<UserManageSessionData>) => {
     throw Error;
   }
   return {
+    requestResponses: maybeRequestResponses,
     committments: maybeCommittments,
     committmentResponses: maybeCommittmentResponses
   };
@@ -53,6 +68,7 @@ function ManageSessionModal(props: ManageSessionModalProps) {
     studentList: number[]
   }
 
+
   return <>
     <Async promiseFn={loadData} apiKey={props.apiKey} session={props.session}>
       {({ reload }) => <>
@@ -64,7 +80,8 @@ function ManageSessionModal(props: ManageSessionModalProps) {
           <Card>
             <Card.Body>
               <Card.Title>Session</Card.Title>
-              <ViewSession expanded apiKey={props.apiKey} session={props.session} />
+              <ViewSession expanded apiKey={props.apiKey} session={props.session} /> <br></br>
+              <ViewSessionRequestResponse expanded={false} apiKey={props.apiKey} sessionRequestResponse={data.requestResponses[0]} />
             </Card.Body>
           </Card>
           <br />
