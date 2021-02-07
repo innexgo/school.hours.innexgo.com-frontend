@@ -1,11 +1,10 @@
 import React from 'react';
-import { Container, Popover, Form, } from 'react-bootstrap';
+import { Container, Popover, Form, Table } from 'react-bootstrap';
 import DashboardLayout from '../components/DashboardLayout';
 import Loader from '../components/Loader';
 import InstructorManageCourseMemberships from '../components/InstructorManageCourseMemberships';
 import InstructorManageCourseKeys from '../components/InstructorManageCourseKeys';
 import UtilityWrapper from '../components/UtilityWrapper';
-import { ViewCourse } from '../components/ViewData';
 
 import { Async, AsyncProps } from 'react-async';
 import { viewCourse, isApiErrorCode } from '../utils/utils';
@@ -21,6 +20,40 @@ const loadCourse = async (props: AsyncProps<Course>) => {
   } else {
     return maybeCourses[0];
   }
+}
+
+const ViewCourse = (props: {
+  course: Course,
+  apiKey: ApiKey,
+  expanded: boolean
+}) => {
+  return <Async /*promiseFn={loadCourseData}*/
+    apiKey={props.apiKey}
+    courseId={props.course.courseId}>
+    {_ => <>
+      <Async.Pending><Loader /></Async.Pending>
+      <Async.Rejected>
+        <span className="text-danger">An unknown error has occured.</span>
+      </Async.Rejected>
+      <Async.Fulfilled<CourseData>>{courseData =>
+        <div>
+            <Table hover bordered>
+              <tbody>
+                <tr>
+                  <th>Name</th>
+                  <td>{courseData.name}</td>
+                </tr>
+                <tr>
+                  <th>Description</th>
+                  <td>{courseData.description}</td>
+                </tr>
+              </tbody>
+            </Table>
+          </div>
+      }
+      </Async.Fulfilled>
+    </>}
+  </Async>
 }
 
 
