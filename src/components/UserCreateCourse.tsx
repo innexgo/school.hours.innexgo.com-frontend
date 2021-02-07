@@ -1,7 +1,7 @@
 import React from "react"
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
 import { Button, Form } from "react-bootstrap";
-import { viewAdminship, viewSchoolData, newCourse, isApiErrorCode } from "../utils/utils";
+import { viewSchoolData, newCourse, isApiErrorCode } from "../utils/utils";
 
 import SearchSingleSchool from "../components/SearchSingleSchool";
 

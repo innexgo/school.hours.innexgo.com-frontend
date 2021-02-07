@@ -84,7 +84,7 @@ function ManageSessionModal(props: ManageSessionModalProps) {
             </Card.Body>
           </Card>
           <br />
-          {data.requestResponses.length == 0 ? <> </> :
+          {data.requestResponses.length === 0 ? <> </> :
             <>
               <Card>
                 <Card.Body>

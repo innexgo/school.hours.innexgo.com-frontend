@@ -6,7 +6,6 @@ import timeGridPlugin from '@fullcalendar/timegrid'
 import { Card, Row, Col, Button, Form } from 'react-bootstrap';
 import ToggleButton from "react-bootstrap/ToggleButton";
 import { Formik, FormikHelpers } from 'formik';
-import { sessionToEvent, sessionRequestToEvent, } from '../components/ToCalendar';
 import Loader from "../components/Loader";
 
 import { ViewSessionRequest } from '../components/ViewData';

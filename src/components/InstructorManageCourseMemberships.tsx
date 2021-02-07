@@ -16,7 +16,7 @@ import { newSetCourseMembership, viewCourseMembership, isApiErrorCode } from '..
 
 type CancelCourseMembershipProps = {
   user: User,
-  course: Course,
+  courseId: number,
   apiKey: ApiKey,
   postSubmit: () => void
 };
@@ -30,7 +30,7 @@ function CancelCourseMembership(props: CancelCourseMembershipProps) {
     fprops: FormikHelpers<CancelCourseMembershipValue>) => {
 
     const maybeCourseMembership = await newSetCourseMembership({
-      courseId: props.course.courseId,
+      courseId: props.courseId,
       userId: props.user.userId,
       courseMembershipKind: "CANCEL",
       apiKey: props.apiKey.key,
@@ -121,7 +121,7 @@ function CancelCourseMembership(props: CancelCourseMembershipProps) {
 type InternalInstructorManageCourseMembershipsProps = {
   // its critical that we pass the function as a prop, because if we define it inside this function, react-async will break
   loadMemberships: (props: AsyncProps<CourseMembership[]>) => Promise<CourseMembership[]>,
-  course: Course,
+  courseId: number,
   apiKey: ApiKey,
 }
 
@@ -147,7 +147,7 @@ function InternalInstructorManageCourseMemberships(props: InternalInstructorMana
             <tbody>
               {
                 data.length === 0
-                  ? <tr><td colSpan={3} className="text-center">No current students.</td></tr>
+                  ? <tr><td colSpan={3} className="text-center">No current members.</td></tr>
                   : data.map((a: CourseMembership) =>
                     <tr>
                       <td><ViewUser user={a.user} apiKey={props.apiKey} expanded={false} /></td>
@@ -189,17 +189,17 @@ function InternalInstructorManageCourseMemberships(props: InternalInstructorMana
 
 type InstructorManageCourseMembershipsProps = {
   courseMembershipKind: CourseMembershipKind,
-  course: Course,
+  courseId: number,
   apiKey: ApiKey,
 }
 
 function InstructorManageCourseMemberships(props: InstructorManageCourseMembershipsProps) {
   return <InternalInstructorManageCourseMemberships
-    course={props.course}
+    courseId={props.courseId}
     apiKey={props.apiKey}
     loadMemberships={async (_: AsyncProps<CourseMembership[]>) => {
       const maybeCourseMemberships = await viewCourseMembership({
-        courseId: props.course.courseId,
+        courseId: props.courseId,
         courseMembershipKind: props.courseMembershipKind,
         onlyRecent: true,
         apiKey: props.apiKey.key

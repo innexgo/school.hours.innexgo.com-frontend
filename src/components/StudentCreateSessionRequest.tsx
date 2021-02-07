@@ -2,7 +2,7 @@ import React from "react"
 import SearchSingleCourse from "../components/SearchSingleCourse";
 import { Formik, FormikHelpers } from "formik";
 import { Row, Col, Button, Form } from "react-bootstrap";
-import { newSessionRequest, viewCourseMembership, viewCourseData, isApiErrorCode } from "../utils/utils";
+import { newSessionRequest, viewCourseData, isApiErrorCode } from "../utils/utils";
 import format from "date-fns/format";
 
 type StudentCreateSessionRequestProps = {

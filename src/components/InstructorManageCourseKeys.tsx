@@ -111,7 +111,7 @@ function RevokeCourseKey(props: RevokeCourseKeyProps) {
 
 const loadCourseKeys = async (props: AsyncProps<CourseKey[]>) => {
   const maybeCourseKeys = await viewCourseKey({
-    courseId: props.course.courseId,
+    courseId: props.courseId,
     courseKeyKind: "VALID",
     onlyRecent: true,
     apiKey: props.apiKey.key
@@ -125,7 +125,7 @@ const loadCourseKeys = async (props: AsyncProps<CourseKey[]>) => {
 }
 
 type InstructorManageCourseKeysProps = {
-  course: Course,
+  courseId: number,
   apiKey: ApiKey,
 }
 
@@ -144,7 +144,7 @@ function InstructorManageCourseKeys(props: InstructorManageCourseKeysProps) {
   const normalizeNumberField = (e: string) => e.replace(/[^0-9]+/g, "");
 
   return <>
-    <Async promiseFn={loadCourseKeys} apiKey={props.apiKey} course={props.course}>
+    <Async promiseFn={loadCourseKeys} apiKey={props.apiKey} courseId={props.courseId}>
       {({ reload }) => <>
         <Async.Pending><Loader /></Async.Pending>
         <Async.Rejected>
@@ -223,7 +223,7 @@ function InstructorManageCourseKeys(props: InstructorManageCourseKeysProps) {
 
                   // TODO let user choose how many uses and how many
                   const maybeCourseKey = await newValidCourseKey({
-                    courseId: props.course.courseId,
+                    courseId: props.courseId,
                     duration: values.expires
                       ? addDays(Date.now(), parseInt(values.expiryDays)).valueOf()
                       : INT_MAX,
