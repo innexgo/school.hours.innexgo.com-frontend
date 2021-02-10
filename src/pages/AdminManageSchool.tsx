@@ -3,6 +3,7 @@ import { Container, Popover, Form, Table } from 'react-bootstrap';
 import DashboardLayout from '../components/DashboardLayout';
 import Loader from '../components/Loader';
 import AdminManageAdminships from '../components/AdminManageAdminships';
+import AdminManageAdminshipRequests from '../components/AdminManageAdminshipRequests';
 import UtilityWrapper from '../components/UtilityWrapper';
 import { ViewSchool, ViewUser } from '../components/ViewData';
 
@@ -30,14 +31,14 @@ const loadSchool = async (props: AsyncProps<School>) => {
 const loadCourseData = async (props: AsyncProps<CourseData[]>) => {
   const maybeCourseData = await viewCourseData({
     schoolId: props.school.schoolId,
-    onlyRecent:true,
+    onlyRecent: true,
     apiKey: props.apiKey.key
   });
 
-  if (isApiErrorCode(maybeCourseData )) {
+  if (isApiErrorCode(maybeCourseData)) {
     throw Error;
   } else {
-    return maybeCourseData ;
+    return maybeCourseData;
   }
 }
 
@@ -65,6 +66,14 @@ function AdminManageSchool(props: AuthenticatedComponentProps) {
                 <AdminManageAdminships school={school} apiKey={props.apiKey} />
               </UtilityWrapper>
             </div>
+
+            <div className="mx-3 my-3">
+              <UtilityWrapper title="Administrator Requests">
+                <Popover id="information-tooltip"> Shows the current administrators of this school. </Popover>
+                <AdminManageAdminshipRequests school={school} apiKey={props.apiKey} />
+              </UtilityWrapper>
+            </div>
+
 
             <div className="mx-3 my-3">
               <UtilityWrapper title="Courses">
