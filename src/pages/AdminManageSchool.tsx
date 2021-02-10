@@ -6,6 +6,7 @@ import AdminManageAdminships from '../components/AdminManageAdminships';
 import AdminManageAdminshipRequests from '../components/AdminManageAdminshipRequests';
 import UtilityWrapper from '../components/UtilityWrapper';
 import { ViewSchool, ViewUser } from '../components/ViewData';
+import AdminManageSchoolData from '../components/AdminManageSchoolData';
 
 import { Visibility } from '@material-ui/icons'
 
@@ -56,7 +57,7 @@ function AdminManageSchool(props: AuthenticatedComponentProps) {
             <div className="mx-3 my-3">
               <UtilityWrapper title="School Data">
                 <Popover id="information-tooltip"> Shows basic information about this school. </Popover>
-                <ViewSchool school={school} apiKey={props.apiKey} expanded />
+                <AdminManageSchoolData schoolId={school.schoolId} apiKey={props.apiKey} />
               </UtilityWrapper>
             </div>
 

@@ -1,7 +1,8 @@
 import React from "react"
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
 import { Button, Form } from "react-bootstrap";
-import { newSchool, isApiErrorCode } from "../utils/utils";
+import { newSchool, isApiErrorCode, normalizeSchoolName } from "../utils/utils";
+
 
 type UserCreateSchoolProps = {
   apiKey: ApiKey;
@@ -92,8 +93,6 @@ function UserCreateSchool(props: UserCreateSchoolProps) {
     // execute callback
     props.postSubmit();
   }
-
-  const normalizeSchoolName = (e: string) => e.toUpperCase().replace(/[^A-Z ]+/g, "").replace(/ +(?= )/g,"");
 
   return <>
     <Formik<CreateSchoolValue>

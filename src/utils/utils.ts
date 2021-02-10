@@ -845,4 +845,6 @@ export const INT_MAX: number = 999999999999999;
 
 export const isPasswordValid = (pass: string) => pass.length >= 8 && /\d/.test(pass);
 
-export const normalizeCourseName = (e: string) => e.toUpperCase().replace(/[^(A-Z0-9: _\-)]+/g, "").replace(/ +(?= )/g,"");;
+export const normalizeCourseName = (e: string) => e.toUpperCase().replace(/[^(A-Z0-9: _\-)]+/g, "").replace(/ +(?= )/g,"");
+
+export const normalizeSchoolName = (e: string) => e.toUpperCase().replace(/[^A-Z ]+/g, "").replace(/ +(?= )/g,"");
