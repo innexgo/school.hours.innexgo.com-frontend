@@ -1,6 +1,6 @@
 import React from "react"
 import SearchSingleCourse from "../components/SearchSingleCourse";
-import { Formik, FormikHelpers } from "formik";
+import { Formik, FormikHelpers,} from "formik";
 import { Row, Col, Button, Form } from "react-bootstrap";
 import { newSessionRequest, viewCourseData, isApiErrorCode } from "../utils/utils";
 import format from "date-fns/format";
@@ -20,13 +20,12 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
   }
 
   const onSubmit = async (values: CreateSessionRequestValue,
-    { setStatus }: FormikHelpers<CreateSessionRequestValue>) => {
+    { setErrors, setStatus }: FormikHelpers<CreateSessionRequestValue>) => {
+
 
     if (values.courseId == null) {
-      setStatus({
-        courseId: "Please select a course.",
-        message: "",
-        failureResult: "",
+      setErrors({
+        courseId: "Please select a course."
       });
       return;
     }
@@ -43,26 +42,25 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
       switch (maybeSessionRequest) {
         case "API_KEY_NONEXISTENT": {
           setStatus({
-            message: "",
-            courseId: "",
             failureResult: "You have been automatically logged out. Please relogin.",
             successResult: ""
           });
           break;
         }
-        case "USER_NONEXISTENT": {
-          setStatus({
-            message: "",
-            courseId: "This teacher does not exist.",
-            failureResult: "",
-            successResult: ""
+        case "COURSE_NONEXISTENT": {
+          setErrors({
+            courseId: "This course does not exist.",
+          });
+          break;
+        }
+        case "COURSE_ARCHIVED": {
+          setErrors({
+            courseId: "This course has been archived.",
           });
           break;
         }
         case "NEGATIVE_DURATION": {
           setStatus({
-            message: "",
-            courseId: "",
             failureResult: "The duration you have selected is not valid.",
             successResult: ""
           });
@@ -70,8 +68,6 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
         }
         default: {
           setStatus({
-            message: "",
-            courseId: "",
             failureResult: "An unknown or network error has occurred.",
             successResult: ""
           });
@@ -82,8 +78,6 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
     }
 
     setStatus({
-      message: "",
-      courseId: "",
       failureResult: "",
       successResult: "Request Created",
     });
@@ -99,8 +93,6 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
         courseId: null
       }}
       initialStatus={{
-        message: "",
-        courseId: "",
         failureResult: "",
         successResult: ""
       }}
@@ -131,14 +123,15 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
                     recentStudentUserId: props.apiKey.creator.userId,
                     partialName: input,
                     onlyRecent: true,
+                    active: true,
                     apiKey: props.apiKey.key,
                   });
 
                   return isApiErrorCode(maybeCourseData) ? [] : maybeCourseData;
                 }}
-                isInvalid={fprops.status.courseId !== ""}
+                isInvalid={!!fprops.errors.courseId}
                 setFn={(e: CourseData | null) => fprops.setFieldValue("courseId", e?.course.courseId)} />
-              <Form.Text className="text-danger">{fprops.status.courseId}</Form.Text>
+              <Form.Text className="text-danger">{fprops.errors.courseId}</Form.Text>
             </Col>
           </Form.Group>
           <Form.Group as={Row}>
@@ -151,9 +144,9 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
                 as="textarea"
                 rows={3}
                 onChange={fprops.handleChange}
-                isInvalid={fprops.status.message !== ""}
+                isInvalid={!!fprops.errors.message}
               />
-              <Form.Text className="text-danger">{fprops.status.message}</Form.Text>
+              <Form.Text className="text-danger">{fprops.errors.message}</Form.Text>
             </Col>
           </Form.Group>
           <Button type="submit"> Submit </Button>

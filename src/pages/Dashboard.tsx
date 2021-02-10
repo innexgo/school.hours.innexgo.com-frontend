@@ -15,6 +15,7 @@ import { viewSubscription, viewSchoolData, viewCourseData, isApiErrorCode } from
 type ResourceCardProps = {
   title: string,
   subtitle: string,
+  active: boolean,
   text: string,
   href: string
 }
@@ -25,7 +26,7 @@ function ResourceCard(props: ResourceCardProps) {
       <Card className="h-100" style={{ width: '15rem' }}>
         <Card.Body>
           <Card.Title>{props.title}</Card.Title>
-          <Card.Subtitle className="text-muted">{props.subtitle}</Card.Subtitle>
+          <Card.Subtitle className="text-muted">{props.subtitle}{props.active ? "" : " (ARCHIVED)"}</Card.Subtitle>
           <Card.Text>{props.text}</Card.Text>
         </Card.Body>
       </Card>
@@ -136,6 +137,7 @@ function Dashboard(props: AuthenticatedComponentProps) {
                           <ResourceCard
                             title={sd.name}
                             subtitle=""
+                            active={sd.active}
                             text={sd.description}
                             href={`/admin_manage_school?schoolId=${sd.school.schoolId}`}
                           />
@@ -176,6 +178,7 @@ function Dashboard(props: AuthenticatedComponentProps) {
                         <ResourceCard
                           title={cd.name}
                           subtitle={"INSTRUCTOR"}
+                          active={cd.active}
                           text={cd.description}
                           href={`/instructor_manage_course?courseId=${cd.course.courseId}`}
                         />
@@ -188,6 +191,7 @@ function Dashboard(props: AuthenticatedComponentProps) {
                         <ResourceCard
                           title={cd.name}
                           subtitle={"STUDENT"}
+                          active={cd.active}
                           text={cd.description}
                           href={`/student_manage_course?courseId=${cd.course.courseId}`}
                         />

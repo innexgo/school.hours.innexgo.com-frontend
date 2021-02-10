@@ -66,6 +66,7 @@ export const ApiErrorCodes = [
   "SUBSCRIPTION_LIMITED",
 
   "SCHOOL_NONEXISTENT",
+  "SCHOOL_ARCHIVED",
 
   "ADMINSHIP_REQUEST_NONEXISTENT",
   "ADMINSHIP_REQUEST_RESPONSE_EXISTENT",
@@ -96,6 +97,7 @@ export const ApiErrorCodes = [
   "COMMITTMENT_RESPONSE_CANNOT_CREATE_FOR_OTHERS_STUDENT",
 
   "COURSE_NONEXISTENT",
+  "COURSE_ARCHIVED",
 
   "COURSE_KEY_NONEXISTENT",
   "COURSE_KEY_EXPIRED",
@@ -222,7 +224,7 @@ export async function newCourse(props: NewCourseProps): Promise<Course | ApiErro
 
 
 export type NewCourseDataProps = {
-  courseID: number,
+  courseId: number,
   name: string,
   description: string,
   active: boolean,
@@ -842,3 +844,5 @@ export function isApiErrorCode(maybeApiErrorCode: any): maybeApiErrorCode is Api
 export const INT_MAX: number = 999999999999999;
 
 export const isPasswordValid = (pass: string) => pass.length >= 8 && /\d/.test(pass);
+
+export const normalizeCourseName = (e: string) => e.toUpperCase().replace(/[^(A-Z0-9: _\-)]+/g, "").replace(/ +(?= )/g,"");;

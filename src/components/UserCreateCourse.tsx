@@ -1,7 +1,7 @@
 import React from "react"
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
 import { Button, Form } from "react-bootstrap";
-import { viewSchoolData, newCourse, isApiErrorCode } from "../utils/utils";
+import { viewSchoolData, newCourse, isApiErrorCode, normalizeCourseName} from "../utils/utils";
 
 import SearchSingleSchool from "../components/SearchSingleSchool";
 
@@ -84,8 +84,6 @@ function UserCreateCourse(props: UserCreateCourseProps) {
     // execute callback
     props.postSubmit();
   }
-
-  const normalizeCourseName = (e: string) => e.toUpperCase().replace(/[^(A-Z0-9: _\-)]+/g, "").replace(/ +(?= )/g,"");;
 
   return <>
     <Formik<CreateCourseValue>

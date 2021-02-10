@@ -402,8 +402,8 @@ function EventCalendar(props: EventCalendarProps) {
             <Tab eventKey="joincourse" title="Join a Course">
               <p>You need to join a course in order to create an event.</p>
               <ul>
-                <li>If you're a student, you can join a course <a href="/add_course">here</a>.</li>
-                <li>If you're an instructor, create a course <a href="/add_course">here</a>.</li>
+                <li>If you're a student, you can <a href="/add_course">join a course</a>.</li>
+                <li>If you're an instructor, <a href="/add_course">create a course</a>.</li>
               </ul>
             </Tab>
           }

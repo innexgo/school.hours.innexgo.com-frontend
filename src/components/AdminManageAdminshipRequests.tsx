@@ -53,7 +53,7 @@ function ReviewAdminshipRequest(props: ReviewAdminshipRequestProps) {
         }
         case "API_KEY_UNAUTHORIZED": {
           fprops.setStatus({
-            failureResult: "You are not authorized to remove this administrator from this school.",
+            failureResult: "You are not authorized to review this request.",
             successResult: ""
           });
           break;
@@ -81,7 +81,7 @@ function ReviewAdminshipRequest(props: ReviewAdminshipRequestProps) {
         }
         default: {
           fprops.setStatus({
-            failureResult: "An unknown or network error has occured while remove adminship.",
+            failureResult: "An unknown or network error has occured while submitting response.",
             successResult: ""
           });
           break;
