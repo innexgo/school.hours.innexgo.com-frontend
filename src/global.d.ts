@@ -192,7 +192,6 @@ declare global {
 
   type SessionData = {
     session:Session,
-    location: Location,
     name: string,
     startTime: number,
     duration: number,

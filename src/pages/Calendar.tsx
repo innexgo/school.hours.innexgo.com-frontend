@@ -46,7 +46,7 @@ function EventCalendar(props: EventCalendarProps) {
 
   // the currently selected data
   const [selectedManageSession, setSelectedManageSession] = React.useState<Session | null>(null);
-  const [selectedViewSession, setSelectedViewSession] = React.useState<Session | null>(null);
+  const [selectedViewSessionData, setSelectedViewSessionData] = React.useState<SessionData | null>(null);
   const [selectedManageSessionRequest, setSelectedManageSessionRequest] = React.useState<SessionRequest | null>(null);
   const [selectedReviewSessionRequest, setSelectedReviewSessionRequest] = React.useState<SessionRequest | null>(null);
   const [selectedViewSessionRequestResponse, setSelectedViewSessionRequestResponse] = React.useState<SessionRequestResponse | null>(null);
@@ -287,7 +287,7 @@ function EventCalendar(props: EventCalendarProps) {
           setSelectedManageSession(props.sessionData.session);
         } else {
           // otherwise get the view only version
-          setSelectedViewSession(props.sessionData.session);
+          setSelectedViewSessionData(props.sessionData);
         }
         break;
       }
@@ -419,13 +419,13 @@ function EventCalendar(props: EventCalendarProps) {
         <UserManageSession session={selectedManageSession} apiKey={props.apiKey} />
       </DisplayModal>
     }
-    {selectedViewSession === null ? <> </> :
+    {selectedViewSessionData === null ? <> </> :
       <DisplayModal
         title="View Session"
         show={selectedManageSession !== null}
-        onClose={() => setSelectedViewSession(null)}
+        onClose={() => setSelectedViewSessionData(null)}
       >
-        <ViewSession session={selectedViewSession} expanded apiKey={props.apiKey} />
+        <ViewSession sessionData={selectedViewSessionData} expanded apiKey={props.apiKey} />
       </DisplayModal>
     }
     {selectedReviewSessionRequest === null ? <> </> :

@@ -3,6 +3,7 @@ import { Async, AsyncProps } from 'react-async';
 import { Row, Col, Card, Tabs, Tab, Table, Form, Button, } from 'react-bootstrap';
 import { Formik, FormikHelpers, } from 'formik';
 import Loader from '../components/Loader';
+import UserManageSessionData from '../components/UserManageSessionData';
 import { ViewSession, ViewUser, ViewSessionRequestResponse } from '../components/ViewData';
 import SearchMultiUser from '../components/SearchMultiUser';
 import { newCommittment, newCommittmentResponse, viewCommittment, viewCommittmentResponse, viewCourseMembership, isApiErrorCode, viewSessionRequestResponse } from '../utils/utils';
@@ -68,7 +69,6 @@ function ManageSessionModal(props: ManageSessionModalProps) {
     studentList: number[]
   }
 
-
   return <>
     <Async promiseFn={loadData} apiKey={props.apiKey} session={props.session}>
       {({ reload }) => <>
@@ -80,7 +80,7 @@ function ManageSessionModal(props: ManageSessionModalProps) {
           <Card>
             <Card.Body>
               <Card.Title>Session</Card.Title>
-              <ViewSession expanded apiKey={props.apiKey} session={props.session} />
+              <UserManageSessionData apiKey={props.apiKey} sessionId={props.session.sessionId} />
             </Card.Body>
           </Card>
           <br />

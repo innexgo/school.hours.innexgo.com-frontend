@@ -59,86 +59,60 @@ const loadSessionData = async (props: AsyncProps<SessionData>) => {
 }
 
 export const ViewSchool = (props: {
-  school: School,
+  schoolData: SchoolData,
   apiKey: ApiKey,
   expanded: boolean
 }) => {
   const [expanded, setExpanded] = React.useState(props.expanded);
-  return <Async promiseFn={loadSchoolData}
-    apiKey={props.apiKey}
-    schoolId={props.school.schoolId}>
-    {_ => <>
-      <Async.Pending><Loader /></Async.Pending>
-      <Async.Rejected>
-        <span className="text-danger">An unknown error has occured.</span>
-      </Async.Rejected>
-      <Async.Fulfilled<SchoolData>>{schoolData =>
-        expanded
-          ? <span>
-            {schoolData.name}
-            <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
-          </span>
-          : <div>
-            <Table hover bordered>
-              <tbody>
-                <tr>
-                  <th>Name</th>
-                  <td>{schoolData.name}</td>
-                </tr>
-                <tr>
-                  <th>Description</th>
-                  <td>{schoolData.description}</td>
-                </tr>
-              </tbody>
-            </Table>
-            <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
-          </div>
-      }
-      </Async.Fulfilled>
-    </>}
-  </Async>
+  return !expanded
+    ? <span>
+      {props.schoolData.name}
+      <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
+    </span>
+    : <div>
+      <Table hover bordered>
+        <tbody>
+          <tr>
+            <th>Name</th>
+            <td>{props.schoolData.name}</td>
+          </tr>
+          <tr>
+            <th>Description</th>
+            <td>{props.schoolData.description}</td>
+          </tr>
+        </tbody>
+      </Table>
+      <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
+    </div>
 }
 
 
 export const ViewCourse = (props: {
-  course: Course,
+  courseData: CourseData,
   apiKey: ApiKey,
   expanded: boolean
 }) => {
   const [expanded, setExpanded] = React.useState(props.expanded);
-  return <Async promiseFn={loadCourseData}
-    apiKey={props.apiKey}
-    courseId={props.course.courseId}>
-    {_ => <>
-      <Async.Pending><Loader /></Async.Pending>
-      <Async.Rejected>
-        <span className="text-danger">An unknown error has occured.</span>
-      </Async.Rejected>
-      <Async.Fulfilled<CourseData>>{courseData =>
-        expanded ?
-          <span>
-            {courseData.name}
-            <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
-          </span>
-          : <div>
-            <Table hover bordered>
-              <tbody>
-                <tr>
-                  <th>Name</th>
-                  <td>{courseData.name}</td>
-                </tr>
-                <tr>
-                  <th>Description</th>
-                  <td>{courseData.description}</td>
-                </tr>
-              </tbody>
-            </Table>
-            <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
-          </div>
-      }
-      </Async.Fulfilled>
-    </>}
-  </Async>
+  return !expanded
+    ? <span>
+      {props.courseData.name}
+      <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
+    </span>
+    : <div>
+      <Table hover bordered>
+        <tbody>
+          <tr>
+            <th>Name</th>
+            <td>{props.courseData.name}</td>
+          </tr>
+          <tr>
+            <th>Description</th>
+            <td>{props.courseData.description}</td>
+          </tr>
+        </tbody>
+      </Table>
+      <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
+    </div>
 }
 
 
@@ -148,13 +122,12 @@ export const ViewUser = (props: {
   expanded: boolean
 }) => {
   const [expanded, setExpanded] = React.useState(props.expanded);
-  if (!expanded) {
-    return <span>
+  return !expanded
+    ? <span>
       {props.user.name}
       <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
     </span>
-  } else {
-    return <div>
+    : <div>
       <Table hover bordered>
         <tbody>
           <tr>
@@ -169,63 +142,61 @@ export const ViewUser = (props: {
       </Table>
       <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
     </div>
-  }
 }
 
 export const ViewSession = (props: {
-  session: Session,
+  sessionData: SessionData,
   apiKey: ApiKey,
   expanded: boolean
 }) => {
   const [expanded, setExpanded] = React.useState(props.expanded);
-  return <Async promiseFn={loadSessionData}
-    apiKey={props.apiKey}
-    sessionId={props.session.sessionId}>
-    {_ => <>
-      <Async.Pending><Loader /></Async.Pending>
-      <Async.Rejected>
-        <span className="text-danger">An unknown error has occured.</span>
-      </Async.Rejected>
-      <Async.Fulfilled<SessionData>>{sessionData =>
-        expanded
-          ? <span>
-            {sessionData.name} - {format(sessionData.startTime, "MMM do")}
-            <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
-          </span>
-          : <div>
-            <Table hover bordered>
-              <tbody>
-                <tr>
-                  <th>Name</th>
-                  <td>{sessionData.name} </td>
-                </tr>
-                <tr>
-                  <th>Date</th>
-                  <td>{format(sessionData.startTime, "MMM do")} </td>
-                </tr>
-                <tr>
-                  <th>Time</th>
-                  <td>
-                    {format(sessionData.startTime, "h:mm a - ")}
-                    {format(sessionData.startTime + sessionData.duration, "h:mm a")}
-                  </td>
-                </tr>
-                <tr>
-                  <th>Private</th>
-                  <td>{`${sessionData.hidden}`}</td>
-                </tr>
-                <tr>
-                  <th>Course</th>
-                  <td><ViewCourse course={props.session.course} apiKey={props.apiKey} expanded={false} /></td>
-                </tr>
-              </tbody>
-            </Table>
-            <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
-          </div>
-      }
-      </Async.Fulfilled>
-    </>}
-  </Async>
+  return !expanded
+    ? <span>
+      {props.sessionData.name} - {format(props.sessionData.startTime, "MMM do")}
+      <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
+    </span>
+    : <div>
+      <Table hover bordered>
+        <tbody>
+          <tr>
+            <th>Name</th>
+            <td>{props.sessionData.name} </td>
+          </tr>
+          <tr>
+            <th>Date</th>
+            <td>{format(props.sessionData.startTime, "MMM do")} </td>
+          </tr>
+          <tr>
+            <th>Time</th>
+            <td>
+              {format(props.sessionData.startTime, "h:mm a - ")}
+              {format(props.sessionData.startTime + props.sessionData.duration, "h:mm a")}
+            </td>
+          </tr>
+          <tr>
+            <th>Private</th>
+            <td>{`${props.sessionData.hidden}`}</td>
+          </tr>
+          <tr>
+            <th>Course</th>
+            <td>
+              <Async promiseFn={loadCourseData}
+                apiKey={props.apiKey}
+                courseId={props.sessionData.session.course.courseId}>
+                <Async.Pending><Loader /></Async.Pending>
+                <Async.Rejected>
+                  <span className="text-danger">Unable to load course.</span>
+                </Async.Rejected>
+                <Async.Fulfilled<CourseData>>{courseData =>
+                  <ViewCourse courseData={courseData} apiKey={props.apiKey} expanded={false} />
+                }</Async.Fulfilled>
+              </Async>
+            </td>
+          </tr>
+        </tbody>
+      </Table>
+      <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
+    </div>
 }
 
 export const ViewSessionRequest = (props: {
@@ -267,7 +238,19 @@ export const ViewSessionRequest = (props: {
           </tr>
           <tr>
             <th>Course</th>
-            <td><ViewCourse course={props.sessionRequest.course} apiKey={props.apiKey} expanded={false} /></td>
+            <td>
+              <Async promiseFn={loadCourseData}
+                apiKey={props.apiKey}
+                courseId={props.sessionRequest.course.courseId}>
+                <Async.Pending><Loader /></Async.Pending>
+                <Async.Rejected>
+                  <span className="text-danger">Unable to load course.</span>
+                </Async.Rejected>
+                <Async.Fulfilled<CourseData>>{courseData =>
+                  <ViewCourse courseData={courseData} apiKey={props.apiKey} expanded={false} />
+                }</Async.Fulfilled>
+              </Async>
+            </td>
           </tr>
         </tbody>
       </Table>
@@ -348,7 +331,19 @@ export const ViewCommittment = (props: {
               <tbody>
                 <tr>
                   <th>Session</th>
-                  <td><ViewSession session={props.committment.session} apiKey={props.apiKey} expanded /></td>
+                  <td>
+                    <Async promiseFn={loadSessionData}
+                      apiKey={props.apiKey}
+                      sessionId={props.committment.session.sessionId}>
+                      <Async.Pending><Loader /></Async.Pending>
+                      <Async.Rejected>
+                        <span className="text-danger">Unable to load session.</span>
+                      </Async.Rejected>
+                      <Async.Fulfilled<SessionData>>{sessionData =>
+                        <ViewSession sessionData={sessionData} apiKey={props.apiKey} expanded={false} />
+                      }</Async.Fulfilled>
+                    </Async>
+                  </td>
                 </tr>
                 <tr>
                   <th>Attendee</th>

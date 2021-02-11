@@ -68,7 +68,8 @@ class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
             courseId: this.props.sessionRequest.course.courseId,
             minStartTime: args.start.valueOf(),
             maxStartTime: args.end.valueOf(),
-            apiKey: this.props.apiKey.key
+            onlyRecent:true,
+            apiKey: this.props.apiKey.key,
           });
 
           return isApiErrorCode(maybeSessionData)
