@@ -1,5 +1,5 @@
 import React from 'react'
-import { Container, Card, Form, Tabs, Tab } from 'react-bootstrap';
+import { Button, Container, Card, Form, Tabs, Tab } from 'react-bootstrap';
 import { Add } from '@material-ui/icons'
 import { Async, AsyncProps } from 'react-async';
 
@@ -8,9 +8,11 @@ import Section from '../components/Section';
 import Loader from '../components/Loader';
 import DisplayModal from '../components/DisplayModal';
 import UserCreateSchool from '../components/UserCreateSchool';
+import UserCreateAdminshipRequest from '../components/UserCreateAdminshipRequest';
 import UserCreateCourse from '../components/UserCreateCourse';
+import CreateAdminship from '../components/CreateAdminship';
 import UserCreateCourseMembership from '../components/UserCreateCourseMembership';
-import { viewSubscription, viewSchoolData, viewCourseData, isApiErrorCode } from '../utils/utils';
+import { viewSubscription, viewSchoolData, viewAdminshipRequest, viewAdminshipRequestResponse, viewCourseData, isApiErrorCode } from '../utils/utils';
 
 type ResourceCardProps = {
   title: string,
@@ -54,6 +56,8 @@ function AddNewCard(props: AddNewCardProps) {
 type DashboardData = {
   subscription: Subscription | null,
   schoolData: SchoolData[],
+  adminshipRequests: AdminshipRequest[],
+  adminshipRequestResponses: AdminshipRequestResponse[],
   instructorCourseData: CourseData[],
   studentCourseData: CourseData[],
 }
@@ -72,6 +76,19 @@ const loadDashboardData = async (props: AsyncProps<DashboardData>) => {
     apiKey: props.apiKey.key
   });
 
+  const maybeAdminshipRequests = await viewAdminshipRequest({
+    creatorUserId: props.apiKey.creator.userId,
+    responded: false,
+    apiKey: props.apiKey.key
+  });
+
+  const maybeAdminshipRequestResponses = await viewAdminshipRequestResponse({
+    requesterUserId: props.apiKey.creator.userId,
+    responded: false,
+    apiKey: props.apiKey.key
+  });
+
+
   const maybeInstructorCourseData = await viewCourseData({
     recentInstructorUserId: props.apiKey.creator.userId,
     onlyRecent: true,
@@ -88,6 +105,8 @@ const loadDashboardData = async (props: AsyncProps<DashboardData>) => {
   if (
     isApiErrorCode(maybeSubscriptions) ||
     isApiErrorCode(maybeSchoolData) ||
+    isApiErrorCode(maybeAdminshipRequests) ||
+    isApiErrorCode(maybeAdminshipRequestResponses) ||
     isApiErrorCode(maybeInstructorCourseData) ||
     isApiErrorCode(maybeStudentCourseData)
   ) {
@@ -97,15 +116,96 @@ const loadDashboardData = async (props: AsyncProps<DashboardData>) => {
   return {
     subscription: maybeSubscriptions.length === 0 ? null : maybeSubscriptions[0],
     schoolData: maybeSchoolData,
+    adminshipRequests: maybeAdminshipRequests,
+    adminshipRequestResponses: maybeAdminshipRequestResponses,
     instructorCourseData: maybeInstructorCourseData,
     studentCourseData: maybeStudentCourseData,
   }
 }
 
+const loadSchoolData = async (props: AsyncProps<SchoolData>) => {
+  const maybeSchoolData = await viewSchoolData({
+    schoolId: props.schoolId,
+    onlyRecent: true,
+    apiKey: props.apiKey.key
+  });
+
+  if (isApiErrorCode(maybeSchoolData) || maybeSchoolData.length === 0) {
+    throw Error;
+  } else {
+    return maybeSchoolData[0];
+  }
+}
+
+
+
+type AdminshipRequestResponseCardProps = {
+  adminshipRequestResponse: AdminshipRequestResponse,
+  apiKey: ApiKey,
+  postSubmit: () => void
+}
+
+function AdminshipRequestResponseCard(props: AdminshipRequestResponseCardProps) {
+
+  return <Async promiseFn={loadSchoolData}
+    apiKey={props.apiKey}
+    schoolId={props.adminshipRequestResponse.adminshipRequest.school.schoolId}>
+    <Async.Pending><Loader /></Async.Pending>
+    <Async.Rejected>
+      <Form.Text className="text-danger">An unknown error has occured while loading school data.</Form.Text>
+    </Async.Rejected>
+    <Async.Fulfilled<SchoolData>>{schoolData => <>
+      <Card className="h-100" style={{ width: '15rem' }}>
+        <Card.Body>
+          <Card.Title>{schoolData.name}</Card.Title>
+          <Card.Subtitle className="text-muted">
+            {props.adminshipRequestResponse.accepted ? "ACCEPTED" : "REJECTED"}
+          </Card.Subtitle>
+          <Card.Text>{props.adminshipRequestResponse.message}</Card.Text>
+          {props.adminshipRequestResponse.accepted
+            ? <CreateAdminship apiKey={props.apiKey}
+              adminshipRequestResponse={props.adminshipRequestResponse}
+              postSubmit={props.postSubmit} />
+            : <> </>
+          }
+        </Card.Body>
+      </Card>
+    </>
+    }</Async.Fulfilled>
+  </Async>
+}
+
+type AdminshipRequestCardProps = {
+  adminshipRequest: AdminshipRequest,
+  apiKey: ApiKey,
+}
+
+function AdminshipRequestCard(props: AdminshipRequestCardProps) {
+  return <Async promiseFn={loadSchoolData}
+    apiKey={props.apiKey}
+    schoolId={props.adminshipRequest.school.schoolId}>
+    <Async.Pending><Loader /></Async.Pending>
+    <Async.Rejected>
+      <Form.Text className="text-danger">An unknown error has occured while loading school data.</Form.Text>
+    </Async.Rejected>
+    <Async.Fulfilled<SchoolData>>{schoolData => <>
+      <Card className="h-100" style={{ width: '15rem' }}>
+        <Card.Body>
+          <Card.Title>{schoolData.name}</Card.Title>
+          <Card.Subtitle className="text-muted">PENDING</Card.Subtitle>
+          <Card.Text>{props.adminshipRequest.message}</Card.Text>
+        </Card.Body>
+      </Card>
+    </>
+    }</Async.Fulfilled>
+  </Async>
+}
+
+
 function Dashboard(props: AuthenticatedComponentProps) {
 
   // which modal to display
-  const [showNewSchoolModal, setShowNewSchoolModal] = React.useState(false);
+  const [showNewAdminshipModal, setShowNewAdminshipModal] = React.useState(false);
   const [showNewCourseModal, setShowNewCourseModal] = React.useState(false);
 
   const [showHiddenSchools, setShowHiddenSchools] = React.useState(false);
@@ -121,48 +221,92 @@ function Dashboard(props: AuthenticatedComponentProps) {
               <Form.Text className="text-danger">An unknown error has occured while loading data.</Form.Text>
             </Async.Rejected>
             <Async.Fulfilled<DashboardData>>{ddata => <>
-              {ddata.schoolData.length === 0 && ddata.subscription == null
-                ? <> </>
-                : <Section id="my_schools" name="My Schools">
-                  <Form.Check
-                    checked={showHiddenSchools}
-                    onChange={_ => setShowHiddenSchools(!showHiddenSchools)}
-                    label="Show Hidden Schools"
-                  />
-                  <div className="d-flex flex-wrap">
-                    {ddata.schoolData
-                      .filter(sd => showHiddenSchools || sd.active)
-                      .map((sd: SchoolData) =>
-                        <div className="my-3 mx-3">
-                          <ResourceCard
-                            title={sd.name}
-                            subtitle=""
-                            active={sd.active}
-                            text={sd.description}
-                            href={`/admin_manage_school?schoolId=${sd.school.schoolId}`}
-                          />
+              {
+                ddata.subscription === null &&
+                  ddata.schoolData.length === 0 &&
+                  ddata.adminshipRequests.length === 0 &&
+                  ddata.adminshipRequestResponses.length === 0
+                  ? <> </>
+                  : <Section id="my_schools" name="My Schools">
+                    <Form.Check
+                      checked={showHiddenSchools}
+                      onChange={_ => setShowHiddenSchools(!showHiddenSchools)}
+                      label="Show Hidden Schools"
+                    />
+                    <div className="d-flex flex-wrap">
+                      {ddata.schoolData
+                        .filter(sd => showHiddenSchools || sd.active)
+                        .map(sd =>
+                          <div className="my-3 mx-3">
+                            <ResourceCard
+                              title={sd.name}
+                              subtitle=""
+                              active={sd.active}
+                              text={sd.description}
+                              href={`/admin_manage_school?schoolId=${sd.school.schoolId}`}
+                            />
+                          </div>
+                        )}
+                      {ddata.adminshipRequestResponses
+                        .filter(arr => showHiddenSchools || arr.accepted)
+                        .map(arr =>
+                          <div className="my-3 mx-3">
+                            <AdminshipRequestResponseCard
+                              adminshipRequestResponse={arr}
+                              apiKey={props.apiKey}
+                              postSubmit={reloadDashboardData}
+                            />
+                          </div>
+                        )}
+                      {ddata.adminshipRequests
+                        .map(ar =>
+                          <div className="my-3 mx-3">
+                            <AdminshipRequestCard
+                              adminshipRequest={ar}
+                              apiKey={props.apiKey}
+                            />
+                          </div>
+                        )}
+                      {ddata.subscription === null
+                        ? <> </>
+                        : <div className="my-3 mx-3">
+                          <AddNewCard setShow={setShowNewAdminshipModal} />
+                          <DisplayModal
+                            title="Create New School"
+                            show={showNewAdminshipModal}
+                            onClose={() => setShowNewAdminshipModal(false)}
+                          >
+                            <Tabs>
+                              <Tab title="Create School" eventKey="school_create" className="py-4">
+                                <UserCreateSchool apiKey={props.apiKey}
+                                  postSubmit={() => {
+                                    setShowNewAdminshipModal(false);
+                                    reloadDashboardData();
+                                  }}
+                                />
+                              </Tab>
+                              <Tab title="Join School" eventKey="school_join" className="py-4">
+                                <UserCreateAdminshipRequest
+                                  hiddenSchoolIds={[
+                                    ...ddata.adminshipRequests.map(ar => ar.school.schoolId),
+                                    ...ddata.adminshipRequestResponses
+                                      .filter(arr => arr.accepted)
+                                      .map(arr => arr.adminshipRequest.school.schoolId),
+                                    ...ddata.schoolData.map(sd => sd.school.schoolId),
+                                  ]}
+                                  apiKey={props.apiKey}
+                                  postSubmit={() => {
+                                    setShowNewAdminshipModal(false);
+                                    reloadDashboardData();
+                                  }}
+                                />
+                              </Tab>
+                            </Tabs>
+                          </DisplayModal>
                         </div>
-                      )}
-                    {ddata.subscription === null
-                      ? <> </>
-                      : <div className="my-3 mx-3">
-                        <AddNewCard setShow={setShowNewSchoolModal} />
-                        <DisplayModal
-                          title="Create New School"
-                          show={showNewSchoolModal}
-                          onClose={() => setShowNewSchoolModal(false)}
-                        >
-                          <UserCreateSchool apiKey={props.apiKey}
-                            postSubmit={() => {
-                              setShowNewSchoolModal(false);
-                              reloadDashboardData();
-                            }}
-                          />
-                        </DisplayModal>
-                      </div>
-                    }
-                  </div>
-                </Section>
+                      }
+                    </div>
+                  </Section>
               }
               <Section id="my_courses" name="My Courses">
                 <Form.Check
@@ -205,7 +349,7 @@ function Dashboard(props: AuthenticatedComponentProps) {
                       onClose={() => setShowNewCourseModal(false)}
                     >
                       <Tabs>
-                        {ddata.subscription === null
+                        {ddata.schoolData.length === 0
                           ? <> </>
                           : <Tab title="Create Course" eventKey="course_create" className="py-4">
                             <UserCreateCourse apiKey={props.apiKey}

@@ -73,8 +73,9 @@ export const ApiErrorCodes = [
   "ADMINSHIP_REQUEST_RESPONSE_NONEXISTENT",
 
   "ADMINSHIP_REQUEST_RESPONSE_CANNOT_USE_OTHERS",
+  "ADMINSHIP_REQUEST_RESPONSE_INVALID",
 
-  "ADMINSHIP_CANNOT_LEAVE_EMPTY",
+   "ADMINSHIP_CANNOT_LEAVE_EMPTY",
 
   "SESSION_REQUEST_NONEXISTENT",
   "SESSION_REQUEST_RESPONSE_EXISTENT",
@@ -332,7 +333,6 @@ export async function newCancelAdminship(props: NewCancelAdminshipProps): Promis
 
 export type NewValidAdminshipProps = {
   adminshipRequestResponseId: number,
-  subscriptionId: number,
   apiKey: string
 }
 
@@ -654,6 +654,7 @@ export type ViewAdminshipRequestResponseProps = {
   creatorUserId?: number, //
   message?: string, //
   accepted?: boolean, //
+  responded?: boolean, //
   requesterUserId?: number, //
   schoolId?: number, //
   offset?: number,

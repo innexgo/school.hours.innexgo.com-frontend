@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Form, Table } from 'react-bootstrap';
+import { Card, Button, Form, Table } from 'react-bootstrap';
 import ToggleButton from "react-bootstrap/ToggleButton";
 import Loader from '../components/Loader';
 import DisplayModal from '../components/DisplayModal';
@@ -115,6 +115,28 @@ function ReviewAdminshipRequest(props: ReviewAdminshipRequestProps) {
         <Form
           noValidate
           onSubmit={fprops.handleSubmit} >
+          <Card>
+            <Card.Body>
+              <Card.Title>Adminship Request</Card.Title>
+              <Table hover bordered>
+                <tbody>
+                  <tr>
+                    <th>Sent</th>
+                    <td>{format(props.adminshipRequest.creationTime, "MMM do h:mm a")}</td>
+                  </tr>
+                  <tr>
+                    <th>Message</th>
+                    <td>{props.adminshipRequest.message} </td>
+                  </tr>
+                  <tr>
+                    <th>From</th>
+                    <td><ViewUser user={props.adminshipRequest.creator} apiKey={props.apiKey} expanded={false} /></td>
+                  </tr>
+                </tbody>
+              </Table>
+            </Card.Body>
+          </Card>
+          <br/>
           <div hidden={fprops.status.successResult !== ""}>
             <Form.Group>
               <Form.Control
@@ -134,7 +156,7 @@ function ReviewAdminshipRequest(props: ReviewAdminshipRequestProps) {
                 name="radio"
                 value="ACCEPT"
                 checked={fprops.values.accept === true}
-                onChange={_ => fprops.setFieldValue("accepted", true)}
+                onChange={_ => fprops.setFieldValue("accept", true)}
                 className="btn-success"
               > Accept </ToggleButton>
               <ToggleButton
@@ -143,7 +165,7 @@ function ReviewAdminshipRequest(props: ReviewAdminshipRequestProps) {
                 name="radio"
                 value="REJECT"
                 checked={fprops.values.accept === false}
-                onChange={_ => fprops.setFieldValue("accepted", false)}
+                onChange={_ => fprops.setFieldValue("accept", false)}
                 className="btn-danger"
               > Reject </ToggleButton>
             </Form.Group>
@@ -196,7 +218,7 @@ function AdminManageAdminshipRequests(props: AdminManageAdminshipRequestsProps) 
               <tr>
                 <th>User</th>
                 <th>Date Sent</th>
-                <th>Message</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
