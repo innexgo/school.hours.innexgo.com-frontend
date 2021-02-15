@@ -10,13 +10,12 @@ declare global {
   type User = {
     userId: number,
     creationTime: number,
-    kind: UserKind,
     name: string,
     email: string,
   }
 
   type PasswordReset = {
-    creationTime: long;
+    creationTime: number;
   }
 
   type PasswordKind = "CHANGE" | "RESET" | "CANCEL";
