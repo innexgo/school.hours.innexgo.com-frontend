@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button, Container, Card, Form, Tabs, Tab } from 'react-bootstrap';
+import { Table, Button, Container, Card, Form, Tabs, Tab } from 'react-bootstrap';
 import { Add } from '@material-ui/icons'
 import { Async, AsyncProps } from 'react-async';
 
@@ -7,12 +7,14 @@ import DashboardLayout from '../components/DashboardLayout';
 import Section from '../components/Section';
 import Loader from '../components/Loader';
 import DisplayModal from '../components/DisplayModal';
+import { ViewUser, } from '../components/ViewData';
 import UserCreateSchool from '../components/UserCreateSchool';
 import UserCreateAdminshipRequest from '../components/UserCreateAdminshipRequest';
 import UserCreateCourse from '../components/UserCreateCourse';
 import CreateAdminship from '../components/CreateAdminship';
 import UserCreateCourseMembership from '../components/UserCreateCourseMembership';
 import { viewSubscription, viewSchoolData, viewAdminshipRequest, viewAdminshipRequestResponse, viewCourseData, isApiErrorCode } from '../utils/utils';
+import format from "date-fns/format";
 
 type ResourceCardProps = {
   title: string,
@@ -180,8 +182,10 @@ type AdminshipRequestCardProps = {
   apiKey: ApiKey,
 }
 
-function AdminshipRequestCard(props: AdminshipRequestCardProps) {
-  return <Async promiseFn={loadSchoolData}
+function AdminshipRequestCard(props: AdminshipRequestCardProps) { 
+ const [showModal, setShowModal] = React.useState(false);
+ 
+ return <Async promiseFn={loadSchoolData}
     apiKey={props.apiKey}
     schoolId={props.adminshipRequest.school.schoolId}>
     <Async.Pending><Loader /></Async.Pending>
@@ -194,8 +198,35 @@ function AdminshipRequestCard(props: AdminshipRequestCardProps) {
           <Card.Title>{schoolData.name}</Card.Title>
           <Card.Subtitle className="text-muted">PENDING</Card.Subtitle>
           <Card.Text>{props.adminshipRequest.message}</Card.Text>
+	  <Button onClick={()=>setShowModal(true)}> View Request </Button>
         </Card.Body>
       </Card>
+	
+  <DisplayModal
+    title="My Request"
+    show={showModal}
+    onClose={() => setShowModal(false)}
+  >
+
+
+              <Table hover bordered>
+                <tbody>
+                  <tr>
+                    <th>Sent</th>
+                    <td>{format(props.adminshipRequest.creationTime, "MMM do h:mm a")}</td>
+                  </tr>
+                  <tr>
+                    <th>Message</th>
+                    <td>{props.adminshipRequest.message} </td>
+                  </tr>
+                  <tr>
+                    <th>From</th>
+                    <td><ViewUser user={props.adminshipRequest.creator} apiKey={props.apiKey} expanded={false} /></td>
+                  </tr>
+                </tbody>
+              </Table>
+
+</DisplayModal>
     </>
     }</Async.Fulfilled>
   </Async>
