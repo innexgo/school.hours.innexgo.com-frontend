@@ -1,25 +1,33 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Container, Popover } from 'react-bootstrap';
+import DashboardLayout from '../components/DashboardLayout';
+import StudentManageCourseData from '../components/StudentManageCourseData';
+import StudentManageCourseMemberships from '../components/StudentManageCourseMemberships'
+import UtilityWrapper from '../components/UtilityWrapper';
 
-// Bootstrap CSS & JS
-import '../style/dashboard.scss';
-import 'bootstrap/dist/js/bootstrap';
-import 'popper.js/dist/popper';
-
-function Error404() {
+function StudentManageCourse(props: AuthenticatedComponentProps) {
+  const courseId = parseInt(new URLSearchParams(window.location.search).get("courseId") ?? "");
   return (
-    <div style={{
-      display: "flex",
-      height: "100vh",
-      width: "100vw"
-    }}>
-      <div className="my-auto mx-auto text-center">
-        <h1>Student Manage Course.</h1>
-        <h5>Page under construction...</h5>
-        <Link to="/">Return Home</Link>
-      </div>
-    </div>
+    <DashboardLayout {...props}>
+      <Container fluid className="py-4 px-4">
+        <div className="mx-3 my-3">
+          <UtilityWrapper title="Course Data">
+            <Popover id="information-tooltip"> Shows basic information about this course. </Popover>
+            <StudentManageCourseData courseId={courseId} apiKey={props.apiKey} />
+          </UtilityWrapper>
+        </div>
+
+        <div className="mx-3 my-3">
+          <UtilityWrapper title="Current Instructors">
+            <Popover id="information-tooltip"> Shows the current instructors of this course.</Popover>
+            <StudentManageCourseMemberships courseId={courseId} apiKey={props.apiKey} courseMembershipKind="INSTRUCTOR" />
+          </UtilityWrapper>
+        </div>
+
+   
+      </Container>
+    </DashboardLayout>
   )
 }
 
-export default Error404
+export default StudentManageCourse
