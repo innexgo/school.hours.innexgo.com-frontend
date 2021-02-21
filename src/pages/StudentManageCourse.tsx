@@ -13,7 +13,7 @@ function StudentManageCourse(props: AuthenticatedComponentProps) {
         <div className="mx-3 my-3">
           <UtilityWrapper title="Course Data">
             <Popover id="information-tooltip"> Shows basic information about this course. </Popover>
-            <StudentManageCourseData user={props.apiKey.creator} courseId={courseId} apiKey={props.apiKey} />
+            <StudentManageCourseData courseId={courseId} apiKey={props.apiKey} />
           </UtilityWrapper>
         </div>
 

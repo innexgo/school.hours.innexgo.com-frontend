@@ -257,15 +257,14 @@ export async function newCancelCourseKey(props: NewCancelCourseKeyProps): Promis
   return await fetchApi("courseKey/newCancel/", getFormData(props));
 }
 
-export type NewSetCourseMembershipProps = {
+export type NewCancelCourseMembershipProps = {
   userId: number,
   courseId: number,
-  courseMembershipKind: CourseMembershipKind,
   apiKey: string
 }
 
-export async function newSetCourseMembership(props: NewSetCourseMembershipProps): Promise<CourseMembership | ApiErrorCode> {
-  return await fetchApi("courseMembership/newSet/", getFormData(props));
+export async function newCancelCourseMembership(props: NewCancelCourseMembershipProps): Promise<CourseMembership | ApiErrorCode> {
+  return await fetchApi("courseMembership/newCancel/", getFormData(props));
 }
 
 export type NewKeyCourseMembershipProps = {

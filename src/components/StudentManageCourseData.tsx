@@ -2,14 +2,13 @@ import React from 'react';
 import { Form, Button, Table } from 'react-bootstrap'; import Loader from '../components/Loader';
 import { Async, AsyncProps } from 'react-async';
 import DisplayModal from '../components/DisplayModal';
-import { viewCourseData, newCourseData, isApiErrorCode, normalizeCourseName, newSetCourseMembership } from '../utils/utils';
+import { viewCourseMembership, viewCourseData, isApiErrorCode, newCancelCourseMembership } from '../utils/utils';
 import { ViewUser } from '../components/ViewData';
 import { Cancel } from '@material-ui/icons';
 import { Formik, FormikHelpers } from 'formik'
 import format from 'date-fns/format';
 
 type LeaveCourseProps = {
-  user: User,
   courseData: CourseData,
   apiKey: ApiKey,
   postSubmit: () => void
@@ -23,15 +22,14 @@ function LeaveCourse(props: LeaveCourseProps) {
     fprops: FormikHelpers<LeaveCourseValue>) => {
 
 
-    const maybeSetCourseMembership = await newSetCourseMembership({
-      userId: props.user.userId,
+    const maybeCancelCourseMembership = await newCancelCourseMembership({
+      userId: props.apiKey.creator.userId,
       courseId: props.courseData.course.courseId,
-      courseMembershipKind: "CANCEL",
       apiKey: props.apiKey.key,
     });
 
-    if (isApiErrorCode(maybeSetCourseMembership)) {
-      switch (maybeSetCourseMembership) {
+    if (isApiErrorCode(maybeCancelCourseMembership)) {
+      switch (maybeCancelCourseMembership) {
         case "API_KEY_NONEXISTENT": {
           fprops.setStatus({
             failureResult: "You have been automatically logged out. Please relogin.",
@@ -45,14 +43,14 @@ function LeaveCourse(props: LeaveCourseProps) {
             successResult: ""
           });
           break;
-        } 
+        }
         case "COURSE_ARCHIVED": {
           fprops.setStatus({
             failureResult: "This course has already been archived by your teacher.",
             successResult: ""
           });
           break;
-        }               
+        }
         case "API_KEY_UNAUTHORIZED": {
           fprops.setStatus({
             failureResult: "You are not authorized to manage this course.",
@@ -115,23 +113,44 @@ function LeaveCourse(props: LeaveCourseProps) {
   </>
 }
 
-const loadCourseData = async (props: AsyncProps<CourseData>) => {
+type CourseDataMembership = {
+  courseData: CourseData,
+  courseMembership: CourseMembership | null
+}
+
+const loadCourseDataMembership = async (props: AsyncProps<CourseDataMembership>) => {
   const maybeCourseData = await viewCourseData({
     courseId: props.courseId,
     onlyRecent: true,
     apiKey: props.apiKey.key
   });
 
-  if (isApiErrorCode(maybeCourseData) || maybeCourseData.length === 0) {
+
+  const maybeCourseMemberships = await viewCourseMembership({
+    courseId: props.courseId,
+    userId: props.apiKey.creator.userId,
+    onlyRecent: true,
+    apiKey: props.apiKey.key
+  });
+
+  if (isApiErrorCode(maybeCourseData)
+    || maybeCourseData.length === 0
+    || isApiErrorCode(maybeCourseMemberships)) {
     throw Error;
   } else {
-    return maybeCourseData[0];
+    return {
+      courseData: maybeCourseData[0],
+      courseMembership: maybeCourseMemberships.length === 0
+        ? null
+        : maybeCourseMemberships[0]
+    };
   }
+
+
 }
 
 
 const StudentManageCourseData = (props: {
-  user: User,
   courseId: number,
   apiKey: ApiKey,
 }) => {
@@ -139,7 +158,7 @@ const StudentManageCourseData = (props: {
   const [showLeaveCourse, setShowLeaveCourse] = React.useState(false);
 
   return <Async
-    promiseFn={loadCourseData}
+    promiseFn={loadCourseDataMembership}
     apiKey={props.apiKey}
     courseId={props.courseId}>
     {({ reload }) => <>
@@ -147,40 +166,42 @@ const StudentManageCourseData = (props: {
       <Async.Rejected>
         <span className="text-danger">An unknown error has occured.</span>
       </Async.Rejected>
-      <Async.Fulfilled<CourseData>>{courseData => <>
+      <Async.Fulfilled<CourseDataMembership >>{cdm => <>
         <Table hover bordered>
           <tbody>
             <tr>
               <th>Status</th>
-              <td>{courseData.active ? "Active" : "Archived"}</td>
+              <td>{cdm.courseData.active ? "Active" : "Archived"}</td>
             </tr>
             <tr>
               <th>Name</th>
-              <td>{courseData.name}</td>
+              <td>{cdm.courseData.name}</td>
             </tr>
             <tr>
               <th>Description</th>
-              <td>{courseData.description}</td>
+              <td>{cdm.courseData.description}</td>
             </tr>
             <tr>
               <th>Creator</th>
-              <td><ViewUser user={courseData.course.creator} apiKey={props.apiKey} expanded={false} /></td>
+              <td><ViewUser user={cdm.courseData.course.creator} apiKey={props.apiKey} expanded={false} /></td>
             </tr>
             <tr>
               <th>Creation Time</th>
-              <td>{format(courseData.course.creationTime, "MMM do")} </td>
+              <td>{format(cdm.courseData.course.creationTime, "MMM do")} </td>
             </tr>
           </tbody>
         </Table>
-        <Button variant="danger" onClick={_ => setShowLeaveCourse(true)}>Leave <Cancel /></Button>
+        { cdm.courseMembership != null && cdm.courseMembership.courseMembershipKind == "STUDENT"
+            ? <Button variant="danger" onClick={_ => setShowLeaveCourse(true)}>Leave <Cancel /></Button>
+            : <> </>
+        }
         <DisplayModal
           title="Leave Course"
           show={showLeaveCourse}
           onClose={() => setShowLeaveCourse(false)}
         >
           <LeaveCourse
-            user={props.user}
-            courseData={courseData}
+            courseData={cdm.courseData}
             apiKey={props.apiKey}
             postSubmit={() => {
               setShowLeaveCourse(false);

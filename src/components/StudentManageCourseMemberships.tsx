@@ -1,25 +1,12 @@
 import React from 'react';
-import { Button, Form, Table } from 'react-bootstrap';
+import { Form, Table } from 'react-bootstrap';
 import Loader from '../components/Loader';
-import DisplayModal from '../components/DisplayModal';
 import { ViewUser, } from '../components/ViewData';
-
-import { Delete, } from '@material-ui/icons'
-import { Formik, FormikHelpers, } from 'formik'
 
 import format from "date-fns/format";
 
 import { Async, AsyncProps } from 'react-async';
-import { newSetCourseMembership, viewCourseMembership, isApiErrorCode } from '../utils/utils';
-
-
-type CancelCourseMembershipProps = {
-  user: User,
-  courseId: number,
-  apiKey: ApiKey,
-  postSubmit: () => void
-};
-
+import { viewCourseMembership, isApiErrorCode } from '../utils/utils';
 
 
 type InternalStudentManageCourseMembershipsProps = {
@@ -30,11 +17,11 @@ type InternalStudentManageCourseMembershipsProps = {
 }
 
 function InternalStudentManageCourseMemberships(props: InternalStudentManageCourseMembershipsProps) {
- 
+
 
   return <>
     <Async promiseFn={props.loadMemberships}>
-      {({ reload }) => <>
+      {_ => <>
         <Async.Pending><Loader /></Async.Pending>
         <Async.Rejected>
           <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
@@ -59,7 +46,7 @@ function InternalStudentManageCourseMemberships(props: InternalStudentManageCour
                   )}
             </tbody>
           </Table>
-          
+
         </>}
         </Async.Fulfilled>
       </>}

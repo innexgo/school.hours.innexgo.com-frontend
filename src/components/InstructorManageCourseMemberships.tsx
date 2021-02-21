@@ -11,7 +11,7 @@ import { Formik, FormikHelpers, } from 'formik'
 import format from "date-fns/format";
 
 import { Async, AsyncProps } from 'react-async';
-import { newSetCourseMembership, viewCourseMembership, isApiErrorCode } from '../utils/utils';
+import { newCancelCourseMembership, viewCourseMembership, isApiErrorCode } from '../utils/utils';
 
 
 type CancelCourseMembershipProps = {
@@ -29,10 +29,9 @@ function CancelCourseMembership(props: CancelCourseMembershipProps) {
   const onSubmit = async (values: CancelCourseMembershipValue,
     fprops: FormikHelpers<CancelCourseMembershipValue>) => {
 
-    const maybeCourseMembership = await newSetCourseMembership({
+    const maybeCourseMembership = await newCancelCourseMembership({
       courseId: props.courseId,
       userId: props.user.userId,
-      courseMembershipKind: "CANCEL",
       apiKey: props.apiKey.key,
     });
 
