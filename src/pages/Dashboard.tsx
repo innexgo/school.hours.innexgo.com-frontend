@@ -148,6 +148,7 @@ type AdminshipRequestResponseCardProps = {
 }
 
 function AdminshipRequestResponseCard(props: AdminshipRequestResponseCardProps) {
+  const [showModal, setShowModal] = React.useState(false);
 
   return <Async promiseFn={loadSchoolData}
     apiKey={props.apiKey}
@@ -164,13 +165,49 @@ function AdminshipRequestResponseCard(props: AdminshipRequestResponseCardProps) 
             {props.adminshipRequestResponse.accepted ? "ACCEPTED" : "REJECTED"}
           </Card.Subtitle>
           <Card.Text>{props.adminshipRequestResponse.message}</Card.Text>
+          <Button onClick={() => setShowModal(true)}>
+            {props.adminshipRequestResponse.accepted
+              ? "Manage Response"
+              : "View Response"
+            }
+          </Button>
+        </Card.Body>
+        <DisplayModal
+          title="View Request"
+          show={showModal}
+          onClose={() => setShowModal(false)}
+        >
+          <Table hover bordered>
+            <tbody>
+              <tr>
+                <th>Request Sent</th>
+                <td>{format(props.adminshipRequestResponse.adminshipRequest.creationTime, "MMM do h:mm a")}</td>
+              </tr>
+              <tr>
+                <th>Request Message</th>
+                <td>{props.adminshipRequestResponse.adminshipRequest.message}</td>
+              </tr>
+              <tr>
+                <th>Response Sent</th>
+                <td>{format(props.adminshipRequestResponse.creationTime, "MMM do h:mm a")}</td>
+              </tr>
+              <tr>
+                <th>Response From</th>
+                <td><ViewUser user={props.adminshipRequestResponse.creator} apiKey={props.apiKey} expanded={false} /></td>
+              </tr>
+              <tr>
+                <th>Response Message</th>
+                <td>{props.adminshipRequestResponse.message}</td>
+              </tr>
+            </tbody>
+          </Table>
           {props.adminshipRequestResponse.accepted
             ? <CreateAdminship apiKey={props.apiKey}
               adminshipRequestResponse={props.adminshipRequestResponse}
               postSubmit={props.postSubmit} />
             : <> </>
           }
-        </Card.Body>
+        </DisplayModal>
       </Card>
     </>
     }</Async.Fulfilled>
@@ -182,10 +219,10 @@ type AdminshipRequestCardProps = {
   apiKey: ApiKey,
 }
 
-function AdminshipRequestCard(props: AdminshipRequestCardProps) { 
- const [showModal, setShowModal] = React.useState(false);
- 
- return <Async promiseFn={loadSchoolData}
+function AdminshipRequestCard(props: AdminshipRequestCardProps) {
+  const [showModal, setShowModal] = React.useState(false);
+
+  return <Async promiseFn={loadSchoolData}
     apiKey={props.apiKey}
     schoolId={props.adminshipRequest.school.schoolId}>
     <Async.Pending><Loader /></Async.Pending>
@@ -198,35 +235,32 @@ function AdminshipRequestCard(props: AdminshipRequestCardProps) {
           <Card.Title>{schoolData.name}</Card.Title>
           <Card.Subtitle className="text-muted">PENDING</Card.Subtitle>
           <Card.Text>{props.adminshipRequest.message}</Card.Text>
-	  <Button onClick={()=>setShowModal(true)}> View Request </Button>
+          <Button onClick={() => setShowModal(true)}> View Request </Button>
         </Card.Body>
       </Card>
-	
-  <DisplayModal
-    title="My Request"
-    show={showModal}
-    onClose={() => setShowModal(false)}
-  >
+      <DisplayModal
+        title="View Request"
+        show={showModal}
+        onClose={() => setShowModal(false)}
+      >
+        <Table hover bordered>
+          <tbody>
+            <tr>
+              <th>Sent</th>
+              <td>{format(props.adminshipRequest.creationTime, "MMM do h:mm a")}</td>
+            </tr>
+            <tr>
+              <th>Message</th>
+              <td>{props.adminshipRequest.message} </td>
+            </tr>
+            <tr>
+              <th>From</th>
+              <td><ViewUser user={props.adminshipRequest.creator} apiKey={props.apiKey} expanded={false} /></td>
+            </tr>
+          </tbody>
+        </Table>
 
-
-              <Table hover bordered>
-                <tbody>
-                  <tr>
-                    <th>Sent</th>
-                    <td>{format(props.adminshipRequest.creationTime, "MMM do h:mm a")}</td>
-                  </tr>
-                  <tr>
-                    <th>Message</th>
-                    <td>{props.adminshipRequest.message} </td>
-                  </tr>
-                  <tr>
-                    <th>From</th>
-                    <td><ViewUser user={props.adminshipRequest.creator} apiKey={props.apiKey} expanded={false} /></td>
-                  </tr>
-                </tbody>
-              </Table>
-
-</DisplayModal>
+      </DisplayModal>
     </>
     }</Async.Fulfilled>
   </Async>
@@ -271,9 +305,9 @@ function Dashboard(props: AuthenticatedComponentProps) {
                           <div className="my-3 mx-3">
                             <ResourceCard
                               title={sd.name}
-                              subtitle=""
+                              subtitle="ADMIN"
                               active={sd.active}
-                              text={sd.description}
+                              text={""}
                               href={`/admin_manage_school?schoolId=${sd.school.schoolId}`}
                             />
                           </div>
