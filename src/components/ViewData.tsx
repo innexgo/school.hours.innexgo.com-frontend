@@ -320,7 +320,7 @@ export const ViewCommittment = (props: {
         <span className="text-danger">An unknown error has occured.</span>
       </Async.Rejected>
       <Async.Fulfilled<SessionData>>{sessionData =>
-        expanded
+        !expanded
           ? <span>
             {format(sessionData.startTime, "h:mm a - ")}
             {format(sessionData.startTime + sessionData.duration, "h:mm a")}
