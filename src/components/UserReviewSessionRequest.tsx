@@ -32,6 +32,7 @@ class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
       initialView="timeGridDay"
       unselectCancel=".UserReviewSessionRequest"
       headerToolbar={false}
+      dayHeaders={false}
       allDaySlot={false}
       height="auto"
       slotMinTime="08:00"
@@ -68,7 +69,7 @@ class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
             courseId: this.props.sessionRequest.course.courseId,
             minStartTime: args.start.valueOf(),
             maxStartTime: args.end.valueOf(),
-            onlyRecent:true,
+            onlyRecent: true,
             apiKey: this.props.apiKey.key,
           });
 
@@ -82,6 +83,7 @@ class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
             }));
         },
       ]}
+      slotLabelContent={a => <> </>}
     />
   }
 }
@@ -341,39 +343,51 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
               <Form.Text className="text-danger">{fprops.errors.accepted}</Form.Text>
             </Form.Group>
           </Col>
-          <Col xs={2}>
-            <Form.Label>Requested Duration</Form.Label>
-            <FullCalendar
-              plugins={[timeGridPlugin, interactionPlugin]}
-              initialView="timeGridDay"
-              unselectCancel=".UserReviewSessionRequest"
-              headerToolbar={false}
-              allDaySlot={false}
-              height="auto"
-              slotMinTime="08:00"
-              slotMaxTime="18:00"
-              slotDuration="00:15:00"
-              selectable={false}
-              initialDate={props.sessionRequest.startTime}
-              datesSet={({ view }) => /* Keeps window size in sync */view.calendar.updateSize()}
-              events={[{
-                id: `SessionRequest:${props.sessionRequest.sessionRequestId}`,
-                start: new Date(props.sessionRequest.startTime),
-                end: new Date(props.sessionRequest.startTime + props.sessionRequest.duration),
-                display: "background",
-                sessionRequest: props.sessionRequest,
-              }]}
-            />
-          </Col>
-          <Col>
-            <Form.Group>
-              <Form.Label>Select or Create Session</Form.Label>
-              <CalendarWidget
-                {...props}
-                setFieldValue={fprops.setFieldValue}
-                sessionId={fprops.values.sessionId}
-              />
-              {/*
+          <Col lg={8}>
+            <table>
+              <tr>
+                <td>
+                  <Form.Label>Requested Duration</Form.Label>
+                </td>
+                <td>
+                  <Form.Label>Select or Create Session</Form.Label>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <FullCalendar
+                    plugins={[timeGridPlugin, interactionPlugin]}
+                    initialView="timeGridDay"
+                    unselectCancel=".UserReviewSessionRequest"
+                    headerToolbar={false}
+                    dayHeaders={false}
+                    allDaySlot={false}
+                    height="auto"
+                    slotMinTime="08:00"
+                    slotMaxTime="18:00"
+                    slotDuration="00:15:00"
+                    selectable={false}
+                    initialDate={props.sessionRequest.startTime}
+                    datesSet={({ view }) => /* Keeps window size in sync */ view.calendar.updateSize()}
+                    events={[{
+                      id: `SessionRequest:${props.sessionRequest.sessionRequestId}`,
+                      start: new Date(props.sessionRequest.startTime),
+                      end: new Date(props.sessionRequest.startTime + props.sessionRequest.duration),
+                      display: "background",
+                      sessionRequest: props.sessionRequest,
+                    }]}
+                  />
+                </td>
+                <td>
+                  <CalendarWidget
+                    {...props}
+                    setFieldValue={fprops.setFieldValue}
+                    sessionId={fprops.values.sessionId}
+                  />
+                </td>
+              </tr>
+            </table>
+            {/*
               <Form.Text className="text-muted">
                 Calendar displays a list of all sessions you have scheduled for this day.
                 You may either assign a student to a preexisting session by clicking on the gray calendar item,
@@ -381,9 +395,7 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
                 If you create a new session, you can choose the name and visibility.
               </Form.Text>
               */}
-              <br />
-              <Form.Text className="text-danger">{fprops.errors.sessionId}</Form.Text>
-            </Form.Group>
+            <Form.Text className="text-danger">{fprops.errors.sessionId}</Form.Text>
           </Col>
         </Row>
         <br />
