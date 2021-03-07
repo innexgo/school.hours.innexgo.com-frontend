@@ -8,9 +8,10 @@ import ToggleButton from "react-bootstrap/ToggleButton";
 import { Formik, FormikHelpers } from 'formik';
 import Loader from "../components/Loader";
 
+import CalendarCard from '../components/CalendarCard';
+import { sessionToEvent } from '../components/ToCalendar';
 import { ViewSessionRequest } from '../components/ViewData';
-import { newAcceptSessionRequestResponse, newRejectSessionRequestResponse, newSession, newCommittment, viewSessionData, viewCourseData, isApiErrorCode } from '../utils/utils';
-
+import { newAcceptSessionRequestResponse, newRejectSessionRequestResponse, newSession, newCommittment, viewSessionData, viewCourseData, viewCourseMembership, isApiErrorCode } from '../utils/utils';
 
 type CalendarWidgetProps = {
   sessionRequest: SessionRequest;
@@ -38,6 +39,7 @@ class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
       slotMinTime="08:00"
       slotMaxTime="18:00"
       slotDuration="00:15:00"
+      eventContent={CalendarCard}
       selectable={true}
       selectMirror={true}
       initialDate={this.props.sessionRequest.startTime}
@@ -64,26 +66,42 @@ class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
             endStr: string;
             timeZone: string;
           }) => {
-
-          const maybeSessionData = await viewSessionData({
-            courseId: this.props.sessionRequest.course.courseId,
-            minStartTime: args.start.valueOf(),
-            maxStartTime: args.end.valueOf(),
-            onlyRecent: true,
-            apiKey: this.props.apiKey.key,
+          const maybeCourseMemberships = await viewCourseMembership({
+            userId: this.props.apiKey.creator.userId,
+            courseMembershipKind: "INSTRUCTOR",
+            onlyRecent:true,
+            apiKey: this.props.apiKey.key
           });
 
-          return isApiErrorCode(maybeSessionData)
-            ? []
-            : maybeSessionData.map(s => ({
-              id: `Session:${s.session.sessionId}`,
-              start: new Date(s.startTime),
-              end: new Date(s.startTime + s.duration),
-              color: s.session.sessionId === this.props.sessionId ? "#3788D8" : "#6C757D",
-            }));
+          if(isApiErrorCode(maybeCourseMemberships)) {
+            return [];
+          }
+
+          return (await Promise.all(maybeCourseMemberships.map(async cm => {
+            const maybeSessionData = await viewSessionData({
+              courseId: cm.course.courseId,
+              minStartTime: args.start.valueOf(),
+              maxStartTime: args.end.valueOf(),
+              onlyRecent: true,
+              apiKey: this.props.apiKey.key,
+            });
+            return isApiErrorCode(maybeSessionData)
+              ? []
+              : maybeSessionData;
+
+          })))
+          .flat()
+          .map(s =>
+              sessionToEvent({
+                sessionData: s,
+                relation: "INSTRUCTOR",
+                apiKey: this.props.apiKey,
+                muted: s.session.sessionId !== this.props.sessionId,
+                permitted: s.session.course.courseId === this.props.sessionRequest.course.courseId
+              }));
         },
       ]}
-      slotLabelContent={a => <> </>}
+      slotLabelContent={_ => <> </>}
     />
   }
 }
@@ -106,8 +124,6 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
     newSessionPublic: boolean
     message: string,
   }
-
-  const defaultSessionName = `${props.courseData.name} - ${props.sessionRequest.attendee.name}`;
 
   const onSubmit = async (values: ReviewSessionRequestValues,
     { setStatus, setErrors, }: FormikHelpers<ReviewSessionRequestValues>) => {
@@ -160,18 +176,8 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
         return;
       }
 
-      let sessionName: string;
-
-      if (values.newSessionName === "") {
-        sessionName = defaultSessionName;
-      } else {
-        sessionName = values.newSessionName;
-      }
-
-      // TODO location ???
-
       const maybeSession = await newSession({
-        name: sessionName,
+        name: values.newSessionName,
         courseId: props.sessionRequest.course.courseId,
         startTime: values.startTime,
         duration: values.duration,
@@ -303,7 +309,7 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
               <Form.Control
                 name="newSessionName"
                 type="text"
-                placeholder={`${defaultSessionName} (default)`}
+                placeholder="New Session Name (optional)"
                 value={fprops.values.newSessionName}
                 onChange={fprops.handleChange}
                 isInvalid={!!fprops.errors.newSessionName}
@@ -342,6 +348,10 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
               <br />
               <Form.Text className="text-danger">{fprops.errors.accepted}</Form.Text>
             </Form.Group>
+            <br />
+            <Button type="submit" >Submit</Button>
+            <br />
+            <Form.Text className="text-danger">{fprops.status}</Form.Text>
           </Col>
           <Col lg={8}>
             <table>
@@ -398,10 +408,6 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
             <Form.Text className="text-danger">{fprops.errors.sessionId}</Form.Text>
           </Col>
         </Row>
-        <br />
-        <Button type="submit" >Submit</Button>
-        <br />
-        <Form.Text className="text-danger">{fprops.status}</Form.Text>
       </Form>}
     </Formik>
   </>

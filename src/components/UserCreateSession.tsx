@@ -22,16 +22,10 @@ function CreateSession(props: CreateSessionProps) {
     studentList: number[],
   }
 
-  const [defaultSessionName, setDefaultSessionName] = React.useState(props.apiKey.creator.name);
-
   const onSubmit = async (values: CreateSessionValue, { setStatus }: FormikHelpers<CreateSessionValue>) => {
     let sessionName: string;
 
-    if (values.name === "") {
-      sessionName = defaultSessionName;
-    } else {
-      sessionName = values.name;
-    }
+    sessionName = values.name;
 
     if (values.courseId == null) {
       setStatus({
@@ -221,7 +215,7 @@ function CreateSession(props: CreateSessionProps) {
               <Form.Control
                 name="name"
                 type="text"
-                placeholder={`${defaultSessionName} (default)`}
+                placeholder="Session Name (optional)"
                 value={fprops.values.name}
                 onChange={fprops.handleChange}
                 isInvalid={fprops.status.name !== ""}
@@ -253,11 +247,6 @@ function CreateSession(props: CreateSessionProps) {
                 }}
                 setFn={e => {
                   fprops.setFieldValue("studentList", e.map(s => s.userId));
-                  let newDefault = props.apiKey.creator.name;
-                  for (const s of e) {
-                    newDefault += ` - ${s.name}`
-                  }
-                  setDefaultSessionName(newDefault);
                 }} />
               <Form.Text className="text-danger">{fprops.status.studentList}</Form.Text>
             </Col>

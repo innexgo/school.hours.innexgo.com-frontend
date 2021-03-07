@@ -2,7 +2,10 @@ import { EventInput } from '@fullcalendar/react';
 
 export const sessionToEvent = (props: {
   sessionData: SessionData,
-  relation: CourseMembershipKind
+  relation: CourseMembershipKind,
+  apiKey: ApiKey,
+  muted: boolean,
+  permitted: boolean,
 }): EventInput => ({
   id: `Session:${props.sessionData.session.sessionId}`,
   start: new Date(props.sessionData.startTime),
@@ -32,7 +35,6 @@ export const sessionRequestResponseToEvent = (props: {
   relation: CourseMembershipKind
 }): EventInput =>
   props.sessionRequestResponse.accepted
-
     ? {
       id: `SessionRequestResponse:${props.sessionRequestResponse.sessionRequest.sessionRequestId}`,
       start: new Date(props.sessionData!.startTime),

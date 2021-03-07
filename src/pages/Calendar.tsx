@@ -268,7 +268,10 @@ function EventCalendar(props: EventCalendarProps) {
               ? []
               : maybeSessionData.map(x => sessionToEvent({
                 sessionData: x,
-                relation: "INSTRUCTOR"
+                relation: "INSTRUCTOR",
+                apiKey:props.apiKey,
+                muted:false,
+                permitted:true
               })),
           ];
         }))).flat();
