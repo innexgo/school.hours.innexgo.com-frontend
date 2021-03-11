@@ -26,6 +26,7 @@ import { sessionToEvent, sessionRequestToEvent, sessionRequestResponseToEvent, c
 type EventCalendarProps = {
   apiKey: ApiKey,
   showAllHours: boolean,
+  showHiddenEvents: boolean,
   courseMemberships: CourseMembership[],
   activeCourseDatas: CourseData[]
 }
@@ -123,7 +124,7 @@ function EventCalendar(props: EventCalendarProps) {
         ? []
         : (await Promise.all(maybeSessionRequestResponses
           // hide things you cancelled yourself
-          .filter(x => x.creator.userId !== props.apiKey.creator.userId)
+          .filter(x => x.creator.userId !== props.apiKey.creator.userId || props.showHiddenEvents)
           .map(async x => {
             const courseData = props.activeCourseDatas
               .find(cd => cd.course.courseId === x.sessionRequest.course.courseId);
@@ -254,6 +255,14 @@ function EventCalendar(props: EventCalendarProps) {
             apiKey: props.apiKey.key
           });
 
+          const maybeSessionRequestResponses = await viewSessionRequestResponse({
+            courseId: x.course.courseId,
+            minStartTime: args.start.valueOf(),
+            maxStartTime: args.end.valueOf(),
+            accepted: false,
+            apiKey: props.apiKey.key,
+          });
+          console.log(maybeSessionRequestResponses);
           // return an array made out of each session / session request converted to a calendar event
           // note that we mark these with "INSTRUCTOR" to show that these are existing in our instructor capacity
           return [
@@ -272,6 +281,15 @@ function EventCalendar(props: EventCalendarProps) {
                 apiKey:props.apiKey,
                 muted:false,
                 permitted:true
+              })),
+              ...isApiErrorCode(maybeSessionRequestResponses)
+              ? []
+              : maybeSessionRequestResponses
+                  .filter(x => props.showHiddenEvents)
+                  .map(x => sessionRequestResponseToEvent({
+                    sessionRequestResponse: x,
+                    courseData: courseData,
+                    relation: "INSTRUCTOR"
               })),
           ];
         }))).flat();
@@ -530,6 +548,7 @@ const loadCourseData = async (props: AsyncProps<CourseData[]>) => {
 
 function CalendarWidget(props: AuthenticatedComponentProps) {
   const [showAllHours, setShowAllHours] = React.useState(false);
+  const [showHiddenEvents, setShowHiddenEvents] = React.useState(false);
   const [hiddenCourses, setHiddenCourses] = React.useState<number[]>([]);
 
 
@@ -556,6 +575,11 @@ function CalendarWidget(props: AuthenticatedComponentProps) {
                   checked={showAllHours}
                   onChange={_ => setShowAllHours(!showAllHours)}
                   label="Show All Hours"
+                />
+                <Form.Check
+                  checked={showHiddenEvents}
+                  onChange={_ => setShowHiddenEvents(!showHiddenEvents)}
+                  label="Show Hidden Events"
                 />
                 {cds.length === 0
                   ? <> </>
@@ -589,6 +613,7 @@ function CalendarWidget(props: AuthenticatedComponentProps) {
                   activeCourseDatas={cds.filter(cm => !hiddenCourses.includes(cm.course.courseId))}
                   apiKey={props.apiKey}
                   showAllHours={showAllHours}
+                  showHiddenEvents={showHiddenEvents}
                   courseMemberships={cms}
                 />
               }
