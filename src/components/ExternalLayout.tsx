@@ -21,7 +21,7 @@ class ExternalLayout extends React.Component<ExternalLayoutProps> {
     return (
       <>
         <ExternalHeader fixed={this.props.fixed} transparentTop={this.props.transparentTop}>
-          Innexgo Hourse
+          Innexgo Hours
         </ExternalHeader>
         {this.props.children}
         <Footer />
