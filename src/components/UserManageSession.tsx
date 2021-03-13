@@ -89,11 +89,13 @@ function ManageSessionModal(props: ManageSessionModalProps) {
               <Card>
                 <Card.Body>
                   <Card.Title>Initial Response</Card.Title>
+                  <Table>
                   {data.requestResponses.map(srr =>
-                    <>
+                    <tr>
                       <ViewSessionRequestResponse expanded={false} apiKey={props.apiKey} sessionRequestResponse={srr} />
-                    </>
+                    </tr>
                   )}
+                  </Table>
                 </Card.Body>
               </Card>
               <br />
