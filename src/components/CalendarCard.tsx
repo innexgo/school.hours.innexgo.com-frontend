@@ -73,9 +73,9 @@ function SessionCard(props: {
     style={{
       backgroundColor: props.permitted
       ? props.muted
-        ? "#6C757D"
+        ? "#28A745"
         : "#3788D8"
-      : "#DC3545"
+      : "#6C757D"
     }}
   >
     {sessionData.name !== ""

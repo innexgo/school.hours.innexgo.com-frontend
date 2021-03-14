@@ -3,7 +3,7 @@ import { Async, AsyncProps } from 'react-async';
 import FullCalendar, { EventClickArg, DateSelectArg } from "@fullcalendar/react"
 import interactionPlugin from '@fullcalendar/interaction'
 import timeGridPlugin from '@fullcalendar/timegrid'
-import { Card, Row, Col, Button, Form } from 'react-bootstrap';
+import { Media, Card, Row, Col, Button, Form } from 'react-bootstrap';
 import ToggleButton from "react-bootstrap/ToggleButton";
 import { Formik, FormikHelpers } from 'formik';
 import Loader from "../components/Loader";
@@ -26,7 +26,6 @@ class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
     const setStartTime = (x: number | null) => this.props.setFieldValue("startTime", x);
     const setDuration = (x: number | null) => this.props.setFieldValue("duration", x);
     const setSessionId = (x: number | null) => this.props.setFieldValue("sessionId", x);
-
 
     return <FullCalendar
       plugins={[timeGridPlugin, interactionPlugin]}
@@ -69,11 +68,11 @@ class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
           const maybeCourseMemberships = await viewCourseMembership({
             userId: this.props.apiKey.creator.userId,
             courseMembershipKind: "INSTRUCTOR",
-            onlyRecent:true,
+            onlyRecent: true,
             apiKey: this.props.apiKey.key
           });
 
-          if(isApiErrorCode(maybeCourseMemberships)) {
+          if (isApiErrorCode(maybeCourseMemberships)) {
             return [];
           }
 
@@ -90,8 +89,8 @@ class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
               : maybeSessionData;
 
           })))
-          .flat()
-          .map(s =>
+            .flat()
+            .map(s =>
               sessionToEvent({
                 sessionData: s,
                 relation: "INSTRUCTOR",
@@ -105,6 +104,24 @@ class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
     />
   }
 }
+
+function ColorExplainer(props: { color: string; text: string }) {
+  return <Media>
+    <div
+      className="mr-2"
+      style={{
+        borderStyle: "solid",
+        height: 32,
+        width: 32,
+        backgroundColor: props.color
+      }}
+    />
+    <Media.Body>
+      <p>{props.text}</p>
+    </Media.Body>
+  </Media>
+}
+
 
 type IUserReviewSessionRequestProps = {
   postSubmit: () => void;
@@ -354,6 +371,17 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
             <Form.Text className="text-danger">{fprops.status}</Form.Text>
           </Col>
           <Col lg={8}>
+            <Row>
+              <Col>
+                <ColorExplainer color="#28A745" text="Valid Slot" />
+              </Col>
+              <Col>
+                <ColorExplainer color="#6C757D" text="Invalid Slot" />
+              </Col>
+              <Col>
+                <ColorExplainer color="#2788D8" text="Selected" />
+              </Col>
+            </Row>
             <table>
               <tr>
                 <td>
