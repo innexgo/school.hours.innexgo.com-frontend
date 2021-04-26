@@ -1,26 +1,25 @@
-
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Container, Popover } from 'react-bootstrap';
+import DashboardLayout from '../components/DashboardLayout';
 
-// Bootstrap CSS & JS
-import '../style/dashboard.scss';
-import 'bootstrap/dist/js/bootstrap';
-import 'popper.js/dist/popper';
+import CourseViewStatsReport from '../components/CourseViewStatsReport';
+import UtilityWrapper from '../components/UtilityWrapper';
 
-function Error404() {
+
+function CourseStatsReport(props: AuthenticatedComponentProps) {
+  const courseId = parseInt(new URLSearchParams(window.location.search).get("courseId") ?? "");
   return (
-    <div style={{
-      display: "flex",
-      height: "100vh",
-      width: "100vw"
-    }}>
-      <div className="my-auto mx-auto text-center">
-        <h1>404 Error.</h1>
-        <h5>Page Not Found</h5>
-        <Link to="/">Return Home</Link>
-      </div>
-    </div>
+    <DashboardLayout {...props}>
+      <Container fluid className="py-4 px-4">
+      <div className="mx-3 my-3">
+          <UtilityWrapper title="Course Data">
+            <Popover id="information-tooltip"> report </Popover>
+            <CourseViewStatsReport courseId={courseId} apiKey={props.apiKey} />
+          </UtilityWrapper>
+        </div>
+      </Container>
+    </DashboardLayout>
   )
 }
 
-export default Error404
+export default CourseStatsReport;

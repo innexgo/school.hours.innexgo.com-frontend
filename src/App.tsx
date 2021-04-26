@@ -22,6 +22,7 @@ import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
 // calendar
 import Calendar from './pages/Calendar';
+// report
 
 // settings
 import Settings from './pages/Settings';
