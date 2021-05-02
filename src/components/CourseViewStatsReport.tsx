@@ -29,13 +29,13 @@ type InternalCourseViewStatsReportProps = {
 function InternalCourseViewStatsReport(props: InternalCourseViewStatsReportProps) {
 
     return <>
-        <Async promiseFn={props.loadMemberships}>
+        <Async promiseFn={props.loadMemberships} minStartTime={0}>
             {({ reload }) => <>
                 <Async.Pending><Loader /></Async.Pending>
                 <Async.Rejected>
                     <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
                 </Async.Rejected>
-                <Async.Fulfilled<CourseMembership[]>>{data => <>
+                <Async.Fulfilled<CourseStatsReportData>>{data => <>
                     <Table hover bordered>
                         <thead>
                             <tr>
@@ -46,17 +46,13 @@ function InternalCourseViewStatsReport(props: InternalCourseViewStatsReportProps
                         </thead>
                         <tbody>
                             {
-                                data.length === 0
+                                data.courseMemberships.length === 0
                                     ? <tr><td colSpan={3} className="text-center">No current members.</td></tr>
-                                    : data.map((a: CourseMembership) =>
+                                    : data.courseMemberships.map((a: CourseMembership) =>
                                         <tr>
                                             <td><ViewUser user={a.user} apiKey={props.apiKey} expanded={false} /></td>
                                             <td>{format(a.creationTime, "MMM do")}</td>
                                             <th>
-                                                <Button variant="link" className="text-dark"
-                                                    onClick={() => setConfirmRemoveUser(a.user)}>
-                                                    <Delete />
-                                                </Button>
                                             </th>
                                         </tr>
                                     )}
@@ -86,6 +82,7 @@ function CourseViewStatsReport(props: CourseViewStatsReportProps) {
         apiKey={props.apiKey}
         loadMemberships={async (fprops: AsyncProps<CourseStatsReportData>) => {
             const maybeCourseMemberships = await viewCourseMembership({
+                courseMembershipKind: "STUDENT",
                 courseId: props.courseId,
                 onlyRecent: true,
                 apiKey: props.apiKey.key
