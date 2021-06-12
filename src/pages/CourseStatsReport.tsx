@@ -13,7 +13,11 @@ function CourseStatsReport(props: AuthenticatedComponentProps) {
       <Container fluid className="py-4 px-4">
       <div className="mx-3 my-3">
           <UtilityWrapper title="Course Data">
-            <Popover id="information-tooltip"> report </Popover>
+            <Popover id="information-tooltip"> 
+            The total tells you the total times an appointment has been set up within the past 6 months.
+            P represents how many times present to the appointed meetings.
+            A represents how many times absent to the appointed meetings.
+             </Popover>
             <CourseViewStatsReport courseId={courseId} apiKey={props.apiKey} />
           </UtilityWrapper>
         </div>
