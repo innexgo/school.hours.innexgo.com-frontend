@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, Form } from "react-bootstrap";
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
-import { newValidAdminship, isApiErrorCode } from '../utils/utils';
+import { newValidAdminship, isErr } from '../utils/utils';
 
 type CreateAdminshipProps = {
   adminshipRequestResponse: AdminshipRequestResponse;
@@ -29,7 +29,7 @@ function CreateAdminship(props: CreateAdminshipProps) {
       apiKey: props.apiKey.key,
     });
 
-    if (isApiErrorCode(maybeAdminship)) {
+    if (isErr(maybeAdminship)) {
       switch (maybeAdminship) {
         case "ADMINSHIP_REQUEST_RESPONSE_NONEXISTENT": {
           fprops.setStatus({

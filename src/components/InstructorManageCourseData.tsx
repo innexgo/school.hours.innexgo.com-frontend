@@ -2,11 +2,13 @@ import React from 'react';
 import { Form, Button, Table } from 'react-bootstrap'; import Loader from '../components/Loader';
 import { Async, AsyncProps } from 'react-async';
 import DisplayModal from '../components/DisplayModal';
-import { viewCourseData, newCourseData, isApiErrorCode, normalizeCourseName } from '../utils/utils';
+import { courseDataView, courseDataNew, CourseData, normalizeCourseName } from '../utils/utils';
 import { ViewUser } from '../components/ViewData';
 import { Edit, Archive, Unarchive} from '@material-ui/icons';
 import { Formik, FormikHelpers } from 'formik'
 import format from 'date-fns/format';
+import {isErr} from '@innexgo/frontend-common';
+import {ApiKey} from '@innexgo/frontend-auth-api';
 
 
 type EditCourseDataProps = {
@@ -25,7 +27,7 @@ function EditCourseData(props: EditCourseDataProps) {
   const onSubmit = async (values: EditCourseDataValue,
     fprops: FormikHelpers<EditCourseDataValue>) => {
 
-    const maybeCourseData = await newCourseData({
+    const maybeCourseData = await courseDataNew({
       courseId: props.courseData.course.courseId,
       apiKey: props.apiKey.key,
       name: values.name,
@@ -33,8 +35,8 @@ function EditCourseData(props: EditCourseDataProps) {
       active: props.courseData.active,
     });
 
-    if (isApiErrorCode(maybeCourseData)) {
-      switch (maybeCourseData) {
+    if (isErr(maybeCourseData)) {
+      switch (maybeCourseData.Err) {
         case "API_KEY_NONEXISTENT": {
           fprops.setStatus({
             failureResult: "You have been automatically logged out. Please relogin.",
@@ -143,7 +145,7 @@ function ArchiveCourse(props: ArchiveCourseProps) {
   const onSubmit = async (_: ArchiveCourseValue,
     fprops: FormikHelpers<ArchiveCourseValue>) => {
 
-    const maybeCourseData = await newCourseData({
+    const maybeCourseData = await courseDataNew({
       courseId: props.courseData.course.courseId,
       apiKey: props.apiKey.key,
       name: props.courseData.name,
@@ -151,7 +153,7 @@ function ArchiveCourse(props: ArchiveCourseProps) {
       active: !props.courseData.active,
     });
 
-    if (isApiErrorCode(maybeCourseData)) {
+    if (isErr(maybeCourseData)) {
       switch (maybeCourseData) {
         case "API_KEY_NONEXISTENT": {
           fprops.setStatus({
@@ -225,13 +227,13 @@ function ArchiveCourse(props: ArchiveCourseProps) {
 
 
 const loadCourseData = async (props: AsyncProps<CourseData>) => {
-  const maybeCourseData = await viewCourseData({
+  const maybeCourseData = await courseDataView({
     courseId: props.courseId,
     onlyRecent: true,
     apiKey: props.apiKey.key
   });
 
-  if (isApiErrorCode(maybeCourseData) || maybeCourseData.length === 0) {
+  if (isErr(maybeCourseData) || maybeCourseData.length === 0) {
     throw Error;
   } else {
     return maybeCourseData[0];

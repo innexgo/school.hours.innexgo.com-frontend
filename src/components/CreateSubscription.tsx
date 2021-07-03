@@ -1,7 +1,9 @@
-import React from 'react';
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
 import { Button, Form, } from 'react-bootstrap'
-import { newSubscription, isApiErrorCode } from '../utils/utils';
+import { subscriptionNew} from '../utils/utils';
+
+import {ApiKey} from '@innexgo/frontend-auth-api';
+import {isErr} from '@innexgo/frontend-common';
 
 interface CreateSubscriptionProps {
   apiKey: ApiKey,
@@ -26,13 +28,13 @@ function CreateSubscription(props: CreateSubscriptionProps) {
       return;
     }
 
-    const passwordChangeResult = await newSubscription({
+    const passwordChangeResult = await subscriptionNew({
       subscriptionKind: "VALID",
       apiKey: props.apiKey.key,
     });
 
-    if (isApiErrorCode(passwordChangeResult)) {
-      switch (passwordChangeResult) {
+    if (isErr(passwordChangeResult)) {
+      switch (passwordChangeResult.Err) {
         case "OK": {
           setStatus({
             failureMessage: "",

@@ -1,13 +1,14 @@
-import React from "react"
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
 import { Button, Form } from "react-bootstrap";
-import { viewSchoolData, newCourse, isApiErrorCode, normalizeCourseName} from "../utils/utils";
+import { CourseData, schoolDataView, courseNew, normalizeCourseName} from "../utils/utils";
+import {isErr} from '@innexgo/frontend-common';
+import {ApiKey } from '@innexgo/frontend-auth-api';
 
 import SearchSingleSchool from "../components/SearchSingleSchool";
 
 type UserCreateCourseProps = {
   apiKey: ApiKey;
-  postSubmit: () => void;
+  postSubmit: (cd:CourseData) => void;
 }
 
 function UserCreateCourse(props: UserCreateCourseProps) {
@@ -43,15 +44,15 @@ function UserCreateCourse(props: UserCreateCourseProps) {
       return;
     }
 
-    const maybeCourse = await newCourse({
+    const maybeCourse = await courseNew({
       schoolId: values.schoolId!,
       description: values.description,
       name: values.name,
       apiKey: props.apiKey.key,
     });
 
-    if (isApiErrorCode(maybeCourse)) {
-      switch (maybeCourse) {
+    if (isErr(maybeCourse)) {
+      switch (maybeCourse.Err) {
         case "API_KEY_NONEXISTENT": {
           fprops.setStatus({
             failureResult: "You have been automatically logged out. Please relogin.",
@@ -82,7 +83,7 @@ function UserCreateCourse(props: UserCreateCourseProps) {
       successResult: "Course Created"
     });
     // execute callback
-    props.postSubmit();
+    props.postSubmit(maybeCourse.Ok);
   }
 
   return <>
@@ -108,14 +109,14 @@ function UserCreateCourse(props: UserCreateCourseProps) {
               <SearchSingleSchool
                 name="courseId"
                 search={async (input: string) => {
-                  const maybeSchoolData = await viewSchoolData({
+                  const maybeSchoolData = await schoolDataView({
                     partialName: input,
                     onlyRecent: true,
                     recentAdminUserId: props.apiKey.creator.userId,
                     apiKey: props.apiKey.key,
                   });
 
-                  return isApiErrorCode(maybeSchoolData) ? [] : maybeSchoolData;
+                  return isErr(maybeSchoolData) ? [] : maybeSchoolData;
 
                 }}
                 isInvalid={!!fprops.errors.schoolId}

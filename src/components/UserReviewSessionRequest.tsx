@@ -11,7 +11,10 @@ import Loader from "../components/Loader";
 import CalendarCard from '../components/CalendarCard';
 import { sessionToEvent } from '../components/ToCalendar';
 import { ViewSessionRequest } from '../components/ViewData';
-import { newAcceptSessionRequestResponse, newRejectSessionRequestResponse, newSession, newCommittment, viewSessionData, viewCourseData, viewCourseMembership, isApiErrorCode } from '../utils/utils';
+import { CourseData, SessionRequest, SessionRequestResponse, sessionRequestResponseNew, sessionNew, committmentNew, sessionDataView, courseDataView, courseMembershipView} from '../utils/utils';
+
+import {ApiKey, User} from '@innexgo/frontend-auth-api';
+import {isErr} from '@innexgo/frontend-common';
 
 type CalendarWidgetProps = {
   sessionRequest: SessionRequest;
@@ -65,26 +68,26 @@ class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
             endStr: string;
             timeZone: string;
           }) => {
-          const maybeCourseMemberships = await viewCourseMembership({
+          const maybeCourseMemberships = await courseMembershipView({
             userId: this.props.apiKey.creator.userId,
             courseMembershipKind: "INSTRUCTOR",
             onlyRecent: true,
             apiKey: this.props.apiKey.key
           });
 
-          if (isApiErrorCode(maybeCourseMemberships)) {
+          if (isErr(maybeCourseMemberships)) {
             return [];
           }
 
           return (await Promise.all(maybeCourseMemberships.map(async cm => {
-            const maybeSessionData = await viewSessionData({
+            const maybeSessionData = await sessionDataView({
               courseId: cm.course.courseId,
               minStartTime: args.start.valueOf(),
               maxStartTime: args.end.valueOf(),
               onlyRecent: true,
               apiKey: this.props.apiKey.key,
             });
-            return isApiErrorCode(maybeSessionData)
+            return isErr(maybeSessionData)
               ? []
               : maybeSessionData;
 
@@ -137,8 +140,8 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
     startTime: number | null,
     duration: number | null,
     accepted: boolean | null,
-    newSessionName: string,
-    newSessionPublic: boolean
+    sessionNewName: string,
+    sessionNewPublic: boolean
     message: string,
   }
 
@@ -157,8 +160,8 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
         apiKey: props.apiKey.key
       });
 
-      if (isApiErrorCode(maybeSessionRequestResponse)) {
-        switch (maybeSessionRequestResponse) {
+      if (isErr(maybeSessionRequestResponse)) {
+        switch (maybeSessionRequestResponse.Err) {
           case "API_KEY_NONEXISTENT": {
             setStatus("You have been automatically logged out. Please relogin.");
             break;
@@ -193,17 +196,17 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
         return;
       }
 
-      const maybeSession = await newSession({
-        name: values.newSessionName,
+      const maybeSession = await sessionNew({
+        name: values.sessionNewName,
         courseId: props.sessionRequest.course.courseId,
         startTime: values.startTime,
         duration: values.duration,
-        hidden: !values.newSessionPublic,
+        hidden: !values.sessionNewPublic,
         apiKey: props.apiKey.key,
       });
 
-      if (isApiErrorCode(maybeSession)) {
-        switch (maybeSession) {
+      if (isErr(maybeSession)) {
+        switch (maybeSession.Err) {
           case "API_KEY_NONEXISTENT": {
             setStatus("You have been automatically logged out. Please relogin.");
             break;
@@ -227,17 +230,17 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
     }
 
     // create committment
-    const maybeCommittment = await newCommittment({
+    const maybeCommittment = await committmentNew({
       sessionId: sessionId,
       attendeeUserId: props.sessionRequest.attendee.userId,
-      cancellable: values.newSessionPublic,
+      cancellable: values.sessionNewPublic,
       apiKey: props.apiKey.key
     });
 
     // TODO handle all other error codes that are possible
     // TODO if committment exists, we can just grab that
-    if (isApiErrorCode(maybeCommittment)) {
-      switch (maybeCommittment) {
+    if (isErr(maybeCommittment)) {
+      switch (maybeCommittment.Err) {
         case "COMMITTMENT_EXISTENT": {
           setStatus("Student is already scheduled for this session.");
           break;
@@ -258,8 +261,8 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
       apiKey: props.apiKey.key
     });
 
-    if (isApiErrorCode(maybeSessionRequestResponse)) {
-      switch (maybeSessionRequestResponse) {
+    if (isErr(maybeSessionRequestResponse)) {
+      switch (maybeSessionRequestResponse.Err) {
         case "API_KEY_NONEXISTENT": {
           setStatus("You have been automatically logged out. Please relogin.");
           break;
@@ -293,8 +296,8 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
         startTime: null,
         duration: null,
         sessionId: null,
-        newSessionName: "",
-        newSessionPublic: false
+        sessionNewName: "",
+        sessionNewPublic: false
       }}
       initialStatus="">
       {(fprops) => <Form
@@ -324,23 +327,23 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
             <Form.Group hidden={fprops.values.startTime === null || fprops.values.duration === null} >
               <Form.Label>New Session Name</Form.Label>
               <Form.Control
-                name="newSessionName"
+                name="sessionNewName"
                 type="text"
                 placeholder="New Session Name (optional)"
-                value={fprops.values.newSessionName}
+                value={fprops.values.sessionNewName}
                 onChange={fprops.handleChange}
-                isInvalid={!!fprops.errors.newSessionName}
+                isInvalid={!!fprops.errors.sessionNewName}
               />
-              <Form.Text className="text-danger">{fprops.errors.newSessionName}</Form.Text>
+              <Form.Text className="text-danger">{fprops.errors.sessionNewName}</Form.Text>
             </Form.Group>
             <Form.Group hidden={fprops.values.startTime === null || fprops.values.duration === null} >
               <Form.Check
-                name="newSessionPublic"
-                checked={fprops.values.newSessionPublic}
+                name="sessionNewPublic"
+                checked={fprops.values.sessionNewPublic}
                 onChange={fprops.handleChange}
                 label="New session visible to all students"
-                isInvalid={!!fprops.errors.newSessionPublic}
-                feedback={fprops.errors.newSessionPublic}
+                isInvalid={!!fprops.errors.sessionNewPublic}
+                feedback={fprops.errors.sessionNewPublic}
               />
             </Form.Group>
             <Form.Group>
@@ -449,13 +452,13 @@ type UserReviewSessionRequestProps = {
 }
 
 const loadCourseData = async (props: AsyncProps<CourseData>) => {
-  const maybeCourseData = await viewCourseData({
+  const maybeCourseData = await courseDataView({
     courseId: props.courseId,
     onlyRecent: true,
     apiKey: props.apiKey.key,
   });
 
-  if (isApiErrorCode(maybeCourseData)) {
+  if (isErr(maybeCourseData)) {
     throw Error;
   }
   // there's an invariant that there must always be one course data per valid course id

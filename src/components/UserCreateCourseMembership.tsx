@@ -1,11 +1,12 @@
-import React from "react"
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
 import { Button, Form } from "react-bootstrap";
-import { newKeyCourseMembership, isApiErrorCode } from "../utils/utils";
+import { courseMembershipNewKey} from "../utils/utils";
+import {isErr} from '@innexgo/frontend-common';
+import {ApiKey, AuthenticatedComponentProps } from '@innexgo/frontend-auth-api';
 
 type UserCreateCourseMembershipProps = {
   apiKey: ApiKey;
-  postSubmit: () => void;
+  postSubmit: (cm:CourseMembership) => void;
 }
 
 // TODO we need to ensure that the abbreviation is truly unique between schools
@@ -34,13 +35,13 @@ function UserCreateCourseMembership(props: UserCreateCourseMembershipProps) {
       return;
     }
 
-    const maybeCourseMembership = await newKeyCourseMembership({
-      courseKey: values.key,
+    const maybeCourseMembership = await courseMembershipNewKey({
+      courseKeyKey: values.key,
       apiKey: props.apiKey.key,
     });
 
-    if (isApiErrorCode(maybeCourseMembership)) {
-      switch (maybeCourseMembership) {
+    if (isErr(maybeCourseMembership)) {
+      switch (maybeCourseMembership.Err) {
         case "API_KEY_NONEXISTENT": {
           fprops.setStatus({
             failureResult: "You have been automatically logged out. Please relogin.",
@@ -92,7 +93,7 @@ function UserCreateCourseMembership(props: UserCreateCourseMembershipProps) {
       successResult: "CourseMembership Created"
     });
     // execute callback
-    props.postSubmit();
+    props.postSubmit(maybeCourseMembership.Ok);
   }
 
   const normalizeKey = (e: string) => e.replace(/[^(A-Za-z0-9_=\-)]/g, "");

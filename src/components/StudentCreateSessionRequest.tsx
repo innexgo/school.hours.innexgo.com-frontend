@@ -1,15 +1,16 @@
-import React from "react"
 import SearchSingleCourse from "../components/SearchSingleCourse";
 import { Formik, FormikHelpers,} from "formik";
 import { Row, Col, Button, Form } from "react-bootstrap";
-import { newSessionRequest, viewCourseData, isApiErrorCode } from "../utils/utils";
+import { SessionRequest, CourseData, sessionRequestNew, courseDataNew, } from "../utils/utils";
 import format from "date-fns/format";
+import {isErr} from '@innexgo/frontend-common';
+import {ApiKey} from '@innexgo/frontend-auth-api';
 
 type StudentCreateSessionRequestProps = {
   start: number;
-  duration: number;
+  end: number;
   apiKey: ApiKey;
-  postSubmit: () => void;
+  postSubmit: (sr:SessionRequest) => void;
 }
 
 function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
@@ -30,16 +31,16 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
       return;
     }
 
-    const maybeSessionRequest = await newSessionRequest({
+    const maybeSessionRequest = await sessionRequestNew({
       courseId: values.courseId,
       message: values.message,
       startTime: props.start,
-      duration: props.duration,
+      endTime: props.end,
       apiKey: props.apiKey.key,
     });
 
-    if (isApiErrorCode(maybeSessionRequest)) {
-      switch (maybeSessionRequest) {
+    if (isErr(maybeSessionRequest)) {
+      switch (maybeSessionRequest.Err) {
         case "API_KEY_NONEXISTENT": {
           setStatus({
             failureResult: "You have been automatically logged out. Please relogin.",
@@ -82,7 +83,7 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
       successResult: "Request Created",
     });
 
-    props.postSubmit();
+    props.postSubmit(,maybeSessionRequest.Ok);
   }
 
   return <>
@@ -119,7 +120,7 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
               <SearchSingleCourse
                 name="courseId"
                 search={async input => {
-                  const maybeCourseData = await viewCourseData({
+                  const maybeCourseData = await courseDataNew({
                     recentStudentUserId: props.apiKey.creator.userId,
                     partialName: input,
                     onlyRecent: true,
@@ -127,7 +128,7 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
                     apiKey: props.apiKey.key,
                   });
 
-                  return isApiErrorCode(maybeCourseData) ? [] : maybeCourseData;
+                  return isErr(maybeCourseData) ? [] : maybeCourseData;
                 }}
                 isInvalid={!!fprops.errors.courseId}
                 setFn={(e: CourseData | null) => fprops.setFieldValue("courseId", e?.course.courseId)} />

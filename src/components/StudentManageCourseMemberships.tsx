@@ -1,4 +1,3 @@
-import React from 'react';
 import { Form, Table } from 'react-bootstrap';
 import Loader from '../components/Loader';
 import { ViewUser, } from '../components/ViewData';
@@ -6,7 +5,10 @@ import { ViewUser, } from '../components/ViewData';
 import format from "date-fns/format";
 
 import { Async, AsyncProps } from 'react-async';
-import { viewCourseMembership, isApiErrorCode } from '../utils/utils';
+import { CourseMembership, CourseMembershipKind, courseMembershipView} from '../utils/utils';
+import {isErr} from '@innexgo/frontend-common';
+
+import {ApiKey} from '@innexgo/frontend-auth-api';
 
 
 type InternalStudentManageCourseMembershipsProps = {
@@ -68,14 +70,14 @@ function StudentManageCourseMemberships(props: StudentManageCourseMembershipsPro
     courseId={props.courseId}
     apiKey={props.apiKey}
     loadMemberships={async (_: AsyncProps<CourseMembership[]>) => {
-      const maybeCourseMemberships = await viewCourseMembership({
+      const maybeCourseMemberships = await courseMembershipView({
         courseId: props.courseId,
         courseMembershipKind: props.courseMembershipKind,
         onlyRecent: true,
         apiKey: props.apiKey.key
       });
 
-      if (isApiErrorCode(maybeCourseMemberships)) {
+      if (isErr(maybeCourseMemberships)) {
         throw Error;
       } else {
         return maybeCourseMemberships;

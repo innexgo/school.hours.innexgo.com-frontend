@@ -1,16 +1,21 @@
-import React from "react";
 import { Async, AsyncProps } from 'react-async';
 import { Card, Form } from "react-bootstrap";
 import Loader from '../components/Loader';
 import { EventContentArg } from "@fullcalendar/react"
-import { viewCommittment, isApiErrorCode } from '../utils/utils';
+import { Session, SessionData, Committment, SessionRequestResponse, SessionRequest, CourseData, committmentView} from '../utils/utils';
+import {ApiKey, User} from '@innexgo/frontend-auth-api';
+import {isErr} from '@innexgo/frontend-common';
 
-function SessionRequestCard(props: { sessionRequest: SessionRequest; courseData: CourseData }) {
+function SessionRequestCard(props: {
+    sessionRequest: SessionRequest;
+    courseData: CourseData
+    creator: User
+}) {
   return (
     <Card className="px-1 py-1 h-100 w-100 bg-danger text-light overflow-hidden" >
       Course: {props.courseData.name}
       <br />
-      From: {props.sessionRequest.attendee.name}
+      From: {props.sessionRequest.creatorUserId}
       <br />
       Msg: {props.sessionRequest.message}
     </Card>
@@ -47,13 +52,13 @@ function RejectedSessionRequestResponseCard(props: {
 }
 
 async function loadSessionCommittments(props: AsyncProps<Committment[]>) {
-  const maybeCommittments = await viewCommittment({
+  const maybeCommittments = await committmentView({
     sessionId: props.session.sessionId,
     responded: false,
     apiKey: props.apiKey.key
   });
 
-  if (isApiErrorCode(maybeCommittments)) {
+  if (isErr(maybeCommittments)) {
     throw Error;
   }
 

@@ -2,11 +2,14 @@ import React from 'react';
 import { Form, Button, Table } from 'react-bootstrap'; import Loader from '../components/Loader';
 import { Async, AsyncProps } from 'react-async';
 import DisplayModal from '../components/DisplayModal';
-import { viewSchoolData, newSchoolData, isApiErrorCode, normalizeSchoolName } from '../utils/utils';
+import { schoolDataView, schoolDataNew, normalizeSchoolName , SchoolData, } from '../utils/utils';
 import { ViewUser } from '../components/ViewData';
 import { Edit, Archive, Unarchive} from '@material-ui/icons';
 import { Formik, FormikHelpers } from 'formik'
 import format from 'date-fns/format';
+
+import {isErr} from '@innexgo/frontend-common';
+import {User, ApiKey} from '@innexgo/frontend-auth-api';
 
 
 type EditSchoolDataProps = {
@@ -25,7 +28,7 @@ function EditSchoolData(props: EditSchoolDataProps) {
   const onSubmit = async (values: EditSchoolDataValue,
     fprops: FormikHelpers<EditSchoolDataValue>) => {
 
-    const maybeSchoolData = await newSchoolData({
+    const maybeSchoolData = await schoolDataNew({
       schoolId: props.schoolData.school.schoolId,
       apiKey: props.apiKey.key,
       name: values.name,
@@ -33,8 +36,8 @@ function EditSchoolData(props: EditSchoolDataProps) {
       active: props.schoolData.active,
     });
 
-    if (isApiErrorCode(maybeSchoolData)) {
-      switch (maybeSchoolData) {
+    if (isErr(maybeSchoolData)) {
+      switch (maybeSchoolData.Err) {
         case "API_KEY_NONEXISTENT": {
           fprops.setStatus({
             failureResult: "You have been automatically logged out. Please relogin.",
@@ -143,7 +146,7 @@ function ArchiveSchool(props: ArchiveSchoolProps) {
   const onSubmit = async (_: ArchiveSchoolValue,
     fprops: FormikHelpers<ArchiveSchoolValue>) => {
 
-    const maybeSchoolData = await newSchoolData({
+    const maybeSchoolData = await schoolDataNew({
       schoolId: props.schoolData.school.schoolId,
       apiKey: props.apiKey.key,
       name: props.schoolData.name,
@@ -151,7 +154,7 @@ function ArchiveSchool(props: ArchiveSchoolProps) {
       active: !props.schoolData.active,
     });
 
-    if (isApiErrorCode(maybeSchoolData)) {
+    if (isErr(maybeSchoolData)) {
       switch (maybeSchoolData) {
         case "API_KEY_NONEXISTENT": {
           fprops.setStatus({
@@ -225,13 +228,13 @@ function ArchiveSchool(props: ArchiveSchoolProps) {
 
 
 const loadSchoolData = async (props: AsyncProps<SchoolData>) => {
-  const maybeSchoolData = await viewSchoolData({
+  const maybeSchoolData = await schoolDataView({
     schoolId: props.schoolId,
     onlyRecent: true,
     apiKey: props.apiKey.key
   });
 
-  if (isApiErrorCode(maybeSchoolData) || maybeSchoolData.length === 0) {
+  if (isErr(maybeSchoolData) || maybeSchoolData.length === 0) {
     throw Error;
   } else {
     return maybeSchoolData[0];

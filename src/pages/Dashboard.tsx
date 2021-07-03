@@ -104,12 +104,12 @@ const loadDashboardData = async (props: AsyncProps<DashboardData>) => {
 
 
   if (
-    isApiErrorCode(maybeSubscriptions) ||
-    isApiErrorCode(maybeSchoolData) ||
-    isApiErrorCode(maybeAdminshipRequests) ||
-    isApiErrorCode(maybeAdminshipRequestResponses) ||
-    isApiErrorCode(maybeInstructorCourseData) ||
-    isApiErrorCode(maybeStudentCourseData)
+    isErr(maybeSubscriptions) ||
+    isErr(maybeSchoolData) ||
+    isErr(maybeAdminshipRequests) ||
+    isErr(maybeAdminshipRequestResponses) ||
+    isErr(maybeInstructorCourseData) ||
+    isErr(maybeStudentCourseData)
   ) {
     throw Error;
   }
@@ -131,7 +131,7 @@ const loadSchoolData = async (props: AsyncProps<SchoolData>) => {
     apiKey: props.apiKey.key
   });
 
-  if (isApiErrorCode(maybeSchoolData) || maybeSchoolData.length === 0) {
+  if (isErr(maybeSchoolData) || maybeSchoolData.length === 0) {
     throw Error;
   } else {
     return maybeSchoolData[0];

@@ -2,7 +2,7 @@ import React from 'react';
 import { Form, Button, Table } from 'react-bootstrap'; import Loader from '../components/Loader';
 import { Async, AsyncProps } from 'react-async';
 import DisplayModal from '../components/DisplayModal';
-import { viewSessionData, newSessionData, isApiErrorCode, } from '../utils/utils';
+import { viewSessionData, newSessionData, isErr, } from '../utils/utils';
 import { ViewUser } from '../components/ViewData';
 import { Edit, Archive, Unarchive } from '@material-ui/icons';
 import { Formik, FormikHelpers } from 'formik'
@@ -35,7 +35,7 @@ function EditSessionData(props: EditSessionDataProps) {
       apiKey: props.apiKey.key,
     });
 
-    if (isApiErrorCode(maybeSessionData)) {
+    if (isErr(maybeSessionData)) {
       switch (maybeSessionData) {
         case "API_KEY_NONEXISTENT": {
           fprops.setStatus({
@@ -134,7 +134,7 @@ const loadSessionData = async (props: AsyncProps<SessionData>) => {
     apiKey: props.apiKey.key
   });
 
-  if (isApiErrorCode(maybeSessionData) || maybeSessionData.length === 0) {
+  if (isErr(maybeSessionData) || maybeSessionData.length === 0) {
     throw Error;
   } else {
     return maybeSessionData[0];

@@ -2,11 +2,14 @@ import React from 'react';
 import { Form, Button, Table } from 'react-bootstrap'; import Loader from '../components/Loader';
 import { Async, AsyncProps } from 'react-async';
 import DisplayModal from '../components/DisplayModal';
-import { viewCourseMembership, viewCourseData, isApiErrorCode, newCancelCourseMembership } from '../utils/utils';
+import { CourseData, courseMembershipView, courseDataView, courseMembershipNewCancel } from '../utils/utils';
 import { ViewUser } from '../components/ViewData';
 import { Cancel } from '@material-ui/icons';
 import { Formik, FormikHelpers } from 'formik'
 import format from 'date-fns/format';
+
+import {isErr} from '@innexgo/frontend-common';
+import {ApiKey} from '@innexgo/frontend-auth-api';
 
 type LeaveCourseProps = {
   courseData: CourseData,
@@ -22,14 +25,14 @@ function LeaveCourse(props: LeaveCourseProps) {
     fprops: FormikHelpers<LeaveCourseValue>) => {
 
 
-    const maybeCancelCourseMembership = await newCancelCourseMembership({
+    const maybeCancelCourseMembership = await courseMembershipNewCancel({
       userId: props.apiKey.creator.userId,
       courseId: props.courseData.course.courseId,
       apiKey: props.apiKey.key,
     });
 
-    if (isApiErrorCode(maybeCancelCourseMembership)) {
-      switch (maybeCancelCourseMembership) {
+    if (isErr(maybeCancelCourseMembership)) {
+      switch (maybeCancelCourseMembership.Err) {
         case "API_KEY_NONEXISTENT": {
           fprops.setStatus({
             failureResult: "You have been automatically logged out. Please relogin.",
@@ -119,23 +122,23 @@ type CourseDataMembership = {
 }
 
 const loadCourseDataMembership = async (props: AsyncProps<CourseDataMembership>) => {
-  const maybeCourseData = await viewCourseData({
+  const maybeCourseData = await courseDataView({
     courseId: props.courseId,
     onlyRecent: true,
     apiKey: props.apiKey.key
   });
 
 
-  const maybeCourseMemberships = await viewCourseMembership({
+  const maybeCourseMemberships = await courseMembershipView({
     courseId: props.courseId,
     userId: props.apiKey.creator.userId,
     onlyRecent: true,
     apiKey: props.apiKey.key
   });
 
-  if (isApiErrorCode(maybeCourseData)
+  if (isErr(maybeCourseData)
     || maybeCourseData.length === 0
-    || isApiErrorCode(maybeCourseMemberships)) {
+    || isErr(maybeCourseMemberships)) {
     throw Error;
   } else {
     return {

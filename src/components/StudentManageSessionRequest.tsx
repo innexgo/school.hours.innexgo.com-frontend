@@ -1,8 +1,10 @@
-import React from "react"
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
 import { Tab, Tabs, Button, Form } from "react-bootstrap";
-import { newRejectSessionRequestResponse, isApiErrorCode } from "../utils/utils";
+import { SessionRequest, sessionRequestResponseNew, } from "../utils/utils";
 import { ViewSessionRequest } from "../components/ViewData";
+
+import {ApiKey} from '@innexgo/frontend-auth-api';
+import {isErr} from '@innexgo/frontend-common';
 
 type StudentManageSessionRequestProps = {
   apiKey: ApiKey;
@@ -36,14 +38,14 @@ function StudentManageSessionRequest(props: StudentManageSessionRequestProps) {
       return;
     }
 
-    const maybeSchool = await newRejectSessionRequestResponse({
+    const maybeSchool = await sessionRequestResponseNew({
       sessionRequestId: props.sessionRequest.sessionRequestId,
       message: "",
       apiKey: props.apiKey.key,
     });
 
-    if (isApiErrorCode(maybeSchool)) {
-      switch (maybeSchool) {
+    if (isErr(maybeSchool)) {
+      switch (maybeSchool.Err) {
         case "API_KEY_NONEXISTENT": {
           fprops.setStatus({
             failureResult: "You have been automatically logged out. Please relogin.",

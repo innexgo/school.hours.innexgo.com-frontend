@@ -10,7 +10,10 @@ import { Formik, FormikHelpers} from 'formik'
 import format from "date-fns/format";
 
 import { Async, AsyncProps } from 'react-async';
-import { viewAdminship, newCancelAdminship, isApiErrorCode } from '../utils/utils';
+import { adminshipView, adminshipNewCancel, School, Adminship } from '../utils/utils';
+
+import {User, ApiKey} from '@innexgo/frontend-auth-api';
+import {isErr} from '@innexgo/frontend-common';
 
 
 type CancelAdminshipProps = {
@@ -28,14 +31,14 @@ function CancelAdminship(props: CancelAdminshipProps) {
   const onSubmit = async (_: CancelAdminshipValue,
     fprops: FormikHelpers<CancelAdminshipValue>) => {
 
-    const maybeAdminship = await newCancelAdminship({
+    const maybeAdminship = await adminshipNewCancel({
       schoolId: props.school.schoolId,
       userId: props.user.userId,
       apiKey: props.apiKey.key,
     });
 
-    if (isApiErrorCode(maybeAdminship)) {
-      switch (maybeAdminship) {
+    if (isErr(maybeAdminship)) {
+      switch (maybeAdminship.Err) {
         case "API_KEY_NONEXISTENT": {
           fprops.setStatus({
             failureResult: "You have been automatically logged out. Please relogin.",
@@ -120,14 +123,14 @@ function CancelAdminship(props: CancelAdminshipProps) {
 
 
 const loadAdminships = async (props: AsyncProps<Adminship[]>) => {
-  const maybeAdminships = await viewAdminship({
+  const maybeAdminships = await adminshipView({
     schoolId: props.school.schoolId,
     adminshipKind: "ADMIN",
     onlyRecent: true,
     apiKey: props.apiKey.key
   });
 
-  if (isApiErrorCode(maybeAdminships)) {
+  if (isErr(maybeAdminships)) {
     throw Error;
   } else {
     return maybeAdminships;

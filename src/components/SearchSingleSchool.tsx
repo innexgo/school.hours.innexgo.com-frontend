@@ -1,6 +1,6 @@
 import AsyncSelect from 'react-select/async';
 import { ValueType } from 'react-select';
-import { isApiErrorCode } from '../utils/utils';
+import { isErr } from '../utils/utils';
 
 interface SearchSingleSchoolProps {
   name: string,
@@ -19,7 +19,7 @@ export default function SearchSingleSchool(props: SearchSingleSchoolProps) {
   const promiseOptions = async function(input: string): Promise<SchoolDataOption[]> {
     const results = await props.search(input);
 
-    if (isApiErrorCode(results)) {
+    if (isErr(results)) {
       return [];
     }
 

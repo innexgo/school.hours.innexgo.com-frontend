@@ -3,7 +3,9 @@ import { Async, AsyncProps } from 'react-async';
 import { Table } from 'react-bootstrap';
 import Loader from '../components/Loader';
 import format from 'date-fns/format';
-import { isApiErrorCode, viewSchoolData, viewCourseData, viewSessionData } from "../utils/utils";
+import { CommittmentResponse, CourseData, SchoolData, SessionData, schoolDataView, courseDataView, sessionDataView } from "../utils/utils";
+import { ApiKey, User } from '@innexgo/frontend-auth-api';
+import { isErr } from '@innexgo/frontend-common';
 
 const ToggleExpandButton = (props: { expanded: boolean, setExpanded: (b: boolean) => void }) =>
   <button className="btn btn-link px-0 py-0 float-right"
@@ -17,45 +19,45 @@ const ToggleExpandButton = (props: { expanded: boolean, setExpanded: (b: boolean
 
 
 const loadCourseData = async (props: AsyncProps<CourseData>) => {
-  const maybeCourseData = await viewCourseData({
-    courseId: props.courseId,
+  const maybeCourseData = await courseDataView({
+    courseId: [props.courseId],
     onlyRecent: true,
     apiKey: props.apiKey.key,
   });
 
-  if (isApiErrorCode(maybeCourseData)) {
-    throw Error;
+  if (isErr(maybeCourseData)) {
+    throw Error(maybeCourseData.Err);
   }
   // there's an invariant that there must always be one course data per valid course id
-  return maybeCourseData[0];
+  return maybeCourseData.Ok[0];
 }
 
 const loadSchoolData = async (props: AsyncProps<SchoolData>) => {
-  const maybeSchoolData = await viewSchoolData({
+  const maybeSchoolData = await schoolDataView({
     schoolId: props.schoolId,
     onlyRecent: true,
     apiKey: props.apiKey.key,
   });
 
-  if (isApiErrorCode(maybeSchoolData)) {
-    throw Error;
+  if (isErr(maybeSchoolData)) {
+    throw Error(maybeSchoolData.Err);
   }
   // there's an invariant that there must always be one school data per valid school id
-  return maybeSchoolData[0];
+  return maybeSchoolData.Ok[0];
 }
 
 const loadSessionData = async (props: AsyncProps<SessionData>) => {
-  const maybeSessionData = await viewSessionData({
-    sessionId: props.sessionId,
+  const maybeSessionData = await sessionDataView({
+    sessionId: [props.sessionId],
     onlyRecent: true,
     apiKey: props.apiKey.key,
   });
 
-  if (isApiErrorCode(maybeSessionData)) {
-    throw Error;
+  if (isErr(maybeSessionData)) {
+    throw Error(maybeSessionData.Err);
   }
   // there's an invariant that there must always be one session data per valid session id
-  return maybeSessionData[0];
+  return maybeSessionData.Ok[0];
 }
 
 export const ViewSchool = (props: {

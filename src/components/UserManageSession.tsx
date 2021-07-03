@@ -6,7 +6,10 @@ import Loader from '../components/Loader';
 import UserManageSessionData from '../components/UserManageSessionData';
 import { ViewSession, ViewUser, ViewSessionRequestResponse } from '../components/ViewData';
 import SearchMultiUser from '../components/SearchMultiUser';
-import { newCommittment, newCommittmentResponse, viewCommittment, viewCommittmentResponse, viewCourseMembership, isApiErrorCode, viewSessionRequestResponse } from '../utils/utils';
+import { Committment, Session, CommittmentResponseKind, SessionRequestResponse, CommittmentResponse, committmentNew, committmentResponseView, committmentView, committmentResponseNew, courseMembershipView, sessionRequestResponseView } from '../utils/utils';
+
+import {isErr} from '@innexgo/frontend-common';
+import {User, ApiKey} from '@innexgo/frontend-auth-api';
 
 type ManageSessionModalProps = {
   session: Session;
@@ -21,16 +24,16 @@ type UserManageSessionData = {
 
 const loadData = async (props: AsyncProps<UserManageSessionData>) => {
 
-  const maybeRequestResponses = await viewSessionRequestResponse({
+  const maybeRequestResponses = await sessionRequestResponseView({
     sessionId: props.session.sessionId,
     apiKey: props.apiKey.key
   })
 
-  if (isApiErrorCode(maybeRequestResponses)) {
+  if (isErr(maybeRequestResponses)) {
     throw Error;
   }
 
-  const maybeCommittments = await viewCommittment({
+  const maybeCommittments = await committmentView({
     sessionId: props.session.sessionId,
     responded: false,
     apiKey: props.apiKey.key
@@ -38,17 +41,17 @@ const loadData = async (props: AsyncProps<UserManageSessionData>) => {
 
 
 
-  if (isApiErrorCode(maybeCommittments)) {
+  if (isErr(maybeCommittments)) {
     throw Error;
   }
 
 
-  const maybeCommittmentResponses = await viewCommittmentResponse({
+  const maybeCommittmentResponses = await committmentResponseView({
     sessionId: props.session.sessionId,
     apiKey: props.apiKey.key
   });
 
-  if (isApiErrorCode(maybeCommittmentResponses)) {
+  if (isErr(maybeCommittmentResponses)) {
     throw Error;
   }
   return {
@@ -113,14 +116,14 @@ function ManageSessionModal(props: ManageSessionModalProps) {
                       return;
                     }
 
-                    const maybeCommittmentResponse = await newCommittmentResponse({
+                    const maybeCommittmentResponse = await committmentResponseNew({
                       committmentId: individual.committment.committmentId,
                       committmentResponseKind: individual.committmentResponseKind,
                       apiKey: props.apiKey.key,
                     });
 
-                    if (isApiErrorCode(maybeCommittmentResponse)) {
-                      switch (maybeCommittmentResponse) {
+                    if (isErr(maybeCommittmentResponse)) {
+                      switch (maybeCommittmentResponse.Err) {
                         case "COMMITTMENT_RESPONSE_EXISTENT": {
                           newStatus[i] = "Attendance has already been taken for this committment.";
                           break;
@@ -203,16 +206,15 @@ function ManageSessionModal(props: ManageSessionModalProps) {
               <Formik<CreateCommittmentValues>
                 onSubmit={async (values: CreateCommittmentValues, { setStatus }: FormikHelpers<CreateCommittmentValues>) => {
                   for (const studentId of values.studentList) {
-                    const maybeCommittment = await newCommittment({
+                    const maybeCommittment = await committmentNew({
                       sessionId: props.session.sessionId,
                       attendeeUserId: studentId,
-                      cancellable: true,
                       apiKey: props.apiKey.key
                     });
 
                     // TODO handle all other error codes that are possible
-                    if (isApiErrorCode(maybeCommittment)) {
-                      switch (maybeCommittment) {
+                    if (isErr(maybeCommittment)) {
+                      switch (maybeCommittment.Err) {
                         case "COMMITTMENT_EXISTENT": {
                           // Committment existent is actually OK, we don't have to make an error
                           continue;
@@ -274,14 +276,14 @@ function ManageSessionModal(props: ManageSessionModalProps) {
                           name="studentList"
                           isInvalid={fprops.status.studentList !== ""}
                           search={async (input: string) => {
-                            const maybeCourseMemberships = await viewCourseMembership({
+                            const maybeCourseMemberships = await courseMembershipView({
                               courseId: props.session.course.courseId,
                               courseMembershipKind: "STUDENT",
                               partialUserName: input,
                               onlyRecent: true,
                               apiKey: props.apiKey.key,
                             });
-                            return isApiErrorCode(maybeCourseMemberships)
+                            return isErr(maybeCourseMemberships)
                               ? []
                               : maybeCourseMemberships
                                 .map(cm => cm.user)

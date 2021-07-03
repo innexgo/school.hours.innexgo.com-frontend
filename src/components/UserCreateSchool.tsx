@@ -1,7 +1,9 @@
 import React from "react"
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
 import { Button, Form } from "react-bootstrap";
-import { newSchool, isApiErrorCode, normalizeSchoolName } from "../utils/utils";
+import { schoolNew, normalizeSchoolName } from "../utils/utils";
+import {isErr } from '@innexgo/frontend-common';
+import {AuthenticatedComponentProps, ApiKey} from '@innexgo/frontend-auth-api';
 
 
 type UserCreateSchoolProps = {
@@ -38,15 +40,15 @@ function UserCreateSchool(props: UserCreateSchoolProps) {
       return;
     }
 
-    const maybeSchool = await newSchool({
+    const maybeSchool = await schoolNew({
       whole: false,
       name: values.name,
       description: values.description,
       apiKey: props.apiKey.key,
     });
 
-    if (isApiErrorCode(maybeSchool)) {
-      switch (maybeSchool) {
+    if (isErr(maybeSchool)) {
+      switch (maybeSchool.Err) {
         case "API_KEY_NONEXISTENT": {
           fprops.setStatus({
             failureResult: "You have been automatically logged out. Please relogin.",

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button, Form, Table } from 'react-bootstrap';
 import Loader from '../components/Loader';
@@ -11,7 +10,9 @@ import { Formik, FormikHelpers, } from 'formik'
 import format from "date-fns/format";
 
 import { Async, AsyncProps } from 'react-async';
-import { newCancelCourseMembership, viewCourseMembership, isApiErrorCode } from '../utils/utils';
+import { CourseMembership, courseMembershipNewCancel, courseMembershipView} from '../utils/utils';
+import {isErr} from '@innexgo/frontend-common';
+import {ApiKey,User} from '@innexgo/frontend-auth-api';
 
 
 type CancelCourseMembershipProps = {
@@ -29,14 +30,14 @@ function CancelCourseMembership(props: CancelCourseMembershipProps) {
   const onSubmit = async (values: CancelCourseMembershipValue,
     fprops: FormikHelpers<CancelCourseMembershipValue>) => {
 
-    const maybeCourseMembership = await newCancelCourseMembership({
+    const maybeCourseMembership = await courseMembershipNewCancel({
       courseId: props.courseId,
       userId: props.user.userId,
       apiKey: props.apiKey.key,
     });
 
-    if (isApiErrorCode(maybeCourseMembership)) {
-      switch (maybeCourseMembership) {
+    if (isErr(maybeCourseMembership)) {
+      switch (maybeCourseMembership.Err) {
         case "API_KEY_NONEXISTENT": {
           fprops.setStatus({
             failureResult: "You have been automatically logged out. Please relogin.",
@@ -197,14 +198,14 @@ function InstructorManageCourseMemberships(props: InstructorManageCourseMembersh
     courseId={props.courseId}
     apiKey={props.apiKey}
     loadMemberships={async (_: AsyncProps<CourseMembership[]>) => {
-      const maybeCourseMemberships = await viewCourseMembership({
+      const maybeCourseMemberships = await courseMembershipView({
         courseId: props.courseId,
         courseMembershipKind: props.courseMembershipKind,
         onlyRecent: true,
         apiKey: props.apiKey.key
       });
 
-      if (isApiErrorCode(maybeCourseMemberships)) {
+      if (isErr(maybeCourseMemberships)) {
         throw Error;
       } else {
         return maybeCourseMemberships;

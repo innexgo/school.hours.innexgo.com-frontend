@@ -536,7 +536,7 @@ interface CourseDataViewProps {
   minCreationTime?: number,
   maxCreationTime?: number,
   creatorUserId?: number[],
-  courseId?: number,
+  courseId?: number[],
   name?: string[],
   partialName?: string,
   description?: string[],

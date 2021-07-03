@@ -1,15 +1,16 @@
-import React from 'react'
 import SearchMultiUser from '../components/SearchMultiUser';
 import SearchSingleCourse from '../components/SearchSingleCourse';
 import { Formik, FormikHelpers } from 'formik';
 
 import { Row, Col, Button, Form } from 'react-bootstrap';
-import { newSession, newCommittment, viewCourseMembership, viewCourseData, isApiErrorCode } from '../utils/utils';
+import { CourseData, sessionNew, committmentNew, courseMembershipView, courseDataView} from '../utils/utils';
 import format from 'date-fns/format';
+import {isErr} from '@innexgo/frontend-common';
+import {ApiKey, User} from '@innexgo/frontend-auth-api';
 
 type CreateSessionProps = {
   start: number;
-  duration: number;
+  end: number;
   postSubmit: () => void;
   apiKey: ApiKey;
 }
@@ -37,17 +38,16 @@ function CreateSession(props: CreateSessionProps) {
       return;
     }
 
-    const maybeSession = await newSession({
+    const maybeSession = await sessionNew({
       name: sessionName,
       courseId: values.courseId,
       startTime: props.start,
-      duration: props.duration,
-      hidden: !values.makePublic,
+      endTime: props.end,
       apiKey: props.apiKey.key,
     });
 
-    if (isApiErrorCode(maybeSession)) {
-      switch (maybeSession) {
+    if (isErr(maybeSession)) {
+      switch (maybeSession.Err) {
         case "API_KEY_NONEXISTENT": {
           setStatus({
             studentList: "",
@@ -68,7 +68,7 @@ function CreateSession(props: CreateSessionProps) {
           setStatus({
             studentList: "",
             name: "",
-            resultFailure: "The duration you have selected is not valid.",
+            resultFailure: "The end you have selected is not valid.",
           });
           break;
         }
@@ -84,17 +84,18 @@ function CreateSession(props: CreateSessionProps) {
       return;
     }
 
+    let session = maybeSession.Ok;
+
     for (const studentId of values.studentList) {
-      const maybeCommittment = await newCommittment({
-        sessionId: maybeSession.sessionId,
+      const maybeCommittment = await committmentNew({
+        sessionId: session.sessionId,
         attendeeUserId: studentId,
-        cancellable: values.makePublic,
         apiKey: props.apiKey.key
       });
 
       // TODO handle all other error codes that are possible
-      if (isApiErrorCode(maybeCommittment)) {
-        switch (maybeCommittment) {
+      if (isErr(maybeCommittment)) {
+        switch (maybeCommittment.Err) {
           case "COMMITTMENT_EXISTENT": {
             // not an error;
             continue;
@@ -160,7 +161,6 @@ function CreateSession(props: CreateSessionProps) {
         name: "",
         courseId: null,
         studentList: [],
-        makePublic: false
       }}
       initialStatus={{
         name: "",
@@ -182,7 +182,7 @@ function CreateSession(props: CreateSessionProps) {
           <Form.Group as={Row}>
             <Form.Label column sm={2}>End Time</Form.Label>
             <Col>
-              <span>{format(props.start + props.duration, "MMM do, hh:mm a")} </span>
+              <span>{format(props.end, "MMM do, hh:mm a")} </span>
             </Col>
           </Form.Group>
           <Form.Group as={Row}>
@@ -191,14 +191,14 @@ function CreateSession(props: CreateSessionProps) {
               <SearchSingleCourse
                 name="courseId"
                 search={async (input: string) => {
-                 const maybeCourseData = await viewCourseData({
+                 const maybeCourseData = await courseDataView({
                     recentMemberUserId: props.apiKey.creator.userId,
                     partialName: input,
                     onlyRecent: true,
                     apiKey: props.apiKey.key,
                   });
 
-                  return isApiErrorCode(maybeCourseData) ? [] : maybeCourseData;
+                  return isErr(maybeCourseData) ? [] : maybeCourseData;
                 }}
                 isInvalid={fprops.status.courseId !== ""}
                 setFn={(e: CourseData | null) => {
@@ -232,14 +232,14 @@ function CreateSession(props: CreateSessionProps) {
                 disabled={fprops.values.courseId == null}
                 isInvalid={fprops.status.studentList !== ""}
                 search={async (input: string) => {
-                  const maybeCourseMemberships = await viewCourseMembership({
-                    courseId: fprops.values.courseId!,
-                    courseMembershipKind: "STUDENT",
+                  const maybeCourseMemberships = await courseMembershipView({
+                    courseId: [fprops.values.courseId!],
+                    courseMembershipKind: ["STUDENT"],
                     partialUserName: input,
                     onlyRecent:true,
                     apiKey: props.apiKey.key,
                   });
-                  return isApiErrorCode(maybeCourseMemberships)
+                  return isErr(maybeCourseMemberships)
                     ? []
                     : maybeCourseMemberships
                         .map(cm => cm.user)
@@ -251,12 +251,6 @@ function CreateSession(props: CreateSessionProps) {
               <Form.Text className="text-danger">{fprops.status.studentList}</Form.Text>
             </Col>
           </Form.Group>
-          <Form.Check
-            name="makePublic"
-            checked={fprops.values.makePublic}
-            onChange={fprops.handleChange}
-            label="Visible to all students"
-          />
           <Button type="submit"> Submit </Button>
           <br />
           <Form.Text className="text-danger">{fprops.status.resultFailure}</Form.Text>

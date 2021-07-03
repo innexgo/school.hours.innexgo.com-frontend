@@ -13,33 +13,35 @@ import { Visibility } from '@material-ui/icons'
 import format from "date-fns/format";
 
 import { Async, AsyncProps } from 'react-async';
-import { viewSchool, courseDataView, isApiErrorCode } from '../utils/utils';
+import { CourseData, School, schoolView, courseDataView, } from '../utils/utils';
+import {isErr} from '@innexgo/frontend-common';
+import {AuthenticatedComponentProps, ApiKey} from '@innexgo/frontend-auth-api';
 
 const loadSchool = async (props: AsyncProps<School>) => {
-  const maybeSchools = await viewSchool({
-    schoolId: parseInt(new URLSearchParams(window.location.search).get("schoolId") ?? ""),
+  const maybeSchools = await schoolView({
+    schoolId: [parseInt(new URLSearchParams(window.location.search).get("schoolId") ?? "")],
     apiKey: props.apiKey.key
   });
 
-  if (isApiErrorCode(maybeSchools)) {
-    throw Error;
+  if (isErr(maybeSchools)) {
+    throw Error(maybeSchools.Err);
   } else {
-    return maybeSchools[0];
+    return maybeSchools.Ok[0];
   }
 }
 
 
 const loadCourseData = async (props: AsyncProps<CourseData[]>) => {
   const maybeCourseData = await courseDataView({
-    schoolId: props.school.schoolId,
+    schoolId: [props.school.schoolId],
     onlyRecent: true,
     apiKey: props.apiKey.key
   });
 
-  if (isApiErrorCode(maybeCourseData)) {
-    throw Error;
+  if (isErr(maybeCourseData)) {
+    throw Error(maybeCourseData.Err);
   } else {
-    return maybeCourseData;
+    return maybeCourseData.Ok;
   }
 }
 

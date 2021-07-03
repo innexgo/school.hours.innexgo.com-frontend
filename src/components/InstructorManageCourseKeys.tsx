@@ -13,8 +13,9 @@ import format from "date-fns/format";
 import addDays from "date-fns/addDays";
 
 import { Async, AsyncProps } from 'react-async';
-import { INT_MAX, newCancelCourseKey, newValidCourseKey, viewCourseKey, isApiErrorCode } from '../utils/utils';
-
+import { INT_MAX, CourseKey, courseKeyDataNew, courseKeyNew, courseKeyDataView, } from '../utils/utils';
+import {isErr} from '@innexgo/frontend-common';
+import {ApiKey} from '@innexgo/frontend-auth-api';
 
 type RevokeCourseKeyProps = {
   courseKey: CourseKey,
@@ -30,13 +31,13 @@ function RevokeCourseKey(props: RevokeCourseKeyProps) {
   const onSubmit = async (values: RevokeCourseKeyValue,
     fprops: FormikHelpers<RevokeCourseKeyValue>) => {
 
-    const maybeCourseKey = await newCancelCourseKey({
+    const maybeCourseKey = await courseKeyDataNew({
       courseKey: props.courseKey.key,
       apiKey: props.apiKey.key,
     });
 
-    if (isApiErrorCode(maybeCourseKey)) {
-      switch (maybeCourseKey) {
+    if (isErr(maybeCourseKey)) {
+      switch (maybeCourseKey.Err) {
         case "API_KEY_NONEXISTENT": {
           fprops.setStatus({
             failureResult: "You have been automatically logged out. Please relogin.",
@@ -110,14 +111,14 @@ function RevokeCourseKey(props: RevokeCourseKeyProps) {
 
 
 const loadCourseKeys = async (props: AsyncProps<CourseKey[]>) => {
-  const maybeCourseKeys = await viewCourseKey({
+  const maybeCourseKeys = await courseKeyDataView({
     courseId: props.courseId,
     courseKeyKind: "VALID",
     onlyRecent: true,
     apiKey: props.apiKey.key
   });
 
-  if (isApiErrorCode(maybeCourseKeys)) {
+  if (isErr(maybeCourseKeys)) {
     throw Error;
   } else {
     return maybeCourseKeys;
@@ -222,7 +223,7 @@ function InstructorManageCourseKeys(props: InstructorManageCourseKeysProps) {
                   }
 
                   // TODO let user choose how many uses and how many
-                  const maybeCourseKey = await newValidCourseKey({
+                  const maybeCourseKey = await courseKeyNew({
                     courseId: props.courseId,
                     duration: values.expires
                       ? addDays(Date.now(), parseInt(values.expiryDays)).valueOf()
@@ -232,7 +233,7 @@ function InstructorManageCourseKeys(props: InstructorManageCourseKeysProps) {
                     apiKey: props.apiKey.key,
                   });
 
-                  if (isApiErrorCode(maybeCourseKey)) {
+                  if (isErr(maybeCourseKey)) {
                     switch (maybeCourseKey) {
                       case "API_KEY_NONEXISTENT": {
                         fprops.setStatus({
