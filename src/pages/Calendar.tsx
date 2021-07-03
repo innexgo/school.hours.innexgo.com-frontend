@@ -7,9 +7,13 @@ import interactionPlugin from '@fullcalendar/interaction'
 import DashboardLayout from '../components/DashboardLayout';
 import CalendarCard from '../components/CalendarCard';
 
+import {isErr} from '@innexgo/frontend-common';
+import {ApiKey, AuthenticatedComponentProps} from '@innexgo/frontend-auth-api';
+
 import { Tab, Tabs, Form, Popover, Container, Row, Col, Card } from 'react-bootstrap';
-import { viewSessionData, viewSessionRequest, isApiErrorCode, viewCourseMembership } from '../utils/utils';
-import { viewSessionRequestResponse, viewCommittment, viewCourseData, viewCommittmentResponse } from '../utils/utils';
+import { Session, SessionData, SessionRequest, SessionRequestResponse, CourseMembership, CourseData, Committment, CommittmentResponse } from '../utils/utils';
+import { sessionDataView, sessionRequestView, courseMembershipView } from '../utils/utils';
+import { sessionRequestResponseView , committmentView, courseDataView, committmentResponseView } from '../utils/utils';
 
 import { ViewSession, ViewSessionRequestResponse, ViewCommittment, ViewCommittmentResponse } from '../components/ViewData';
 
@@ -27,8 +31,8 @@ type EventCalendarProps = {
   apiKey: ApiKey,
   showAllHours: boolean,
   showHiddenEvents: boolean,
-  courseMemberships: CourseMembership[],
-  activeCourseDatas: CourseData[]
+  instructorCourseDatas: CourseData[]
+  studentCourseDatas: CourseData[]
 }
 
 // TODO make it so that selected data and selected modals are equivalent
@@ -37,8 +41,8 @@ type EventCalendarProps = {
 function EventCalendar(props: EventCalendarProps) {
 
   // Closing it should also unselect anything using it
-  const [selectedSpan, setSelectedSpanRaw] = React.useState<{ start: number, duration: number } | null>(null);
-  const setSelectedSpan = (a: { start: number, duration: number } | null) => {
+  const [selectedSpan, setSelectedSpanRaw] = React.useState<{ start: number, end: number } | null>(null);
+  const setSelectedSpan = (a: { start: number, end: number } | null) => {
     setSelectedSpanRaw(a)
     if (!a && calendarRef.current != null) {
       calendarRef.current.getApi().unselect();
@@ -66,23 +70,23 @@ function EventCalendar(props: EventCalendarProps) {
     }) => {
 
 
-    const maybeSessionRequests = await viewSessionRequest({
-      attendeeUserId: props.apiKey.creator.userId,
+    const maybeSessionRequests = await sessionRequestView({
+      creatorUserId: props.apiKey.creator.userId,
       minStartTime: args.start.valueOf(),
       maxStartTime: args.end.valueOf(),
       responded: false,
       apiKey: props.apiKey.key
     });
 
-    const maybeSessionRequestResponses = await viewSessionRequestResponse({
+    const maybeSessionRequestResponses = await sessionRequestResponseView({
       attendeeUserId: props.apiKey.creator.userId,
       minStartTime: args.start.valueOf(),
       maxStartTime: args.end.valueOf(),
-      responded: false,
+      accepted: false,
       apiKey: props.apiKey.key
     });
 
-    const maybeCommittments = await viewCommittment({
+    const maybeCommittments = await committmentView({
       attendeeUserId: props.apiKey.creator.userId,
       minStartTime: args.start.valueOf(),
       maxStartTime: args.end.valueOf(),
@@ -91,7 +95,7 @@ function EventCalendar(props: EventCalendarProps) {
       apiKey: props.apiKey.key
     });
 
-    const maybeCommittmentResponses = await viewCommittmentResponse({
+    const maybeCommittmentResponses = await committmentResponseView({
       attendeeUserId: props.apiKey.creator.userId,
       minStartTime: args.start.valueOf(),
       maxStartTime: args.end.valueOf(),
@@ -100,9 +104,9 @@ function EventCalendar(props: EventCalendarProps) {
 
     // note that we mark these with "STUDENT" to show that these are existing in our student capacity
     const studentEvents = [
-      ...isApiErrorCode(maybeSessionRequests)
+      ...isErr(maybeSessionRequests)
         ? []
-        : maybeSessionRequests
+        : maybeSessionRequests.Ok
           .map(x => {
             const courseData = props.activeCourseDatas
               .find(cd => cd.course.courseId === x.course.courseId);
@@ -120,11 +124,11 @@ function EventCalendar(props: EventCalendarProps) {
           .filter((x): x is EventInput => x !== null)
       ,
 
-      ...isApiErrorCode(maybeSessionRequestResponses)
+      ...isErr(maybeSessionRequestResponses)
         ? []
-        : (await Promise.all(maybeSessionRequestResponses
+        : (await Promise.all(maybeSessionRequestResponses.Ok
           // hide things you cancelled yourself
-          .filter(x => x.creator.userId !== props.apiKey.creator.userId || props.showHiddenEvents)
+          .filter(x => x.creatorUserId !== props.apiKey.creator.userId|| props.showHiddenEvents)
           .map(async x => {
             const courseData = props.activeCourseDatas
               .find(cd => cd.course.courseId === x.sessionRequest.course.courseId);
@@ -133,7 +137,7 @@ function EventCalendar(props: EventCalendarProps) {
               return null;
             }
 
-            if (!x.accepted) {
+            if (!x.committment) {
               return sessionRequestResponseToEvent({
                 sessionRequestResponse: x,
                 courseData: courseData,
@@ -142,19 +146,19 @@ function EventCalendar(props: EventCalendarProps) {
             }
 
             // if accepted, we need to get the location of the committment
-            const maybeSessionData = await viewSessionData({
+            const maybeSessionData = await sessionDataView({
               sessionId: x.committment.session.sessionId,
               onlyRecent: true,
               apiKey: props.apiKey.key
             });
-            if (isApiErrorCode(maybeSessionData)) {
+            if (isErr(maybeSessionData)) {
               return null;
             }
 
             // we have an invariant that any session must have at least one session data, so its ok
             return sessionRequestResponseToEvent({
               sessionRequestResponse: x,
-              sessionData: maybeSessionData[0],
+              sessionData: maybeSessionData.Ok[0],
               courseData: courseData,
               relation: "STUDENT"
             });
@@ -163,9 +167,9 @@ function EventCalendar(props: EventCalendarProps) {
           .filter((x): x is EventInput => x !== null)
       ,
 
-      ...isApiErrorCode(maybeCommittments)
+      ...isErr(maybeCommittments)
         ? []
-        : (await Promise.all(maybeCommittments
+        : (await Promise.all(maybeCommittments.Ok
           .map(async x => {
             const courseData = props.activeCourseDatas
               .find(cd => cd.course.courseId === x.session.course.courseId);
@@ -174,19 +178,20 @@ function EventCalendar(props: EventCalendarProps) {
               return null;
             }
 
-            const maybeSessionData = await viewSessionData({
+            const maybeSessionData = await sessionDataView({
               sessionId: x.session.sessionId,
               onlyRecent: true,
               apiKey: props.apiKey.key
             });
-            if (isApiErrorCode(maybeSessionData)) {
+
+            if (isErr(maybeSessionData)) {
               return null;
             }
 
             // we have an invariant that any session must have at least one session data, so its ok
             return committmentToEvent({
               committment: x,
-              sessionData: maybeSessionData[0],
+              sessionData: maybeSessionData.Ok[0],
               courseData: courseData,
               relation: "STUDENT"
             });
@@ -194,9 +199,9 @@ function EventCalendar(props: EventCalendarProps) {
           .filter((x): x is EventInput => x !== null)
       ,
 
-      ...isApiErrorCode(maybeCommittmentResponses)
+      ...isErr(maybeCommittmentResponses)
         ? []
-        : (await Promise.all(maybeCommittmentResponses
+        : (await Promise.all(maybeCommittmentResponses.Ok
           .map(async x => {
             const courseData = props.activeCourseDatas
               .find(cd => cd.course.courseId === x.committment.session.course.courseId);
@@ -205,19 +210,20 @@ function EventCalendar(props: EventCalendarProps) {
               return null;
             }
 
-            const maybeSessionData = await viewSessionData({
+            const maybeSessionData = await sessionDataView({
               sessionId: x.committment.session.sessionId,
               onlyRecent: true,
               apiKey: props.apiKey.key
             });
-            if (isApiErrorCode(maybeSessionData)) {
+
+            if (isErr(maybeSessionData)) {
               return null;
             }
 
             // we have an invariant that any session must have at least one session data, so its ok
             return committmentResponseToEvent({
               committmentResponse: x,
-              sessionData: maybeSessionData[0],
+              sessionData: maybeSessionData.Ok[0],
               relation: "STUDENT"
             });
           })))
@@ -238,7 +244,7 @@ function EventCalendar(props: EventCalendarProps) {
             return [];
           }
 
-          const maybeSessionData = await viewSessionData({
+          const maybeSessionData = await sessionDataView({
             courseId: x.course.courseId,
             minStartTime: args.start.valueOf(),
             maxStartTime: args.end.valueOf(),
@@ -247,7 +253,7 @@ function EventCalendar(props: EventCalendarProps) {
             apiKey: props.apiKey.key,
           });
 
-          const maybeSessionRequests = await viewSessionRequest({
+          const maybeSessionRequests = await sessionRequestView({
             courseId: x.course.courseId,
             minStartTime: args.start.valueOf(),
             maxStartTime: args.end.valueOf(),
@@ -255,7 +261,7 @@ function EventCalendar(props: EventCalendarProps) {
             apiKey: props.apiKey.key
           });
 
-          const maybeSessionRequestResponses = await viewSessionRequestResponse({
+          const maybeSessionRequestResponses = await sessionRequestResponseView({
             courseId: x.course.courseId,
             minStartTime: args.start.valueOf(),
             maxStartTime: args.end.valueOf(),
@@ -266,26 +272,26 @@ function EventCalendar(props: EventCalendarProps) {
           // return an array made out of each session / session request converted to a calendar event
           // note that we mark these with "INSTRUCTOR" to show that these are existing in our instructor capacity
           return [
-            ...isApiErrorCode(maybeSessionRequests)
+            ...isErr(maybeSessionRequests)
               ? []
-              : maybeSessionRequests.map(x => sessionRequestToEvent({
+              : maybeSessionRequests.Ok.map(x => sessionRequestToEvent({
                 sessionRequest: x,
                 courseData: courseData,
                 relation: "INSTRUCTOR"
               })),
-            ...isApiErrorCode(maybeSessionData)
+            ...isErr(maybeSessionData)
               ? []
-              : maybeSessionData.map(x => sessionToEvent({
+              : maybeSessionData.Ok.map(x => sessionToEvent({
                 sessionData: x,
                 relation: "INSTRUCTOR",
                 apiKey:props.apiKey,
                 muted:false,
                 permitted:true
               })),
-              ...isApiErrorCode(maybeSessionRequestResponses)
+              ...isErr(maybeSessionRequestResponses)
               ? []
-              : maybeSessionRequestResponses
-                  .filter(x => props.showHiddenEvents)
+              : maybeSessionRequestResponses.Ok
+                  .filter(_ => props.showHiddenEvents)
                   .map(x => sessionRequestResponseToEvent({
                     sessionRequestResponse: x,
                     courseData: courseData,
@@ -381,7 +387,7 @@ function EventCalendar(props: EventCalendarProps) {
         if (dsa.start.valueOf() > Date.now()) {
           setSelectedSpan({
             start: dsa.start.valueOf(),
-            duration: dsa.end.valueOf() - dsa.start.valueOf()
+            end: dsa.end.valueOf()
           });
         } else {
           if (calendarRef.current != null) {
@@ -404,7 +410,7 @@ function EventCalendar(props: EventCalendarProps) {
               <UserCreateSession
                 apiKey={props.apiKey}
                 start={selectedSpan.start}
-                duration={selectedSpan.duration}
+                end={selectedSpan.end}
                 postSubmit={() => setSelectedSpan(null)}
               />
             </Tab>
@@ -414,7 +420,7 @@ function EventCalendar(props: EventCalendarProps) {
               <StudentCreateSessionRequest
                 apiKey={props.apiKey}
                 start={selectedSpan.start}
-                duration={selectedSpan.duration}
+                end={selectedSpan.end}
                 postSubmit={() => setSelectedSpan(null)}
               />
             </Tab>
@@ -518,12 +524,12 @@ function EventCalendar(props: EventCalendarProps) {
 }
 
 const loadCourseMemberships = async (props: AsyncProps<CourseMembership[]>) => {
-  const maybeCourseMembership = await viewCourseMembership({
-    userId: props.apiKey.creator.userId,
+  const maybeCourseMembership = await courseMembershipView({
+    userId: props.apiKey.creatorUserId,
     onlyRecent: true,
     apiKey: props.apiKey.key,
   });
-  if (isApiErrorCode(maybeCourseMembership)) {
+  if (isErr(maybeCourseMembership)) {
     throw Error;
   }
   return maybeCourseMembership;
@@ -531,13 +537,13 @@ const loadCourseMemberships = async (props: AsyncProps<CourseMembership[]>) => {
 
 
 const loadCourseData = async (props: AsyncProps<CourseData[]>) => {
-  const maybeCourseData = await viewCourseData({
+  const maybeCourseData = await courseDataView({
     recentMemberUserId: props.apiKey.creator.userId,
     onlyRecent: true,
     apiKey: props.apiKey.key,
   });
 
-  if (isApiErrorCode(maybeCourseData)) {
+  if (isErr(maybeCourseData)) {
     throw Error;
   }
   // there's an invariant that there must always be one course data per valid course id

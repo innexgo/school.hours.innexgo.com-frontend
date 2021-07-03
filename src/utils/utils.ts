@@ -1,52 +1,12 @@
-/**
- * Returns a promise that will be resolved in some milliseconds
- * use await sleep(some milliseconds)
- * @param {int} ms milliseconds to sleep for
- * @return {Promise} a promise that will resolve in ms milliseconds
- */
-export function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+import { fetchApi, Result } from '@innexgo/frontend-common';
 
-export function staticUrl() {
-  return window.location.protocol + "//" + window.location.host;
-}
-
-export function apiUrl() {
-  return staticUrl() + '/api';
-}
-
-function getFormData(data: object) {
-  const formData = new FormData();
-  Object.keys(data).forEach(key => formData.append(key, (data as any)[key]));
-  return formData;
-}
-
-// This function is guaranteed to only return ApiErrorCode | object
-async function fetchApi(url: string, data: FormData) {
-  // Catch all errors and always return a response
-  const resp = await (async () => {
-    try {
-      return await fetch(`${apiUrl()}/${url}`, {
-        method: 'POST',
-        body: data
-      });
-    } catch (e) {
-      return new Response('"NETWORK"', { status: 400 })
-    }
-  })();
-
-  try {
-    let objResp = await resp.json();
-    return objResp;
-  } catch (e) {
-    return "UNKNOWN";
-  }
-}
-
-export const ApiErrorCodes = [
+export const InnexgoHoursErrorCodes = [
   "OK",
   "NOT_FOUND",
+
+  "DECODE_ERROR",
+  "METHOD_NOT_ALLOWED",
+
   "NO_CAPABILITY",
   "API_KEY_UNAUTHORIZED",
   "PASSWORD_INCORRECT",
@@ -68,23 +28,18 @@ export const ApiErrorCodes = [
   "SCHOOL_NONEXISTENT",
   "SCHOOL_ARCHIVED",
 
-  "ADMINSHIP_REQUEST_NONEXISTENT",
-  "ADMINSHIP_REQUEST_RESPONSE_EXISTENT",
-  "ADMINSHIP_REQUEST_RESPONSE_NONEXISTENT",
+  "SCHOOL_KEY_NONEXISTENT",
+  "SCHOOL_KEY_EXPIRED",
+  "SCHOOL_KEY_USED",
 
-  "ADMINSHIP_REQUEST_RESPONSE_CANNOT_USE_OTHERS",
-  "ADMINSHIP_REQUEST_RESPONSE_INVALID",
-
-   "ADMINSHIP_CANNOT_LEAVE_EMPTY",
+  "ADMINSHIP_CANNOT_LEAVE_EMPTY",
 
   "SESSION_REQUEST_NONEXISTENT",
   "SESSION_REQUEST_RESPONSE_EXISTENT",
   "SESSION_REQUEST_RESPONSE_CANNOT_CANCEL_STUDENT",
 
-  "SESSION_CANNOT_CREATE_FOR_OTHERS_STUDENT",
-
+  "SESSION_NOT_RELEVANT",
   "SESSION_NONEXISTENT",
-
 
   "COMMITTMENT_EXISTENT",
   "COMMITTMENT_NONEXISTENT",
@@ -112,8 +67,6 @@ export const ApiErrorCodes = [
   "NEGATIVE_DURATION",
   "CANNOT_ALTER_PAST",
 
-
-
   "VERIFICATION_CHALLENGE_NONEXISTENT",
   "VERIFICATION_CHALLENGE_TIMED_OUT",
   "PASSWORD_RESET_NONEXISTENT",
@@ -122,723 +75,715 @@ export const ApiErrorCodes = [
   "EMAIL_RATELIMIT",
   "EMAIL_BLACKLISTED",
   "UNKNOWN",
-  "NETWORK"
+  "INTERNAL_SERVER_ERROR",
+  "AUTH_INTERNAL_SERVER_ERROR",
+  "AUTH_BAD_REQUEST",
+  "AUTH_NETWORK_ERROR",
+  "AUTH_OTHER",
+  "NETWORK",
 ] as const;
 
+
 // Creates a union type
-export type ApiErrorCode = typeof ApiErrorCodes[number];
+export type InnexgoHoursErrorCode = typeof InnexgoHoursErrorCodes[number];
 
-export type NewValidApiKeyProps = {
-  userEmail: string,
-  userPassword: string,
-  duration: number,
+// important types
+export type SubscriptionKind = "VALID" | "CANCEL";
+export type CommittmentResponseKind =  "PRESENT"| "TARDY"| "ABSENT"| "CANCELLED";
+export type AdminshipKind = "ADMIN" | "CANCEL";
+export type CourseMembershipKind = "STUDENT" | "INSTRUCTOR" | "CANCEL";
+
+export interface School {
+  schoolId: number,
+  creatorUserId: number[],
+  creationTime: number,
+  whole: boolean,
 }
 
-export async function newValidApiKey(props: NewValidApiKeyProps): Promise<ApiKey | ApiErrorCode> {
-  return await fetchApi("apiKey/newValid/", getFormData(props));
+export interface SchoolData {
+  schoolDataId: number,
+  creatorUserId: number[],
+  creationTime: number,
+  school: School,
+  name: string,
+  description: string,
+  active: boolean,
 }
 
-export type NewCancelApiKeyProps = {
-  apiKeyToCancel: string,
+export interface Subscription {
+  subscriptionId: number,
+  creationTime: number,
+  creatorUserId: number[],
+  subscriptionKind: SubscriptionKind,
+  maxUses: number,
+}
+
+export interface SchoolKey {
+  schoolKeyKey: string,
+  creationTime: number,
+  creatorUserId: number[],
+  school: School,
+  maxUses: number,
+  startTime: number,
+  endTime: number,
+}
+
+export interface SchoolKeyData  {
+  schoolKeyDataId: number,
+  creationTime: number,
+  creatorUserId: number[],
+  schoolKey: SchoolKey,
+  active: boolean,
+}
+
+export interface Adminship {
+  adminshipId: number,
+  creationTime: number,
+  creatorUserId: number[],
+  userId: number,
+  school: School,
+  adminshipKind: AdminshipKind,
+  schoolKey?: Committment,
+}
+
+export interface Location {
+  locationId: number,
+  creationTime: number,
+  creatorUserId: number[],
+  school: School,
+  name: string,
+  description: string,
+  valid: boolean,
+}
+
+export interface Course {
+  courseId: number,
+  creatorUserId: number[],
+  creationTime: number,
+  school: School,
+}
+
+export interface CourseData {
+  courseDataId: number,
+  creationTime: number,
+  creatorUserId: number[],
+  course: Course,
+  name: string,
+  description: string,
+  active: boolean,
+}
+
+export interface CourseKey {
+  courseKeyKey: string,
+  creationTime: number,
+  creatorUserId: number[],
+  course: Course,
+  maxUses: number,
+  courseMembershipKind: CourseMembershipKind,
+  startTime: number,
+  endTime: number,
+}
+
+export interface CourseKeyData  {
+  courseKeyDataId: number,
+  creationTime: number,
+  creatorUserId: number[],
+  courseKey: CourseKey,
+  active: boolean,
+}
+
+export interface CourseMembership {
+  courseMembershipId: number,
+  creationTime: number,
+  creatorUserId: number[],
+  userId: number,
+  course: Course,
+  courseMembershipKind: CourseMembershipKind,
+  courseKey?: Committment,
+}
+
+export interface Session {
+  sessionId: number,
+  creationTime: number,
+  creatorUserId: number[],
+  course: Course,
+}
+
+export interface SessionData {
+  sessionDataId: number,
+  creationTime: number,
+  creatorUserId: number[],
+  session: Session,
+  name: string,
+  startTime: number,
+  endTime: number,
+  active: boolean,
+}
+
+export interface SessionRequest {
+  sessionRequestId: number,
+  creationTime: number,
+  creatorUserId: number[],
+  course: Course,
+  message: string,
+  startTime: number,
+  endTime: number,
+}
+
+export interface SessionRequestResponse {
+  sessionRequest: SessionRequest,
+  creationTime: number,
+  creatorUserId: number[],
+  message: string,
+  committment?: Committment,
+}
+
+export interface Committment {
+  committmentId: number,
+  creationTime: number,
+  creatorUserId: number[],
+  attendeeUserId: number,
+  session: Session,
+}
+
+export interface CommittmentResponse {
+  committment: Committment,
+  creationTime: number,
+  creatorUserId: number[],
+  kind: CommittmentResponseKind,
+}
+
+async function fetchApiOrNetworkError<T>(url: string, props: object): Promise<Result<T, InnexgoHoursErrorCode>> {
+  try {
+    return await fetchApi(url, props);
+  } catch (_) {
+    return { Err: "NETWORK" };
+  }
+}
+
+
+// request types
+
+interface SubscriptionNewProps {
+  subscriptionKind: SubscriptionKind,
   apiKey: string,
 }
 
-export async function newApiKeyCancel(props: NewCancelApiKeyProps): Promise<ApiKey | ApiErrorCode> {
-  return await fetchApi("apiKey/newCancel/", getFormData(props));
+export function subscriptionNew(props: SubscriptionNewProps): Promise<Result<Subscription, InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/subscription/new", props);
 }
 
-export type NewVerificationChallengeProps = {
-  userName: string,
-  userEmail: string,
-  userPassword: string,
-};
-
-export async function newVerificationChallenge(props: NewVerificationChallengeProps): Promise<VerificationChallenge | ApiErrorCode> {
-  return await fetchApi("verificationChallenge/new/", getFormData(props));
-}
-
-export type NewUserProps = {
-  verificationChallengeKey: string,
-};
-
-export async function newUser(props: NewUserProps): Promise<User | ApiErrorCode> {
-  return await fetchApi("user/new/", getFormData(props));
-}
-
-export type NewPasswordResetProps = {
-  userEmail: string,
-};
-
-export async function newPasswordReset(props: NewPasswordResetProps): Promise<PasswordReset | ApiErrorCode> {
-  return await fetchApi("passwordReset/new/", getFormData(props));
-}
-
-export type NewSubscriptionProps = {
-  subscriptionKind: SubscriptionKind,
-  apiKey: string
-}
-
-export async function newSubscription(props: NewSubscriptionProps): Promise<Subscription | ApiErrorCode> {
-  return await fetchApi("subscription/new/", getFormData(props));
-}
-
-export type NewChangePasswordProps = {
-  userId: number,
-  oldPassword: string,
-  newPassword: string,
-  apiKey: string
-}
-
-export async function newChangePassword(props: NewChangePasswordProps): Promise<Password | ApiErrorCode> {
-  return await fetchApi("password/newChange/", getFormData(props));
-}
-
-export type NewCancelPasswordProps = {
-  userId: number,
-  apiKey: string
-}
-
-export async function newCancelPassword(props: NewCancelPasswordProps): Promise<Password | ApiErrorCode> {
-  return await fetchApi("password/newCancel/", getFormData(props));
-}
-
-
-export type NewResetPasswordProps = {
-  passwordResetKey: string,
-  newPassword: string
-}
-
-export async function newResetPassword(props: NewResetPasswordProps): Promise<Password | ApiErrorCode> {
-  return await fetchApi("password/newReset/", getFormData(props));
-}
-
-export type NewCourseProps = {
+interface CourseNewProps {
   schoolId: number,
   name: string,
   description: string,
-  apiKey: string
+  apiKey: string,
 }
 
-export async function newCourse(props: NewCourseProps): Promise<Course | ApiErrorCode> {
-  return await fetchApi("course/new/", getFormData(props));
+export function courseNew(props: CourseNewProps): Promise<Result<Course, InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/course/new", props);
 }
 
-
-export type NewCourseDataProps = {
+interface CourseDataNewProps {
   courseId: number,
   name: string,
   description: string,
   active: boolean,
-  apiKey: string
+  apiKey: string,
 }
 
-export async function newCourseData(props: NewCourseDataProps): Promise<CourseData | ApiErrorCode> {
-  return await fetchApi("courseData/new/", getFormData(props));
+export function courseDataNew(props: CourseDataNewProps): Promise<Result<CourseData, InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/course_data/new", props);
 }
 
-export type NewValidCourseKeyProps = {
+interface CourseKeyNewProps {
   courseId: number,
   courseMembershipKind: CourseMembershipKind,
-  duration: number,
   maxUses: number,
-  apiKey: string
+  startTime: number,
+  endTime: number,
+  apiKey: string,
 }
 
-export async function newValidCourseKey(props: NewValidCourseKeyProps): Promise<CourseKey | ApiErrorCode> {
-  return await fetchApi("courseKey/newValid/", getFormData(props));
+export function courseKeyNew(props: CourseKeyNewProps): Promise<Result<CourseKey, InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/course_key/new", props);
 }
 
-export type NewCancelCourseKeyProps = {
-  courseKey: string,
-  apiKey: string
+interface CourseKeyDataNewProps {
+  courseKeyKey: string,
+  active: boolean,
+  apiKey: string,
 }
 
-export async function newCancelCourseKey(props: NewCancelCourseKeyProps): Promise<CourseKey | ApiErrorCode> {
-  return await fetchApi("courseKey/newCancel/", getFormData(props));
+export function courseKeyDataNew(props: CourseKeyDataNewProps): Promise<Result<CourseKeyData, InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/course_key_data/new", props);
 }
 
-export type NewCancelCourseMembershipProps = {
+interface CourseMembershipNewCancelProps {
   userId: number,
   courseId: number,
-  apiKey: string
+  apiKey: string,
 }
 
-export async function newCancelCourseMembership(props: NewCancelCourseMembershipProps): Promise<CourseMembership | ApiErrorCode> {
-  return await fetchApi("courseMembership/newCancel/", getFormData(props));
+export function courseMembershipNewCancel(props: CourseMembershipNewCancelProps): Promise<Result<CourseMembership, InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/course_membership/new_cancel", props);
 }
 
-export type NewKeyCourseMembershipProps = {
-  courseKey: string,
-  apiKey: string
+interface CourseMembershipNewKeyProps {
+  courseKeyKey: string,
+  apiKey: string,
 }
 
-export async function newKeyCourseMembership(props: NewKeyCourseMembershipProps): Promise<CourseMembership | ApiErrorCode> {
-  return await fetchApi("courseMembership/newKey/", getFormData(props));
+export function courseMembershipNewKey(props: CourseMembershipNewKeyProps): Promise<Result<CourseMembership, InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/course_membership/new_key", props);
 }
 
-export type NewSchoolProps = {
+interface SchoolNewProps {
   name: string,
   description: string,
   whole: boolean,
-  apiKey: string
+  apiKey: string,
 }
 
-export async function newSchool(props: NewSchoolProps): Promise<School | ApiErrorCode> {
-  return await fetchApi("school/new/", getFormData(props));
+export function schoolNew(props: SchoolNewProps): Promise<Result<School, InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/school/new", props);
 }
 
-export type NewSchoolDataProps = {
+interface SchoolDataNewProps {
   schoolId: number,
   name: string,
   description: string,
   active: boolean,
-  apiKey: string
-}
-
-export async function newSchoolData(props: NewSchoolDataProps): Promise<SchoolData | ApiErrorCode> {
-  return await fetchApi("schoolData/new/", getFormData(props));
-}
-
-export type NewAdminshipRequestProps = {
-  schoolId: number,
-  message: string,
-  apiKey: string
-}
-
-export async function newAdminshipRequest(props: NewAdminshipRequestProps): Promise<AdminshipRequest | ApiErrorCode> {
-  return await fetchApi("adminshipRequest/new/", getFormData(props));
-}
-
-export type NewAdminshipRequestResponseProps = {
-  adminshipRequestId: number,
-  message: string,
-  accept: boolean,
-  apiKey: string
-}
-
-export async function newAdminshipRequestResponse(props: NewAdminshipRequestResponseProps): Promise<AdminshipRequestResponse | ApiErrorCode> {
-  return await fetchApi("adminshipRequestResponse/new/", getFormData(props));
-}
-
-export type NewCancelAdminshipProps = {
-  userId: number,
-  schoolId: number,
-  apiKey: string
-}
-
-export async function newCancelAdminship(props: NewCancelAdminshipProps): Promise<Adminship | ApiErrorCode> {
-  return await fetchApi("adminship/newCancel/", getFormData(props));
-}
-
-export type NewValidAdminshipProps = {
-  adminshipRequestResponseId: number,
-  apiKey: string
-}
-
-export async function newValidAdminship(props: NewValidAdminshipProps): Promise<Adminship | ApiErrorCode> {
-  return await fetchApi("adminship/newValid/", getFormData(props));
-}
-
-export type NewSessionProps = {
-  name: string,
-  courseId: number,
-  startTime: number,
-  duration: number,
-  hidden: boolean,
   apiKey: string,
 }
 
-export async function newSession(props: NewSessionProps): Promise<Session | ApiErrorCode> {
-  return await fetchApi("session/new/", getFormData(props));
+export function schoolDataNew(props: SchoolDataNewProps): Promise<Result<SchoolData, InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/school_data/new", props);
+}
+
+interface SchoolKeyNewProps {
+  schoolId: number,
+  maxUses: number,
+  startTime: number,
+  endTime: number,
+  apiKey: string,
+}
+
+export function schoolKeyNew(props: SchoolKeyNewProps): Promise<Result<SchoolKey, InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/school_key/new", props);
 }
 
 
-export type NewSessionDataProps = {
-  sessionId: number,
-  name: string,
-  startTime: number,
-  duration: number,
-  hidden: boolean,
+interface SchoolKeyDataNewProps {
+  schoolKeyKey: string,
   active: boolean,
   apiKey: string,
 }
 
-export async function newSessionData(props: NewSessionDataProps): Promise<SessionData | ApiErrorCode> {
-  return await fetchApi("sessionData/new/", getFormData(props));
+export function schoolKeyDataNew(props: SchoolKeyDataNewProps): Promise<Result<SchoolKeyData, InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/school_key_data/new", props);
+}
+
+interface AdminshipNewCancelProps {
+  userId: number,
+  schoolId: number,
+  apiKey: string,
+}
+
+export function adminshipNewCancel(props: AdminshipNewCancelProps): Promise<Result<Adminship, InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/adminship/new_cancel", props);
+}
+
+interface AdminshipNewKeyProps {
+  schoolKeyKey: string,
+  apiKey: string,
+}
+
+export function adminshipNewKey(props: AdminshipNewKeyProps): Promise<Result<Adminship, InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/adminship/new_key", props);
 }
 
 
-export type NewSessionRequestProps = {
+interface SessionNewProps {
+  name: string,
+  courseId: number,
+  startTime: number,
+  endTime: number,
+  apiKey: string,
+}
+
+export function sessionNew(props: SessionNewProps): Promise<Result<Session, InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/session/new", props);
+}
+
+interface SessionDataNewProps {
+  sessionId: number,
+  name: string,
+  active: boolean,
+  startTime: number,
+  endTime: number,
+  apiKey: string,
+}
+
+export function sessionDataNew(props: SessionDataNewProps): Promise<Result<SessionData, InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/session_data/new", props);
+}
+
+interface SessionRequestNewProps {
   courseId: number,
   message: string,
   startTime: number,
-  duration: number,
+  endTime: number,
   apiKey: string,
 }
 
-export async function newSessionRequest(props: NewSessionRequestProps): Promise<SessionRequest | ApiErrorCode> {
-  return await fetchApi("sessionRequest/new/", getFormData(props));
+export function sessionRequestNew(props: SessionRequestNewProps): Promise<Result<SessionRequest, InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/session_request/new", props);
 }
 
-export type NewRejectSessionRequestResponseProps = {
+interface SessionRequestResponseNewProps {
   sessionRequestId: number,
   message: string,
+  sessionId?: number,
   apiKey: string,
 }
 
-export async function newRejectSessionRequestResponse(props: NewRejectSessionRequestResponseProps): Promise<SessionRequestResponse | ApiErrorCode> {
-  return await fetchApi("sessionRequestResponse/newReject/", getFormData(props));
+export function sessionRequestResponseNew(props: SessionRequestResponseNewProps): Promise<Result<SessionRequestResponse, InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/session_request_response/new", props);
 }
 
-export type NewAcceptSessionRequestResponseProps = {
-  sessionRequestId: number,
-  message: string,
-  committmentId: number,
-  apiKey: string,
-}
-
-export async function newAcceptSessionRequestResponse(props: NewAcceptSessionRequestResponseProps): Promise<SessionRequestResponse | ApiErrorCode> {
-  return await fetchApi("sessionRequestResponse/newAccept/", getFormData(props));
-}
-
-
-export type NewCommittmentProps = {
+interface CommittmentNewProps {
   attendeeUserId: number,
   sessionId: number,
-  cancellable: boolean,
   apiKey: string,
 }
 
-export async function newCommittment(props: NewCommittmentProps): Promise<Committment | ApiErrorCode> {
-  return await fetchApi("committment/new/", getFormData(props));
+export function committmentNew(props: CommittmentNewProps): Promise<Result<Committment, InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/committment/new", props);
 }
 
-export type NewCommittmentResponseProps = {
+interface CommittmentResponseNewProps {
   committmentId: number,
   committmentResponseKind: CommittmentResponseKind,
   apiKey: string,
 }
 
-export async function newCommittmentResponse(props: NewCommittmentResponseProps): Promise<CommittmentResponse | ApiErrorCode> {
-  return await fetchApi("committmentResponse/new/", getFormData(props));
+export function committmentResponseNew(props: CommittmentResponseNewProps): Promise<Result<CommittmentResponse, InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/committment_response/new", props);
 }
 
-
-export type ViewSubscriptionProps = {
-  subscriptionId?: number, //
-  creationTime?: number, //
-  minCreationTime?: number, //
-  maxCreationTime?: number, //
-  creatorUserId?: number, //
-  subscriptionKind?: SubscriptionKind, //
-  maxUses?: number, //
-  onlyRecent?: boolean, //
-  offset?: number,
-  count?: number,
+interface SubscriptionViewProps {
+  subscriptionId?: number[],
+  minCreationTime?: number,
+  maxCreationTime?: number,
+  creatorUserId?: number[],
+  subscriptionKind?: SubscriptionKind[],
+  onlyRecent: boolean,
   apiKey: string,
 }
 
-export async function viewSubscription(props: ViewSubscriptionProps): Promise<Subscription[] | ApiErrorCode> {
-  return await fetchApi("subscription/", getFormData(props));
+export function subscriptionView(props: SubscriptionViewProps): Promise<Result<Subscription[], InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/subscription/view", props);
 }
 
-export type ViewSchoolProps = {
-  schoolId?: number, //
-  creationTime?: number, //
-  minCreationTime?: number, //
-  maxCreationTime?: number, //
-  creatorUserId?: number, //
-  whole?: boolean, //
-  offset?: number,
-  count?: number,
+interface SchoolViewProps {
+  schoolId?: number[],
+  minCreationTime?: number,
+  maxCreationTime?: number,
+  creatorUserId?: number[],
+  whole?: boolean,
   apiKey: string,
 }
 
-export async function viewSchool(props: ViewSchoolProps): Promise<School[] | ApiErrorCode> {
-  return await fetchApi("school/", getFormData(props));
+export function schoolView(props: SchoolViewProps): Promise<Result<School[], InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/school/view", props);
 }
 
-export type ViewSchoolDataProps = {
-  schoolDataId?: number, //
-  creationTime?: number, //
-  minCreationTime?: number, //
-  maxCreationTime?: number, //
-  creatorUserId?: number, //
-  schoolId?: number, //
-  name?: string, //
-  partialName?: string, //
-  description?: string, //
-  partialDescription?: string, //
-  active?: boolean, //
-  onlyRecent?: boolean, //
-  recentAdminUserId?:number, //
-  offset?: number,
-  count?: number,
+interface SchoolDataViewProps {
+  schoolDataId?: number[],
+  minCreationTime?: number,
+  maxCreationTime?: number,
+  creatorUserId?: number[],
+  schoolId?: number[],
+  name?: string[],
+  partialName?: string,
+  description?: string[],
+  partialDescription?: string,
+  active?: boolean,
+  onlyRecent: boolean,
   apiKey: string,
 }
 
-export async function viewSchoolData(props: ViewSchoolDataProps): Promise<SchoolData[] | ApiErrorCode> {
-  return await fetchApi("schoolData/", getFormData(props));
+export function schoolDataView(props: SchoolDataViewProps): Promise<Result<SchoolData[], InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/school_data/view", props);
 }
 
-export type ViewUserProps = {
-  userId?: number, //
-  creationTime?: number, //
-  minCreationTime?: number, //
-  maxCreationTime?: number, //
-  userName?: string, //
-  partialUserName?: string, //
-  userEmail?: string, //
-  offset?: number,
-  count?: number,
+interface CourseViewProps {
+  courseId?: number[],
+  minCreationTime?: number,
+  maxCreationTime?: number,
+  creatorUserId?: number[],
+  schoolId?: number[],
   apiKey: string,
 }
 
-
-export async function viewUser(props: ViewUserProps): Promise<User[] | ApiErrorCode> {
-  return await fetchApi("user/", getFormData(props));
+export function courseView(props: CourseViewProps): Promise<Result<Course[], InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/course/view", props);
 }
 
-export type ViewPasswordProps = {
-  passwordId?: number, //
-  creationTime?: number, //
-  minCreationTime?: number, //
-  maxCreationTime?: number, //
-  creatorUserId?: number, //
-  userId?: number, //
-  passwordKind?: PasswordKind, //
-  onlyRecent?: boolean,
-  offset?: number,
-  count?: number,
+interface CourseDataViewProps {
+  courseDataId?: number[],
+  minCreationTime?: number,
+  maxCreationTime?: number,
+  creatorUserId?: number[],
+  courseId?: number,
+  name?: string[],
+  partialName?: string,
+  description?: string[],
+  partialDescription?: string,
+  active?: boolean,
+  onlyRecent: boolean,
+  schoolId?: number[],
   apiKey: string,
 }
 
-export async function viewPassword(props: ViewPasswordProps): Promise<Password[] | ApiErrorCode> {
-  return await fetchApi("password/", getFormData(props));
+export function courseDataView(props: CourseDataViewProps): Promise<Result<CourseData[], InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/course_data/view", props);
 }
 
-
-export type ViewApiKeyProps = {
-  apiKeyId?: number, //
-  creatorUserId?: number, //
-  creationTime?: number, //
-  minCreationTime?: number, //
-  maxCreationTime?: number, //
-  duration?: number, //
-  minDuration?: number, //
-  maxDuration?: number, //
-  apiKeyKind?: ApiKeyKind, //
-  onlyRecent?: boolean, //
-  offset?: number,
-  count?: number,
+interface CourseKeyViewProps {
+  courseKeyKey?: string[],
+  minCreationTime?: number,
+  maxCreationTime?: number,
+  creatorUserId?: number[],
+  courseId?: number[],
+  maxUses?: number[],
+  courseMembershipKind?: CourseMembershipKind[],
+  minStartTime?: number,
+  maxStartTime?: number,
+  minEndTime?: number,
+  maxEndTime?: number,
   apiKey: string,
 }
 
-export async function viewApiKey(props: ViewApiKeyProps): Promise<ApiKey[] | ApiErrorCode> {
-  return await fetchApi("apiKey/", getFormData(props));
+export function courseKeyView(props: CourseKeyViewProps): Promise<Result<CourseKey[], InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/course_key/view", props);
 }
 
-export type ViewCourseProps = {
-  courseId?: number, //
-  creationTime?: number, //
-  minCreationTime?: number, //
-  maxCreationTime?: number, //
-  creatorUserId?: number, //
-  schoolId?: number, //
-  offset?: number,
-  count?: number,
+interface CourseKeyDataViewProps {
+  courseKeyDataId?: number[],
+  minCreationTime?: number,
+  maxCreationTime?: number,
+  creatorUserId?: number[],
+  courseKeyKey?: string,
+  active?: boolean,
+  courseId?: number[],
+  maxUses?: number[],
+  courseMembershipKind?: CourseMembershipKind[],
+  minStartTime?: number,
+  maxStartTime?: number,
+  minEndTime?: number,
+  maxEndTime?: number,
+  onlyRecent: boolean,
   apiKey: string,
 }
 
-export async function viewCourse(props: ViewCourseProps): Promise<Course[] | ApiErrorCode> {
-  return await fetchApi("course/", getFormData(props));
+export function courseKeyDataView(props: CourseKeyDataViewProps): Promise<Result<CourseKeyData[], InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/course_key_data/view", props);
 }
 
-export type ViewCourseDataProps = {
-  courseDataId?: number, //
-  creationTime?: number, //
-  minCreationTime?: number, //
-  maxCreationTime?: number, //
-  creatorUserId?: number, //
-  courseId?: number, //
-  name?: string, //
-  partialName?: string, //
-  description?: string, //
-  partialDescription?: string, //
-  active?: boolean, //
-  onlyRecent?: boolean, //
-  schoolId?: number, //
-  recentMemberUserId?: number, //
-  recentStudentUserId?: number, //
-  recentInstructorUserId?: number, //
-  offset?: number,
-  count?: number,
+interface CourseMembershipViewProps {
+  courseMembershipId?: number[],
+  minCreationTime?: number,
+  maxCreationTime?: number,
+  creatorUserId?: number[],
+  userId?: number[],
+  courseId?: number[],
+  courseMembershipKind?: CourseMembershipKind[],
+  courseMembershipFromKey?: boolean,
+  courseKeyKey?: string,
+  onlyRecent: boolean,
   apiKey: string,
 }
 
-export async function viewCourseData(props: ViewCourseDataProps): Promise<CourseData[] | ApiErrorCode> {
-  return await fetchApi("courseData/", getFormData(props));
+export function courseMembershipView(props: CourseMembershipViewProps): Promise<Result<CourseMembership[], InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/course_membership/view", props);
 }
 
-export type ViewCourseKeyProps = {
-  courseKeyId?: number, //
-  creationTime?: number, //
-  minCreationTime?: number, //
-  maxCreationTime?: number, //
-  creatorUserId?: number, //
-  courseId?: number, //
-  courseKeyKind?: CourseKeyKind, //
-  courseMembershipKind?: CourseMembershipKind, //
-  duration?: number,
-  minDuration?: number,
-  maxDuration?: number,
-  maxUses?: number,
-  onlyRecent?: boolean,
-  offset?: number,
-  count?: number,
+interface SchoolKeyViewProps {
+  schoolKeyKey?: string[],
+  minCreationTime?: number,
+  maxCreationTime?: number,
+  creatorUserId?: number[],
+  schoolId?: number[],
+  maxUses?: number[],
+  minStartTime?: number,
+  maxStartTime?: number,
+  minEndTime?: number,
+  maxEndTime?: number,
   apiKey: string,
 }
 
-export async function viewCourseKey(props: ViewCourseKeyProps): Promise<CourseKey[] | ApiErrorCode> {
-  return await fetchApi("courseKey/", getFormData(props));
+export function schoolKeyView(props: SchoolKeyViewProps): Promise<Result<SchoolKey[], InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/school_key/view", props);
 }
 
-
-export type ViewCourseMembershipProps = {
-  courseMembershipId?: number, //
-  creationTime?: number, //
-  minCreationTime?: number, //
-  maxCreationTime?: number, //
-  creatorUserId?: number, //
-  userId?: number, //
-  courseId?: number, //
-  courseMembershipKind?: CourseMembershipKind, //
-  courseMembershipSourceKind?: CourseMembershipSourceKind, //
-  courseKeyId?: number, //
-  userName?: string,
-  partialUserName?: string,
-  onlyRecent?: boolean,
-  offset?: number,
-  count?: number,
+interface SchoolKeyDataViewProps {
+  schoolKeyDataId?: number[],
+  minCreationTime?: number,
+  maxCreationTime?: number,
+  creatorUserId?: number[],
+  schoolKeyKey?: string[],
+  active?: boolean,
+  schoolId?: number[],
+  maxUses?: number[],
+  minStartTime?: number,
+  maxStartTime?: number,
+  minEndTime?: number,
+  maxEndTime?: number,
+  onlyRecent: boolean,
   apiKey: string,
 }
 
-export async function viewCourseMembership(props: ViewCourseMembershipProps): Promise<CourseMembership[] | ApiErrorCode> {
-  return await fetchApi("courseMembership/", getFormData(props));
+export function schoolKeyDataView(props: SchoolKeyDataViewProps): Promise<Result<SchoolKeyData[], InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/school_key_data/view", props);
 }
 
-export type ViewAdminshipRequestProps = {
-  adminshipRequestId?: number, //
-  creationTime?: number, //
-  minCreationTime?: number, //
-  maxCreationTime?: number, //
-  creatorUserId?: number, //
-  schoolId?: number, //
-  message?: string,
+interface AdminshipViewProps {
+  adminshipId?: number[],
+  minCreationTime?: number,
+  maxCreationTime?: number,
+  creatorUserId?: number[],
+  userId?: number[],
+  schoolId?: number[],
+  adminshipKind?: AdminshipKind[],
+  adminshipHasSource?: boolean,
+  schoolKeyKey?: string[],
+  onlyRecent: boolean,
+  apiKey: string,
+}
+
+export function adminshipView(props: AdminshipViewProps): Promise<Result<Adminship[], InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/adminship/view", props);
+}
+
+interface SessionViewProps {
+  sessionId?: number[],
+  minCreationTime?: number,
+  maxCreationTime?: number,
+  creatorUserId?: number[],
+  courseId?: number[],
+  apiKey: string,
+}
+
+export function sessionView(props: SessionViewProps): Promise<Result<Session[], InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/session/view", props);
+}
+
+interface SessionDataViewProps {
+  sessionDataId?: number[],
+  minCreationTime?: number,
+  maxCreationTime?: number,
+  creatorUserId?: number[],
+  sessionId?: number[],
+  name?: string[],
+  partialName?: string,
+  minStartTime?: number,
+  maxStartTime?: number,
+  minEndTime?: number,
+  maxEndTime?: number,
+  active?: boolean,
+  onlyRecent: boolean,
+  courseId?: number[],
+  apiKey: string,
+}
+
+export function sessionDataView(props: SessionDataViewProps): Promise<Result<SessionData[], InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/session_data/view", props);
+}
+
+interface SessionRequestViewProps {
+  sessionRequestId?: number[],
+  minCreationTime?: number,
+  maxCreationTime?: number,
+  creatorUserId?: number[],
+  courseId?: number[],
+  message?: string[],
+  partialMessage?: string,
+  minStartTime?: number,
+  maxStartTime?: number,
+  minEndTime?: number,
+  maxEndTime?: number,
   responded?: boolean,
-  offset?: number,
-  count?: number,
   apiKey: string,
 }
 
-export async function viewAdminshipRequest(props: ViewAdminshipRequestProps): Promise<AdminshipRequest[] | ApiErrorCode> {
-  return await fetchApi("adminshipRequest/", getFormData(props));
+export function sessionRequestView(props: SessionRequestViewProps): Promise<Result<SessionRequest[], InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/session_request/view", props);
 }
 
-export type ViewAdminshipRequestResponseProps = {
-  adminshipRequestId?: number, //
-  creationTime?: number, //
-  minCreationTime?: number, //
-  maxCreationTime?: number, //
-  creatorUserId?: number, //
-  message?: string, //
-  accepted?: boolean, //
-  responded?: boolean, //
-  requesterUserId?: number, //
-  schoolId?: number, //
-  offset?: number,
-  count?: number,
+interface SessionRequestResponseViewProps {
+  sessionRequestId?: number[],
+  minCreationTime?: number,
+  maxCreationTime?: number,
+  creatorUserId?: number[],
+  message?: string[],
+  partialMessage?: string,
+  accepted?: boolean,
+  committmentId?: number[],
+  attendeeUserId?: number[],
+  courseId?: number[],
+  sessionId?: number[],
+  minStartTime?: number,
+  maxStartTime?: number,
+  minEndTime?: number,
+  maxEndTime?: number,
   apiKey: string,
 }
 
-export async function viewAdminshipRequestResponse(props: ViewAdminshipRequestResponseProps): Promise<AdminshipRequestResponse[] | ApiErrorCode> {
-  return await fetchApi("adminshipRequestResponse/", getFormData(props));
+export function sessionRequestResponseView(props: SessionRequestResponseViewProps): Promise<Result<SessionRequestResponse[], InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/session_request_response/view", props);
 }
 
-export type ViewAdminshipProps = {
-  adminshipId?: number, //
-  creationTime?: number, //
-  minCreationTime?: number, //
-  maxCreationTime?: number, //
-  creatorUserId?: number, //
-  userId?: number, //
-  schoolId?: number, //
-  adminshipKind?: AdminshipKind, //
-  adminshipSourceKind?: AdminshipSourceKind, //
-  adminshipRequestResponseId?: number, //
-  userName?: string,
-  partialUserName?: string,
-  onlyRecent?: boolean,
-  offset?: number,
-  count?: number,
+interface CommittmentViewProps {
+  committmentId?: number[],
+  minCreationTime?: number,
+  maxCreationTime?: number,
+  creatorUserId?: number[],
+  attendeeUserId?: number[],
+  sessionId?: number[],
+  courseId?: number[],
+  minStartTime?: number,
+  maxStartTime?: number,
+  minEndTime?: number,
+  maxEndTime?: number,
+  responded?: boolean,
+  fromRequestResponse?: boolean,
   apiKey: string,
 }
 
-export async function viewAdminship(props: ViewAdminshipProps): Promise<Adminship[] | ApiErrorCode> {
-  return await fetchApi("adminship/", getFormData(props));
+export function committmentView(props: CommittmentViewProps): Promise<Result<Committment[], InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/committment/view", props);
 }
 
-export type ViewSessionProps = {
-  sessionId?: number, //
-  creationTime?: number, //
-  minCreationTime?: number, //
-  maxCreationTime?: number, //
-  creatorUserId?: number, //
-  courseId?: number, //
-  offset?: number,
-  count?: number,
+interface CommittmentResponseViewProps {
+  committmentId?: number[],
+  minCreationTime?: number,
+  maxCreationTime?: number,
+  creatorUserId?: number[],
+  committmentResponseKind?: CommittmentResponseKind[],
+  attendeeUserId?: number[],
+  courseId?: number[],
+  sessionId?: number[],
+  minStartTime?: number,
+  maxStartTime?: number,
+  minEndTime?: number,
+  maxEndTime?: number,
   apiKey: string,
 }
 
-export async function viewSession(props: ViewSessionProps): Promise<Session[] | ApiErrorCode> {
-  return await fetchApi("session/", getFormData(props));
-}
-
-export type ViewSessionDataProps = {
-  sessionDataId?: number, //
-  creationTime?: number, //
-  minCreationTime?: number, //
-  maxCreationTime?: number, //
-  creatorUserId?: number, //
-  sessionId?: number, //
-  name?: string, //
-  partialName?: string, //
-  startTime?: number, //
-  minStartTime?: number, //
-  maxStartTime?: number, //
-  duration?: number, //
-  minDuration?: number, //
-  maxDuration?: number, //
-  hidden?: boolean, //
-  active?: boolean, //
-  onlyRecent?: boolean, //
-  courseId?: number, //
-  offset?: number,
-  count?: number,
-  apiKey: string,
-}
-
-export async function viewSessionData(props: ViewSessionDataProps): Promise<SessionData[] | ApiErrorCode> {
-  return await fetchApi("sessionData/", getFormData(props));
-}
-
-export type ViewSessionRequestProps = {
-  sessionRequestId?: number, //
-  creationTime?: number, //
-  minCreationTime?: number, //
-  maxCreationTime?: number, //
-  creatorUserId?: number, //
-  attendeeUserId?: number, //
-  courseId?: number, //
-  message?: string, //
-  startTime?: number, //
-  minStartTime?: number, //
-  maxStartTime?: number, //
-  duration?: number, //
-  minDuration?: number, //
-  maxDuration?: number, //
-  responded?: boolean, //
-  offset?: number,
-  count?: number,
-  apiKey: string
-}
-
-export async function viewSessionRequest(props: ViewSessionRequestProps): Promise<SessionRequest[] | ApiErrorCode> {
-  return await fetchApi("sessionRequest/", getFormData(props));
-}
-
-export type ViewSessionRequestResponseProps = {
-  sessionRequestId?: number, //
-  creationTime?: number, //
-  minCreationTime?: number, //
-  maxCreationTime?: number, //
-  creatorUserId?: number, //
-  message?: string, //
-  accepted?: boolean, //
-  committmentId?: number, //
-  attendeeUserId?: number, //
-  courseId?: number, //
-  startTime?: number, //
-  minStartTime?: number, //
-  maxStartTime?: number, //
-  duration?: number, //
-  minDuration?: number, //
-  maxDuration?: number, //
-  responded?: boolean, //
-  sessionId?: number, //
-  offset?: number,
-  count?: number,
-  apiKey: string,
-}
-
-export async function viewSessionRequestResponse(props: ViewSessionRequestResponseProps): Promise<SessionRequestResponse[] | ApiErrorCode> {
-  return await fetchApi("sessionRequestResponse/", getFormData(props));
-}
-
-export type ViewCommittmentProps = {
-  committmentId?: number, //
-  creationTime?: number, //
-  minCreationTime?: number, //
-  maxCreationTime?: number, //
-  creatorUserId?: number, //
-  attendeeUserId?: number, //
-  sessionId?: number, //
-  cancellable?: boolean, //
-  courseId?: number, //
-  startTime?: number, //
-  minStartTime?: number, //
-  maxStartTime?: number, //
-  duration?: number, //
-  minDuration?: number, //
-  maxDuration?: number, //
-  responded?: boolean, //
-  fromRequestResponse?: boolean, //
-  offset?: number,
-  count?: number,
-  apiKey: string
-}
-
-export async function viewCommittment(props: ViewCommittmentProps): Promise<Committment[] | ApiErrorCode> {
-  return await fetchApi("committment/", getFormData(props));
-}
-
-export type ViewCommittmentResponseProps = {
-  committmentId?: number, //
-  creationTime?: number, //
-  minCreationTime?: number, //
-  maxCreationTime?: number, //
-  creatorUserId?: number, //
-  committmentResponseKind?: CommittmentResponseKind, //
-  attendeeUserId?: number, //
-  courseId?: number, //
-  startTime?: number, //
-  minStartTime?: number, //
-  maxStartTime?: number, //
-  duration?: number, //
-  minDuration?: number, //
-  maxDuration?: number, //
-  sessionId?: number, //
-  offset?: number,
-  count?: number,
-  apiKey: string,
-}
-
-export async function viewCommittmentResponse(props: ViewCommittmentResponseProps): Promise<CommittmentResponse[] | ApiErrorCode> {
-  return await fetchApi("committmentResponse/", getFormData(props));
-}
-
-export function isApiErrorCode(maybeApiErrorCode: any): maybeApiErrorCode is ApiErrorCode {
-  return typeof maybeApiErrorCode === 'string' && ApiErrorCodes.includes(maybeApiErrorCode as any);
+export function committmentResponseView(props: CommittmentResponseViewProps): Promise<Result<CommittmentResponse[], InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/committment_response/view", props);
 }
 
 export const INT_MAX: number = 999999999999999;

@@ -13,7 +13,7 @@ import { Visibility } from '@material-ui/icons'
 import format from "date-fns/format";
 
 import { Async, AsyncProps } from 'react-async';
-import { viewSchool, viewCourseData, isApiErrorCode } from '../utils/utils';
+import { viewSchool, courseDataView, isApiErrorCode } from '../utils/utils';
 
 const loadSchool = async (props: AsyncProps<School>) => {
   const maybeSchools = await viewSchool({
@@ -30,7 +30,7 @@ const loadSchool = async (props: AsyncProps<School>) => {
 
 
 const loadCourseData = async (props: AsyncProps<CourseData[]>) => {
-  const maybeCourseData = await viewCourseData({
+  const maybeCourseData = await courseDataView({
     schoolId: props.school.schoolId,
     onlyRecent: true,
     apiKey: props.apiKey.key

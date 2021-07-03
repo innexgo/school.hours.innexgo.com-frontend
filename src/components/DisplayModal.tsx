@@ -5,7 +5,6 @@ type DisplayModalProps = {
   title: string;
   show: boolean;
   onClose: () => void;
-  small?:boolean;
   children: React.ReactNode
 }
 
@@ -15,7 +14,7 @@ export default function DisplayModal(props:DisplayModalProps) {
     onHide={props.onClose}
     keyboard={false}
     backdrop="static"
-    size={props.small ? "sm": "xl"}
+    size="xl"
     centered
   >
     <Modal.Header closeButton>

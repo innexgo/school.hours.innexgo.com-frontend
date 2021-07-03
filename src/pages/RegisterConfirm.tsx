@@ -2,17 +2,18 @@ import React from 'react';
 import { Card, Button, Form } from "react-bootstrap";
 import SimpleLayout from '../components/SimpleLayout';
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
-import { newUser, isApiErrorCode } from '../utils/utils';
+import { User, userNew} from '@innexgo/frontend-auth-api';
+import { isErr } from '@innexgo/frontend-common';
 
 type CreateUserProps = {
   verificationChallengeKey: string;
-  postSubmit: (user:User) => void;
+  postSubmit: (user: User) => void;
 }
 
 function CreateUser(props: CreateUserProps) {
   type CreateUserValue = {}
 
-  const onSubmit = async (values: CreateUserValue,
+  const onSubmit = async (_: CreateUserValue,
     fprops: FormikHelpers<CreateUserValue>) => {
 
     let errors: FormikErrors<CreateUserValue> = {};
@@ -25,12 +26,12 @@ function CreateUser(props: CreateUserProps) {
       return;
     }
 
-    const maybeUser = await newUser({
+    const maybeUser = await userNew({
       verificationChallengeKey: props.verificationChallengeKey,
     });
 
-    if (isApiErrorCode(maybeUser)) {
-      switch (maybeUser) {
+    if (isErr(maybeUser)) {
+      switch (maybeUser.Err) {
         case "VERIFICATION_CHALLENGE_NONEXISTENT": {
           fprops.setStatus({
             failureResult: "This registration link is invalid.",
@@ -68,7 +69,7 @@ function CreateUser(props: CreateUserProps) {
       successResult: "User Created"
     });
     // execute callback
-    props.postSubmit(maybeUser);
+    props.postSubmit(maybeUser.Ok);
   }
 
   return <>
@@ -101,7 +102,7 @@ function CreateUser(props: CreateUserProps) {
 
 function RegisterConfirm() {
 
-  const [user, setUser] = React.useState<User|null>(null);
+  const [user, setUser] = React.useState<User | null>(null);
 
   return (
     <SimpleLayout>
@@ -114,7 +115,7 @@ function RegisterConfirm() {
                 ? <Card.Text> Your account ({user.email}), has been created. Click <a href="/">here</a> to login.</Card.Text>
                 : <CreateUser
                   verificationChallengeKey={new URLSearchParams(window.location.search).get("verificationChallengeKey") ?? ""}
-                  postSubmit={(u:User) => setUser(u)}
+                  postSubmit={(u: User) => setUser(u)}
                 />
             }
           </Card.Body>

@@ -13,8 +13,7 @@ import UserCreateAdminshipRequest from '../components/UserCreateAdminshipRequest
 import UserCreateCourse from '../components/UserCreateCourse';
 import CreateAdminship from '../components/CreateAdminship';
 import UserCreateCourseMembership from '../components/UserCreateCourseMembership';
-import { viewSubscription, viewSchoolData, viewAdminshipRequest, viewAdminshipRequestResponse, viewCourseData, isApiErrorCode } from '../utils/utils';
-import format from "date-fns/format";
+import { subscriptionView, schoolDataView, courseDataView, } from '../utils/utils';
 
 type ResourceCardProps = {
   title: string,
@@ -65,14 +64,14 @@ type DashboardData = {
 }
 
 const loadDashboardData = async (props: AsyncProps<DashboardData>) => {
-  const maybeSubscriptions = await viewSubscription({
+  const maybeSubscriptions = await subscriptionView({
     creatorUserId: props.apiKey.creator.userId,
     onlyRecent: true,
     subscriptionKind: "VALID",
     apiKey: props.apiKey.key
   });
 
-  const maybeSchoolData = await viewSchoolData({
+  const maybeSchoolData = await schoolDataView({
     recentAdminUserId: props.apiKey.creator.userId,
     onlyRecent: true,
     apiKey: props.apiKey.key
@@ -91,13 +90,13 @@ const loadDashboardData = async (props: AsyncProps<DashboardData>) => {
   });
 
 
-  const maybeInstructorCourseData = await viewCourseData({
+  const maybeInstructorCourseData = await courseDataView({
     recentInstructorUserId: props.apiKey.creator.userId,
     onlyRecent: true,
     apiKey: props.apiKey.key
   });
 
-  const maybeStudentCourseData = await viewCourseData({
+  const maybeStudentCourseData = await courseDataView({
     recentStudentUserId: props.apiKey.creator.userId,
     onlyRecent: true,
     apiKey: props.apiKey.key
@@ -126,7 +125,7 @@ const loadDashboardData = async (props: AsyncProps<DashboardData>) => {
 }
 
 const loadSchoolData = async (props: AsyncProps<SchoolData>) => {
-  const maybeSchoolData = await viewSchoolData({
+  const maybeSchoolData = await schoolDataView({
     schoolId: props.schoolId,
     onlyRecent: true,
     apiKey: props.apiKey.key
@@ -137,133 +136,6 @@ const loadSchoolData = async (props: AsyncProps<SchoolData>) => {
   } else {
     return maybeSchoolData[0];
   }
-}
-
-
-
-type AdminshipRequestResponseCardProps = {
-  adminshipRequestResponse: AdminshipRequestResponse,
-  apiKey: ApiKey,
-  postSubmit: () => void
-}
-
-function AdminshipRequestResponseCard(props: AdminshipRequestResponseCardProps) {
-  const [showModal, setShowModal] = React.useState(false);
-
-  return <Async promiseFn={loadSchoolData}
-    apiKey={props.apiKey}
-    schoolId={props.adminshipRequestResponse.adminshipRequest.school.schoolId}>
-    <Async.Pending><Loader /></Async.Pending>
-    <Async.Rejected>
-      <Form.Text className="text-danger">An unknown error has occured while loading school data.</Form.Text>
-    </Async.Rejected>
-    <Async.Fulfilled<SchoolData>>{schoolData => <>
-      <Card className="h-100" style={{ width: '15rem' }}>
-        <Card.Body>
-          <Card.Title>{schoolData.name}</Card.Title>
-          <Card.Subtitle className="text-muted">
-            {props.adminshipRequestResponse.accepted ? "ACCEPTED" : "REJECTED"}
-          </Card.Subtitle>
-          <Card.Text>{props.adminshipRequestResponse.message}</Card.Text>
-          <Button onClick={() => setShowModal(true)}>
-            {props.adminshipRequestResponse.accepted
-              ? "Manage Response"
-              : "View Response"
-            }
-          </Button>
-        </Card.Body>
-        <DisplayModal
-          title="View Request"
-          show={showModal}
-          onClose={() => setShowModal(false)}
-        >
-          <Table hover bordered>
-            <tbody>
-              <tr>
-                <th>Request Sent</th>
-                <td>{format(props.adminshipRequestResponse.adminshipRequest.creationTime, "MMM do h:mm a")}</td>
-              </tr>
-              <tr>
-                <th>Request Message</th>
-                <td>{props.adminshipRequestResponse.adminshipRequest.message}</td>
-              </tr>
-              <tr>
-                <th>Response Sent</th>
-                <td>{format(props.adminshipRequestResponse.creationTime, "MMM do h:mm a")}</td>
-              </tr>
-              <tr>
-                <th>Response From</th>
-                <td><ViewUser user={props.adminshipRequestResponse.creator} apiKey={props.apiKey} expanded={false} /></td>
-              </tr>
-              <tr>
-                <th>Response Message</th>
-                <td>{props.adminshipRequestResponse.message}</td>
-              </tr>
-            </tbody>
-          </Table>
-          {props.adminshipRequestResponse.accepted
-            ? <CreateAdminship apiKey={props.apiKey}
-              adminshipRequestResponse={props.adminshipRequestResponse}
-              postSubmit={props.postSubmit} />
-            : <> </>
-          }
-        </DisplayModal>
-      </Card>
-    </>
-    }</Async.Fulfilled>
-  </Async>
-}
-
-type AdminshipRequestCardProps = {
-  adminshipRequest: AdminshipRequest,
-  apiKey: ApiKey,
-}
-
-function AdminshipRequestCard(props: AdminshipRequestCardProps) {
-  const [showModal, setShowModal] = React.useState(false);
-
-  return <Async promiseFn={loadSchoolData}
-    apiKey={props.apiKey}
-    schoolId={props.adminshipRequest.school.schoolId}>
-    <Async.Pending><Loader /></Async.Pending>
-    <Async.Rejected>
-      <Form.Text className="text-danger">An unknown error has occured while loading school data.</Form.Text>
-    </Async.Rejected>
-    <Async.Fulfilled<SchoolData>>{schoolData => <>
-      <Card className="h-100" style={{ width: '15rem' }}>
-        <Card.Body>
-          <Card.Title>{schoolData.name}</Card.Title>
-          <Card.Subtitle className="text-muted">PENDING</Card.Subtitle>
-          <Card.Text>{props.adminshipRequest.message}</Card.Text>
-          <Button onClick={() => setShowModal(true)}> View Request </Button>
-        </Card.Body>
-      </Card>
-      <DisplayModal
-        title="View Request"
-        show={showModal}
-        onClose={() => setShowModal(false)}
-      >
-        <Table hover bordered>
-          <tbody>
-            <tr>
-              <th>Sent</th>
-              <td>{format(props.adminshipRequest.creationTime, "MMM do h:mm a")}</td>
-            </tr>
-            <tr>
-              <th>Message</th>
-              <td>{props.adminshipRequest.message} </td>
-            </tr>
-            <tr>
-              <th>From</th>
-              <td><ViewUser user={props.adminshipRequest.creator} apiKey={props.apiKey} expanded={false} /></td>
-            </tr>
-          </tbody>
-        </Table>
-
-      </DisplayModal>
-    </>
-    }</Async.Fulfilled>
-  </Async>
 }
 
 
