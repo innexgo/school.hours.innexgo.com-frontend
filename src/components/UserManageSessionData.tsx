@@ -1,13 +1,16 @@
 import React from 'react';
-import { Form, Button, Table } from 'react-bootstrap'; import Loader from '../components/Loader';
+import { Form, Button, Table } from 'react-bootstrap';
+import Loader from '../components/Loader';
 import { Async, AsyncProps } from 'react-async';
 import DisplayModal from '../components/DisplayModal';
-import { viewSessionData, newSessionData, isErr, } from '../utils/utils';
+import { sessionDataView, sessionDataNew, SessionData } from '../utils/utils';
 import { ViewUser } from '../components/ViewData';
 import { Edit, Archive, Unarchive } from '@material-ui/icons';
 import { Formik, FormikHelpers } from 'formik'
 import format from 'date-fns/format';
 
+import {isErr} from '@innexgo/frontend-common';
+import {ApiKey} from '@innexgo/frontend-auth-api';
 
 type EditSessionDataProps = {
   sessionData: SessionData,
@@ -25,18 +28,17 @@ function EditSessionData(props: EditSessionDataProps) {
   const onSubmit = async (values: EditSessionDataValue,
     fprops: FormikHelpers<EditSessionDataValue>) => {
 
-    const maybeSessionData = await newSessionData({
+    const maybeSessionData = await sessionDataNew({
       sessionId: props.sessionData.session.sessionId,
       name: values.name,
       startTime: props.sessionData.startTime,
-      duration: props.sessionData.duration,
-      hidden: !values.makePublic,
+      endTime: props.sessionData.endTime,
       active: props.sessionData.active,
       apiKey: props.apiKey.key,
     });
 
     if (isErr(maybeSessionData)) {
-      switch (maybeSessionData) {
+      switch (maybeSessionData.Err) {
         case "API_KEY_NONEXISTENT": {
           fprops.setStatus({
             failureResult: "You have been automatically logged out. Please relogin.",
@@ -128,16 +130,16 @@ function EditSessionData(props: EditSessionDataProps) {
 
 
 const loadSessionData = async (props: AsyncProps<SessionData>) => {
-  const maybeSessionData = await viewSessionData({
+  const maybeSessionData = await sessionDataView({
     sessionId: props.sessionId,
     onlyRecent: true,
     apiKey: props.apiKey.key
   });
 
-  if (isErr(maybeSessionData) || maybeSessionData.length === 0) {
-    throw Error;
+  if (isErr(maybeSessionData)) {
+    throw Error(maybeSessionData.Err);
   } else {
-    return maybeSessionData[0];
+    return maybeSessionData.Ok[0];
   }
 }
 

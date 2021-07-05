@@ -1,9 +1,7 @@
-import React from 'react';
 import { Container, Popover, Form, Table } from 'react-bootstrap';
 import DashboardLayout from '../components/DashboardLayout';
 import Loader from '../components/Loader';
 import AdminManageAdminships from '../components/AdminManageAdminships';
-import AdminManageAdminshipRequests from '../components/AdminManageAdminshipRequests';
 import UtilityWrapper from '../components/UtilityWrapper';
 import { ViewSchool, ViewUser } from '../components/ViewData';
 import AdminManageSchoolData from '../components/AdminManageSchoolData';

@@ -9,7 +9,6 @@ import Loader from '../components/Loader';
 import DisplayModal from '../components/DisplayModal';
 import { ViewUser, } from '../components/ViewData';
 import UserCreateSchool from '../components/UserCreateSchool';
-import UserCreateAdminshipRequest from '../components/UserCreateAdminshipRequest';
 import UserCreateCourse from '../components/UserCreateCourse';
 import CreateAdminship from '../components/CreateAdminship';
 import UserCreateCourseMembership from '../components/UserCreateCourseMembership';

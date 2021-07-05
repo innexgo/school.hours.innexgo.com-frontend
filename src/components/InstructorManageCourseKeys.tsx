@@ -14,8 +14,8 @@ import addDays from "date-fns/addDays";
 
 import { Async, AsyncProps } from 'react-async';
 import { INT_MAX, CourseKey, courseKeyDataNew, courseKeyNew, courseKeyDataView, } from '../utils/utils';
-import {isErr} from '@innexgo/frontend-common';
-import {ApiKey} from '@innexgo/frontend-auth-api';
+import { isErr } from '@innexgo/frontend-common';
+import { ApiKey } from '@innexgo/frontend-auth-api';
 
 type RevokeCourseKeyProps = {
   courseKey: CourseKey,
@@ -28,11 +28,12 @@ function RevokeCourseKey(props: RevokeCourseKeyProps) {
   type RevokeCourseKeyValue = {
   }
 
-  const onSubmit = async (values: RevokeCourseKeyValue,
+  const onSubmit = async (_: RevokeCourseKeyValue,
     fprops: FormikHelpers<RevokeCourseKeyValue>) => {
 
     const maybeCourseKey = await courseKeyDataNew({
-      courseKey: props.courseKey.key,
+      courseKeyKey: props.courseKey.courseKeyKey,
+      active: false,
       apiKey: props.apiKey.key,
     });
 
@@ -113,15 +114,15 @@ function RevokeCourseKey(props: RevokeCourseKeyProps) {
 const loadCourseKeys = async (props: AsyncProps<CourseKey[]>) => {
   const maybeCourseKeys = await courseKeyDataView({
     courseId: props.courseId,
-    courseKeyKind: "VALID",
+    active: true,
     onlyRecent: true,
     apiKey: props.apiKey.key
   });
 
   if (isErr(maybeCourseKeys)) {
-    throw Error;
+    throw Error(maybeCourseKeys.Err);
   } else {
-    return maybeCourseKeys;
+    return maybeCourseKeys.Ok.map(x => x.courseKey);
   }
 }
 
@@ -169,16 +170,16 @@ function InstructorManageCourseKeys(props: InstructorManageCourseKeysProps) {
                     ? <tr><td colSpan={5} className="text-center">No currently active keys.</td></tr>
                     : data.map((a: CourseKey) =>
                       <tr>
-                        <td><code>{a.key}</code></td>
-                        <td>{a.duration === INT_MAX ? "Never" : format(a.creationTime + a.duration!, "MMM dd yyyy")}</td>
-                        <td>{a.maxUses != null && a.maxUses === INT_MAX ? "Infinite" : a.maxUses}</td>
+                        <td><code>{a.courseKeyKey}</code></td>
+                        <td>{a.endTime === INT_MAX ? "Never" : format(a.endTime, "MMM dd yyyy")}</td>
+                        <td>{a.maxUses === INT_MAX ? "Infinite" : a.maxUses}</td>
                         <td>{a.courseMembershipKind}</td>
-                        <td>{a.creationTime + a.duration! > Date.now()
-                          ? <Button variant="link" className="text-dark"
-                            onClick={() => setConfirmRevokeCourseKey(a)}>
+                        <td>{a.endTime > Date.now()
+                          ?
+                          <Button variant="link" className="text-dark" onClick={() => setConfirmRevokeCourseKey(a)}>
                             <Delete />
                           </Button>
-                          : <> </>
+                          : <div />
                         }</td>
                       </tr>
                     )}
@@ -225,7 +226,8 @@ function InstructorManageCourseKeys(props: InstructorManageCourseKeysProps) {
                   // TODO let user choose how many uses and how many
                   const maybeCourseKey = await courseKeyNew({
                     courseId: props.courseId,
-                    duration: values.expires
+                    startTime: Date.now(),
+                    endTime: values.expires
                       ? addDays(Date.now(), parseInt(values.expiryDays)).valueOf()
                       : INT_MAX,
                     maxUses: values.infiniteUses ? INT_MAX : parseInt(values.maxUses),
@@ -234,7 +236,7 @@ function InstructorManageCourseKeys(props: InstructorManageCourseKeysProps) {
                   });
 
                   if (isErr(maybeCourseKey)) {
-                    switch (maybeCourseKey) {
+                    switch (maybeCourseKey.Err) {
                       case "API_KEY_NONEXISTENT": {
                         fprops.setStatus({
                           failureResult: "You have been automatically logged out. Please relogin.",

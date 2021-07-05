@@ -1,6 +1,6 @@
 import AsyncSelect from 'react-select/async';
 import { ValueType } from 'react-select';
-import { isErr } from '../utils/utils';
+import {SchoolData} from '../utils/utils';
 
 interface SearchSingleSchoolProps {
   name: string,
@@ -18,10 +18,6 @@ type SchoolDataOption = {
 export default function SearchSingleSchool(props: SearchSingleSchoolProps) {
   const promiseOptions = async function(input: string): Promise<SchoolDataOption[]> {
     const results = await props.search(input);
-
-    if (isErr(results)) {
-      return [];
-    }
 
     return results.map((x: SchoolData): SchoolDataOption => ({
       label: `${x.name}`,

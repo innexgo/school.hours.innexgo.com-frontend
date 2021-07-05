@@ -83,7 +83,7 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
       successResult: "Request Created",
     });
 
-    props.postSubmit(,maybeSessionRequest.Ok);
+    props.postSubmit(maybeSessionRequest.Ok);
   }
 
   return <>
