@@ -41,11 +41,10 @@ function Login(props: LoginProps) {
       hasError = true;
     }
 
-    // setErrors is a Formik function that automatically sets errors on the correct fields
-    setErrors(errors);
-
     // bail early if we have hit any errors
     if (hasError) {
+      // setErrors is a Formik function that automatically sets errors on the correct fields
+      setErrors(errors);
       return;
     }
 

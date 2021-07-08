@@ -1,12 +1,12 @@
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
 import { Button, Form } from "react-bootstrap";
-import { courseMembershipNewKey} from "../utils/utils";
-import {isErr} from '@innexgo/frontend-common';
-import {ApiKey, AuthenticatedComponentProps } from '@innexgo/frontend-auth-api';
+import { courseMembershipNewKey, CourseMembership } from "../utils/utils";
+import { isErr } from '@innexgo/frontend-common';
+import { ApiKey, } from '@innexgo/frontend-auth-api';
 
 type UserCreateCourseMembershipProps = {
   apiKey: ApiKey;
-  postSubmit: (cm:CourseMembership) => void;
+  postSubmit: (cm: CourseMembership) => void;
 }
 
 // TODO we need to ensure that the abbreviation is truly unique between schools

@@ -7,7 +7,7 @@ import { ViewUser } from '../components/ViewData';
 import { Edit, Archive, Unarchive} from '@material-ui/icons';
 import { Formik, FormikHelpers } from 'formik'
 import format from 'date-fns/format';
-import {isErr} from '@innexgo/frontend-common';
+import {isErr, unwrap} from '@innexgo/frontend-common';
 import {ApiKey} from '@innexgo/frontend-auth-api';
 
 
@@ -154,7 +154,7 @@ function ArchiveCourse(props: ArchiveCourseProps) {
     });
 
     if (isErr(maybeCourseData)) {
-      switch (maybeCourseData) {
+      switch (maybeCourseData.Err) {
         case "API_KEY_NONEXISTENT": {
           fprops.setStatus({
             failureResult: "You have been automatically logged out. Please relogin.",
@@ -227,17 +227,14 @@ function ArchiveCourse(props: ArchiveCourseProps) {
 
 
 const loadCourseData = async (props: AsyncProps<CourseData>) => {
-  const maybeCourseData = await courseDataView({
+  const courseData  = await courseDataView({
     courseId: props.courseId,
     onlyRecent: true,
     apiKey: props.apiKey.key
-  });
+  })
+  .then(unwrap);
 
-  if (isErr(maybeCourseData) || maybeCourseData.length === 0) {
-    throw Error;
-  } else {
-    return maybeCourseData[0];
-  }
+  return courseData[0];
 }
 
 
@@ -276,7 +273,7 @@ const InstructorManageCourseData = (props: {
             </tr>
             <tr>
               <th>Creator</th>
-              <td><ViewUser user={courseData.course.creator} apiKey={props.apiKey} expanded={false} /></td>
+              <td><ViewUser userId={courseData.course.creatorUserId} apiKey={props.apiKey} expanded={false} /></td>
             </tr>
             <tr>
               <th>Creation Time</th>

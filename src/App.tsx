@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import {ApiKey} from '@innexgo/frontend-auth-api';
 
 import AuthenticatedRoute from './components/AuthenticatedRoute';
 

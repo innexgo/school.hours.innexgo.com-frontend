@@ -1,9 +1,9 @@
 import SearchSingleCourse from "../components/SearchSingleCourse";
 import { Formik, FormikHelpers,} from "formik";
 import { Row, Col, Button, Form } from "react-bootstrap";
-import { SessionRequest, CourseData, sessionRequestNew, courseDataNew, } from "../utils/utils";
+import { SessionRequest, CourseData, sessionRequestNew, courseDataView, courseMembershipView, } from "../utils/utils";
 import format from "date-fns/format";
-import {isErr} from '@innexgo/frontend-common';
+import {isErr, unwrap} from '@innexgo/frontend-common';
 import {ApiKey} from '@innexgo/frontend-auth-api';
 
 type StudentCreateSessionRequestProps = {
@@ -111,7 +111,7 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
           <Form.Group as={Row}>
             <Form.Label column sm={2}>End Time</Form.Label>
             <Col>
-              <span>{format(props.start + props.duration, "MMM do, hh:mm a")} </span>
+              <span>{format(props.end, "MMM do, hh:mm a")} </span>
             </Col>
           </Form.Group>
           <Form.Group as={Row}>
@@ -120,15 +120,26 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
               <SearchSingleCourse
                 name="courseId"
                 search={async input => {
-                  const maybeCourseData = await courseDataNew({
-                    recentStudentUserId: props.apiKey.creator.userId,
+
+                  const courseMemberships = await courseMembershipView( {
+                      userId: [props.apiKey.creator.userId],
+                      courseMembershipKind: ["STUDENT"],
+                      onlyRecent: true,
+                      apiKey: props.apiKey.key,
+                  })
+                  .then(unwrap);
+
+                  const courseData = await courseDataView({
+                    courseId: courseMemberships.map(cm => cm.course.courseId),
                     partialName: input,
                     onlyRecent: true,
                     active: true,
                     apiKey: props.apiKey.key,
-                  });
+                  })
+                  .then(unwrap);
+                  
 
-                  return isErr(maybeCourseData) ? [] : maybeCourseData;
+                  return courseData;
                 }}
                 isInvalid={!!fprops.errors.courseId}
                 setFn={(e: CourseData | null) => fprops.setFieldValue("courseId", e?.course.courseId)} />

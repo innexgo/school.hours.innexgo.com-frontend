@@ -4,7 +4,7 @@ import { Table } from 'react-bootstrap';
 import Loader from '../components/Loader';
 import format from 'date-fns/format';
 import { CommittmentResponse, CourseData, SchoolData, SessionData, schoolDataView, courseDataView, sessionDataView } from "../utils/utils";
-import { ApiKey, User } from '@innexgo/frontend-auth-api';
+import { ApiKey, User, userView } from '@innexgo/frontend-auth-api';
 import { isErr } from '@innexgo/frontend-common';
 
 const ToggleExpandButton = (props: { expanded: boolean, setExpanded: (b: boolean) => void }) =>
@@ -58,6 +58,20 @@ const loadSessionData = async (props: AsyncProps<SessionData>) => {
   }
   // there's an invariant that there must always be one session data per valid session id
   return maybeSessionData.Ok[0];
+}
+
+
+const loadUser = async (props: AsyncProps<User>) => {
+  const maybeUser = await userView({
+    userId: props.courseId,
+    apiKey: props.apiKey.key,
+  });
+
+  if (isErr(maybeUser)) {
+    throw Error(maybeUser.Err);
+  }
+  // there's an invariant that there must always be one course data per valid course id
+  return maybeUser.Ok[0];
 }
 
 export const ViewSchool = (props: {
@@ -119,31 +133,41 @@ export const ViewCourse = (props: {
 
 
 export const ViewUser = (props: {
-  user: User,
+  userId: number,
   apiKey: ApiKey,
   expanded: boolean
 }) => {
   const [expanded, setExpanded] = React.useState(props.expanded);
-  return !expanded
-    ? <span>
-      {props.user.name}
-      <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
-    </span>
-    : <div>
-      <Table hover bordered>
-        <tbody>
-          <tr>
-            <th>Name</th>
-            <td>{props.user.name}</td>
-          </tr>
-          <tr>
-            <th>Email</th>
-            <td>{props.user.email}</td>
-          </tr>
-        </tbody>
-      </Table>
-      <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
-    </div>
+  return <Async promiseFn={loadUser} apiKey={props.apiKey} userId={props.userId}>
+    <Async.Pending><Loader /></Async.Pending>
+    <Async.Rejected>
+      <span className="text-danger">Unable to load session.</span>
+    </Async.Rejected>
+    <Async.Fulfilled<User>>{user =>
+      !expanded
+        ? <span>
+          {user.name}
+          <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
+        </span>
+        : <div>
+          <Table hover bordered>
+            <tbody>
+              <tr>
+                <th>Name</th>
+                <td>{user.name}</td>
+              </tr>
+              <tr>
+                <th>Email</th>
+                <td>{user.email}</td>
+              </tr>
+            </tbody>
+          </Table>
+          <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
+        </div>
+    }</Async.Fulfilled>
+  </Async>
+
+
 }
 
 export const ViewSession = (props: {

@@ -5,19 +5,19 @@ import DisplayModal from '../components/DisplayModal';
 import { ViewUser, } from '../components/ViewData';
 
 import { Delete, } from '@material-ui/icons'
-import { Formik, FormikHelpers} from 'formik'
+import { Formik, FormikHelpers } from 'formik'
 
 import format from "date-fns/format";
 
 import { Async, AsyncProps } from 'react-async';
 import { adminshipView, adminshipNewCancel, School, Adminship } from '../utils/utils';
 
-import {User, ApiKey} from '@innexgo/frontend-auth-api';
-import {isErr} from '@innexgo/frontend-common';
+import { ApiKey } from '@innexgo/frontend-auth-api';
+import { isErr, unwrap } from '@innexgo/frontend-common';
 
 
 type CancelAdminshipProps = {
-  user: User,
+  userId: number,
   school: School,
   apiKey: ApiKey,
   postSubmit: () => void
@@ -33,7 +33,7 @@ function CancelAdminship(props: CancelAdminshipProps) {
 
     const maybeAdminship = await adminshipNewCancel({
       schoolId: props.school.schoolId,
-      userId: props.user.userId,
+      userId: props.userId,
       apiKey: props.apiKey.key,
     });
 
@@ -103,8 +103,9 @@ function CancelAdminship(props: CancelAdminshipProps) {
           noValidate
           onSubmit={fprops.handleSubmit} >
           <div hidden={fprops.status.successResult !== ""}>
-            <p>Are you sure you want to remove {props.user.name}?</p>
-            {props.apiKey.creator.userId === props.user.userId
+            <p>Are you sure you want to remove the following user:</p>
+            <ViewUser userId={props.userId} apiKey={props.apiKey} expanded={false} />
+            {props.apiKey.creator.userId === props.userId
               ? <p className="text-danger">You are removing yourself. You won't be able to add yourself back.</p>
               : <> </>
             }
@@ -122,20 +123,16 @@ function CancelAdminship(props: CancelAdminshipProps) {
 }
 
 
-const loadAdminships = async (props: AsyncProps<Adminship[]>) => {
-  const maybeAdminships = await adminshipView({
-    schoolId: props.school.schoolId,
-    adminshipKind: "ADMIN",
+const loadAdminships = async (props: AsyncProps<Adminship[]>) =>
+  await adminshipView({
+    schoolId: [props.school.schoolId],
+    adminshipKind: ["ADMIN"],
     onlyRecent: true,
     apiKey: props.apiKey.key
-  });
+  })
+    .then(unwrap);
 
-  if (isErr(maybeAdminships)) {
-    throw Error;
-  } else {
-    return maybeAdminships;
-  }
-}
+
 
 type AdminManageAdminshipsProps = {
   school: School,
@@ -144,7 +141,7 @@ type AdminManageAdminshipsProps = {
 
 function AdminManageAdminships(props: AdminManageAdminshipsProps) {
 
-  const [confirmRemoveUser, setConfirmRemoveUser] = React.useState<User | null>(null);
+  const [confirmRemoveUser, setConfirmRemoveUser] = React.useState<number | null>(null);
 
   return <>
     <Async promiseFn={loadAdminships} apiKey={props.apiKey} school={props.school}>
@@ -165,11 +162,11 @@ function AdminManageAdminships(props: AdminManageAdminshipsProps) {
             <tbody>
               {data.map((a: Adminship) =>
                 <tr>
-                  <td><ViewUser user={a.user} apiKey={props.apiKey}  expanded={false} /></td>
+                  <td><ViewUser userId={a.userId} apiKey={props.apiKey} expanded={false} /></td>
                   <td>{format(a.creationTime, "MMM do")}</td>
                   <th>
                     <Button variant="link" className="text-dark"
-                      onClick={() => setConfirmRemoveUser(a.user)}>
+                      onClick={() => setConfirmRemoveUser(a.userId)}>
                       <Delete />
                     </Button>
                   </th>
@@ -184,7 +181,7 @@ function AdminManageAdminships(props: AdminManageAdminshipsProps) {
               onClose={() => setConfirmRemoveUser(null)}
             >
               <CancelAdminship {...props}
-                user={confirmRemoveUser}
+                userId={confirmRemoveUser}
                 postSubmit={() => {
                   setConfirmRemoveUser(null);
                   reload();

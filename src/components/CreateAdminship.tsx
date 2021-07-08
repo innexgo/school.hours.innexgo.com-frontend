@@ -1,60 +1,77 @@
-import React from 'react';
-import { Button, Form } from "react-bootstrap";
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
-import { newValidAdminship, isErr } from '../utils/utils';
+import { Button, Form } from "react-bootstrap";
+import { adminshipNewKey, Adminship } from "../utils/utils";
+import { isErr } from '@innexgo/frontend-common';
+import { ApiKey, } from '@innexgo/frontend-auth-api';
 
-type CreateAdminshipProps = {
-  adminshipRequestResponse: AdminshipRequestResponse;
+type UserCreateAdminshipProps = {
   apiKey: ApiKey;
-  postSubmit: (adminship:Adminship) => void;
+  postSubmit: (a: Adminship) => void;
 }
 
-function CreateAdminship(props: CreateAdminshipProps) {
-  type CreateAdminshipValue = {}
+
+function CreateAdminship(props: UserCreateAdminshipProps) {
+
+  type CreateAdminshipValue = {
+    key: string,
+  }
 
   const onSubmit = async (values: CreateAdminshipValue,
     fprops: FormikHelpers<CreateAdminshipValue>) => {
 
     let errors: FormikErrors<CreateAdminshipValue> = {};
+
     // Validate input
 
     let hasError = false;
+    if (values.key === "") {
+      errors.key = "Please enter a school key";
+      hasError = true;
+    }
+
     fprops.setErrors(errors);
     if (hasError) {
       return;
     }
 
-    const maybeAdminship = await newValidAdminship({
-      adminshipRequestResponseId: props.adminshipRequestResponse.adminshipRequest.adminshipRequestId,
+    const maybeAdminship = await adminshipNewKey({
+      schoolKeyKey: values.key,
       apiKey: props.apiKey.key,
     });
 
     if (isErr(maybeAdminship)) {
-      switch (maybeAdminship) {
-        case "ADMINSHIP_REQUEST_RESPONSE_NONEXISTENT": {
+      switch (maybeAdminship.Err) {
+        case "API_KEY_NONEXISTENT": {
           fprops.setStatus({
-            failureResult: "Adminship request response does not exist.",
+            failureResult: "You have been automatically logged out. Please relogin.",
             successResult: ""
           });
           break;
         }
-        case "ADMINSHIP_REQUEST_RESPONSE_INVALID": {
+        case "API_KEY_UNAUTHORIZED": {
           fprops.setStatus({
-            failureResult: "Adminship request response is not accepted.",
+            failureResult: "You don't have the ability to join this school.",
             successResult: ""
           });
           break;
         }
-        case "ADMINSHIP_REQUEST_RESPONSE_CANNOT_USE_OTHERS": {
+        case "SCHOOL_KEY_NONEXISTENT": {
           fprops.setStatus({
-            failureResult: "Adminship request response does not belong to you.",
+            failureResult: "This key is invalid.",
             successResult: ""
           });
           break;
         }
-        case "SCHOOL_ARCHIVED": {
+        case "SCHOOL_KEY_EXPIRED": {
           fprops.setStatus({
-            failureResult: "This school has been archived.",
+            failureResult: "This key has expired.",
+            successResult: ""
+          });
+          break;
+        }
+        case "SCHOOL_KEY_USED": {
+          fprops.setStatus({
+            failureResult: "This key has already been used.",
             successResult: ""
           });
           break;
@@ -82,7 +99,7 @@ function CreateAdminship(props: CreateAdminshipProps) {
         }
         default: {
           fprops.setStatus({
-            failureResult: "An unknown or network error has occured while trying to add school.",
+            failureResult: "An unknown or network error has occured while trying to join school.",
             successResult: ""
           });
           break;
@@ -96,13 +113,17 @@ function CreateAdminship(props: CreateAdminshipProps) {
       successResult: "Adminship Created"
     });
     // execute callback
-    props.postSubmit(maybeAdminship);
+    props.postSubmit(maybeAdminship.Ok);
   }
+
+  const normalizeKey = (e: string) => e.replace(/[^(A-Za-z0-9_=\-)]/g, "");
 
   return <>
     <Formik<CreateAdminshipValue>
       onSubmit={onSubmit}
-      initialValues={{}}
+      initialValues={{
+        key: "",
+      }}
       initialStatus={{
         failureResult: "",
         successResult: ""
@@ -113,7 +134,20 @@ function CreateAdminship(props: CreateAdminshipProps) {
           noValidate
           onSubmit={fprops.handleSubmit} >
           <div hidden={fprops.status.successResult !== ""}>
-            <Button type="submit">Accept Invitation</Button>
+            <Form.Group >
+              <Form.Label>School Key</Form.Label>
+              <Form.Control
+                name="key"
+                type="text"
+                placeholder="School Key"
+                as="input"
+                value={fprops.values.key}
+                onChange={e => fprops.setFieldValue("key", normalizeKey(e.target.value))}
+                isInvalid={!!fprops.errors.key}
+              />
+              <Form.Control.Feedback type="invalid">{fprops.errors.key}</Form.Control.Feedback>
+            </Form.Group>
+            <Button type="submit">Join</Button>
             <br />
             <Form.Text className="text-danger">{fprops.status.failureResult}</Form.Text>
           </div>

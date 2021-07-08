@@ -95,14 +95,14 @@ export type CourseMembershipKind = "STUDENT" | "INSTRUCTOR" | "CANCEL";
 
 export interface School {
   schoolId: number,
-  creatorUserId: number[],
+  creatorUserId: number,
   creationTime: number,
   whole: boolean,
 }
 
 export interface SchoolData {
   schoolDataId: number,
-  creatorUserId: number[],
+  creatorUserId: number,
   creationTime: number,
   school: School,
   name: string,
@@ -113,7 +113,7 @@ export interface SchoolData {
 export interface Subscription {
   subscriptionId: number,
   creationTime: number,
-  creatorUserId: number[],
+  creatorUserId: number,
   subscriptionKind: SubscriptionKind,
   maxUses: number,
 }
@@ -121,7 +121,7 @@ export interface Subscription {
 export interface SchoolKey {
   schoolKeyKey: string,
   creationTime: number,
-  creatorUserId: number[],
+  creatorUserId: number,
   school: School,
   maxUses: number,
   startTime: number,
@@ -131,7 +131,7 @@ export interface SchoolKey {
 export interface SchoolKeyData  {
   schoolKeyDataId: number,
   creationTime: number,
-  creatorUserId: number[],
+  creatorUserId: number,
   schoolKey: SchoolKey,
   active: boolean,
 }
@@ -139,7 +139,7 @@ export interface SchoolKeyData  {
 export interface Adminship {
   adminshipId: number,
   creationTime: number,
-  creatorUserId: number[],
+  creatorUserId: number,
   userId: number,
   school: School,
   adminshipKind: AdminshipKind,
@@ -149,7 +149,7 @@ export interface Adminship {
 export interface Location {
   locationId: number,
   creationTime: number,
-  creatorUserId: number[],
+  creatorUserId: number,
   school: School,
   name: string,
   description: string,
@@ -158,7 +158,7 @@ export interface Location {
 
 export interface Course {
   courseId: number,
-  creatorUserId: number[],
+  creatorUserId: number,
   creationTime: number,
   school: School,
 }
@@ -166,7 +166,7 @@ export interface Course {
 export interface CourseData {
   courseDataId: number,
   creationTime: number,
-  creatorUserId: number[],
+  creatorUserId: number,
   course: Course,
   name: string,
   description: string,
@@ -176,7 +176,7 @@ export interface CourseData {
 export interface CourseKey {
   courseKeyKey: string,
   creationTime: number,
-  creatorUserId: number[],
+  creatorUserId: number,
   course: Course,
   maxUses: number,
   courseMembershipKind: CourseMembershipKind,
@@ -187,7 +187,7 @@ export interface CourseKey {
 export interface CourseKeyData  {
   courseKeyDataId: number,
   creationTime: number,
-  creatorUserId: number[],
+  creatorUserId: number,
   courseKey: CourseKey,
   active: boolean,
 }
@@ -195,7 +195,7 @@ export interface CourseKeyData  {
 export interface CourseMembership {
   courseMembershipId: number,
   creationTime: number,
-  creatorUserId: number[],
+  creatorUserId: number,
   userId: number,
   course: Course,
   courseMembershipKind: CourseMembershipKind,
@@ -205,14 +205,14 @@ export interface CourseMembership {
 export interface Session {
   sessionId: number,
   creationTime: number,
-  creatorUserId: number[],
+  creatorUserId: number,
   course: Course,
 }
 
 export interface SessionData {
   sessionDataId: number,
   creationTime: number,
-  creatorUserId: number[],
+  creatorUserId: number,
   session: Session,
   name: string,
   startTime: number,
@@ -223,7 +223,7 @@ export interface SessionData {
 export interface SessionRequest {
   sessionRequestId: number,
   creationTime: number,
-  creatorUserId: number[],
+  creatorUserId: number,
   course: Course,
   message: string,
   startTime: number,
@@ -233,7 +233,7 @@ export interface SessionRequest {
 export interface SessionRequestResponse {
   sessionRequest: SessionRequest,
   creationTime: number,
-  creatorUserId: number[],
+  creatorUserId: number,
   message: string,
   committment?: Committment,
 }
@@ -241,7 +241,7 @@ export interface SessionRequestResponse {
 export interface Committment {
   committmentId: number,
   creationTime: number,
-  creatorUserId: number[],
+  creatorUserId: number,
   attendeeUserId: number,
   session: Session,
 }
@@ -249,7 +249,7 @@ export interface Committment {
 export interface CommittmentResponse {
   committment: Committment,
   creationTime: number,
-  creatorUserId: number[],
+  creatorUserId: number,
   kind: CommittmentResponseKind,
 }
 

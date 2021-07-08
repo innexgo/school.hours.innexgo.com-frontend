@@ -2,14 +2,14 @@ import React from 'react';
 import { Form, Button, Table } from 'react-bootstrap'; import Loader from '../components/Loader';
 import { Async, AsyncProps } from 'react-async';
 import DisplayModal from '../components/DisplayModal';
-import { schoolDataView, schoolDataNew, normalizeSchoolName , SchoolData, } from '../utils/utils';
+import { schoolDataView, schoolDataNew, normalizeSchoolName, SchoolData, } from '../utils/utils';
 import { ViewUser } from '../components/ViewData';
-import { Edit, Archive, Unarchive} from '@material-ui/icons';
+import { Edit, Archive, Unarchive } from '@material-ui/icons';
 import { Formik, FormikHelpers } from 'formik'
 import format from 'date-fns/format';
 
-import {isErr} from '@innexgo/frontend-common';
-import {User, ApiKey} from '@innexgo/frontend-auth-api';
+import { isErr, unwrap } from '@innexgo/frontend-common';
+import { User, ApiKey } from '@innexgo/frontend-auth-api';
 
 
 type EditSchoolDataProps = {
@@ -155,7 +155,7 @@ function ArchiveSchool(props: ArchiveSchoolProps) {
     });
 
     if (isErr(maybeSchoolData)) {
-      switch (maybeSchoolData) {
+      switch (maybeSchoolData.Err) {
         case "API_KEY_NONEXISTENT": {
           fprops.setStatus({
             failureResult: "You have been automatically logged out. Please relogin.",
@@ -228,17 +228,14 @@ function ArchiveSchool(props: ArchiveSchoolProps) {
 
 
 const loadSchoolData = async (props: AsyncProps<SchoolData>) => {
-  const maybeSchoolData = await schoolDataView({
+  const schoolData = await schoolDataView({
     schoolId: props.schoolId,
     onlyRecent: true,
     apiKey: props.apiKey.key
-  });
+  })
+    .then(unwrap);
 
-  if (isErr(maybeSchoolData) || maybeSchoolData.length === 0) {
-    throw Error;
-  } else {
-    return maybeSchoolData[0];
-  }
+  return schoolData[0];
 }
 
 
@@ -277,7 +274,7 @@ const AdminManageSchoolData = (props: {
             </tr>
             <tr>
               <th>Creator</th>
-              <td><ViewUser user={schoolData.school.creator} apiKey={props.apiKey} expanded={false} /></td>
+              <td><ViewUser userId={schoolData.school.creatorUserId} apiKey={props.apiKey} expanded={false} /></td>
             </tr>
             <tr>
               <th>Creation Time</th>
@@ -287,9 +284,9 @@ const AdminManageSchoolData = (props: {
         </Table>
         <Button variant="secondary" onClick={_ => setShowEditSchoolData(true)}>Edit <Edit /></Button>
 
-        { schoolData.active
-            ? <Button variant="danger" onClick={_ => setShowArchiveSchool(true)}>Archive <Archive /></Button>
-            : <Button variant="success" onClick={_ => setShowArchiveSchool(true)}>Unarchive <Unarchive /></Button>
+        {schoolData.active
+          ? <Button variant="danger" onClick={_ => setShowArchiveSchool(true)}>Archive <Archive /></Button>
+          : <Button variant="success" onClick={_ => setShowArchiveSchool(true)}>Unarchive <Unarchive /></Button>
         }
 
         <DisplayModal

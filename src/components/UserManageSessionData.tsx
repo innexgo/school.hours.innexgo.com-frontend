@@ -9,8 +9,8 @@ import { Edit, Archive, Unarchive } from '@material-ui/icons';
 import { Formik, FormikHelpers } from 'formik'
 import format from 'date-fns/format';
 
-import {isErr} from '@innexgo/frontend-common';
-import {ApiKey} from '@innexgo/frontend-auth-api';
+import { unwrap } from '@innexgo/frontend-common';
+import { ApiKey } from '@innexgo/frontend-auth-api';
 
 type EditSessionDataProps = {
   sessionData: SessionData,
@@ -129,19 +129,13 @@ function EditSessionData(props: EditSessionDataProps) {
 }
 
 
-const loadSessionData = async (props: AsyncProps<SessionData>) => {
-  const maybeSessionData = await sessionDataView({
+const loadSessionData = async (props: AsyncProps<SessionData>) =>
+  unwrap(await sessionDataView({
     sessionId: props.sessionId,
     onlyRecent: true,
     apiKey: props.apiKey.key
-  });
+  }))[0];
 
-  if (isErr(maybeSessionData)) {
-    throw Error(maybeSessionData.Err);
-  } else {
-    return maybeSessionData.Ok[0];
-  }
-}
 
 
 const UserManageSessionData = (props: {
@@ -165,7 +159,7 @@ const UserManageSessionData = (props: {
           <tbody>
             <tr>
               <th>Time</th>
-              <td>{format(sessionData.startTime, "MMM do, h:mm a")} - {format(sessionData.startTime+ sessionData.duration, "h:mm a")}</td>
+              <td>{format(sessionData.startTime, "MMM do, h:mm a")} - {format(sessionData.startTime + sessionData.duration, "h:mm a")}</td>
             </tr>
             <tr>
               <th>Name</th>

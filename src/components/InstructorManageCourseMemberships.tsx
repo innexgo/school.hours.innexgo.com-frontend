@@ -10,13 +10,13 @@ import { Formik, FormikHelpers, } from 'formik'
 import format from "date-fns/format";
 
 import { Async, AsyncProps } from 'react-async';
-import { CourseMembership, courseMembershipNewCancel, courseMembershipView} from '../utils/utils';
-import {isErr} from '@innexgo/frontend-common';
-import {ApiKey,User} from '@innexgo/frontend-auth-api';
+import { CourseMembershipKind, CourseMembership, courseMembershipNewCancel, courseMembershipView } from '../utils/utils';
+import { isErr, unwrap} from '@innexgo/frontend-common';
+import { ApiKey, User } from '@innexgo/frontend-auth-api';
 
 
 type CancelCourseMembershipProps = {
-  user: User,
+  userId: number,
   courseId: number,
   apiKey: ApiKey,
   postSubmit: () => void
@@ -32,7 +32,7 @@ function CancelCourseMembership(props: CancelCourseMembershipProps) {
 
     const maybeCourseMembership = await courseMembershipNewCancel({
       courseId: props.courseId,
-      userId: props.user.userId,
+      userId: props.userId,
       apiKey: props.apiKey.key,
     });
 
@@ -102,8 +102,9 @@ function CancelCourseMembership(props: CancelCourseMembershipProps) {
           noValidate
           onSubmit={fprops.handleSubmit} >
           <div hidden={fprops.status.successResult !== ""}>
-            <p>Are you sure you want to remove {props.user.name}?</p>
-            {props.apiKey.creator.userId === props.user.userId
+            <p>Are you sure you want to remove the following user?</p>
+            <ViewUser apiKey={props.apiKey} userId={props.userId} expanded={false} />
+            {props.apiKey.creator.userId === props.userId
               ? <p className="text-danger">You are removing yourself. You won't be able to add yourself back.</p>
               : <> </>
             }
@@ -126,7 +127,7 @@ type InternalInstructorManageCourseMembershipsProps = {
 }
 
 function InternalInstructorManageCourseMemberships(props: InternalInstructorManageCourseMembershipsProps) {
-  const [confirmRemoveUser, setConfirmRemoveUser] = React.useState<User | null>(null);
+  const [confirmRemoveUserId, setConfirmRemoveUserId] = React.useState<number | null>(null);
 
   return <>
     <Async promiseFn={props.loadMemberships}>
@@ -150,11 +151,11 @@ function InternalInstructorManageCourseMemberships(props: InternalInstructorMana
                   ? <tr><td colSpan={3} className="text-center">No current members.</td></tr>
                   : data.map((a: CourseMembership) =>
                     <tr>
-                      <td><ViewUser user={a.user} apiKey={props.apiKey} expanded={false} /></td>
+                      <td><ViewUser userId={a.userId} apiKey={props.apiKey} expanded={false} /></td>
                       <td>{format(a.creationTime, "MMM do")}</td>
                       <th>
                         <Button variant="link" className="text-dark"
-                          onClick={() => setConfirmRemoveUser(a.user)}>
+                          onClick={() => setConfirmRemoveUserId(a.userId)}>
                           <Delete />
                         </Button>
                       </th>
@@ -162,16 +163,16 @@ function InternalInstructorManageCourseMemberships(props: InternalInstructorMana
                   )}
             </tbody>
           </Table>
-          {confirmRemoveUser === null ? <> </> :
+          {confirmRemoveUserId === null ? <> </> :
             <DisplayModal
               title="Confirm Remove"
-              show={confirmRemoveUser != null}
-              onClose={() => setConfirmRemoveUser(null)}
+              show={confirmRemoveUserId != null}
+              onClose={() => setConfirmRemoveUserId(null)}
             >
               <CancelCourseMembership {...props}
-                user={confirmRemoveUser}
+                userId={confirmRemoveUserId}
                 postSubmit={() => {
-                  setConfirmRemoveUser(null);
+                  setConfirmRemoveUserId(null);
                   reload();
                 }}
               />
@@ -198,18 +199,14 @@ function InstructorManageCourseMemberships(props: InstructorManageCourseMembersh
     courseId={props.courseId}
     apiKey={props.apiKey}
     loadMemberships={async (_: AsyncProps<CourseMembership[]>) => {
-      const maybeCourseMemberships = await courseMembershipView({
-        courseId: props.courseId,
-        courseMembershipKind: props.courseMembershipKind,
+      return await courseMembershipView({
+        courseId: [props.courseId],
+        courseMembershipKind: [props.courseMembershipKind],
         onlyRecent: true,
         apiKey: props.apiKey.key
-      });
+      })
+        .then(unwrap)
 
-      if (isErr(maybeCourseMemberships)) {
-        throw Error;
-      } else {
-        return maybeCourseMemberships;
-      }
     }}
   />
 }

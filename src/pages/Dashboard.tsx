@@ -1,5 +1,5 @@
 import React from 'react'
-import { Table, Button, Container, Card, Form, Tabs, Tab } from 'react-bootstrap';
+import { Container, Card, Form, Tabs, Tab } from 'react-bootstrap';
 import { Add } from '@material-ui/icons'
 import { Async, AsyncProps } from 'react-async';
 
@@ -7,12 +7,13 @@ import DashboardLayout from '../components/DashboardLayout';
 import Section from '../components/Section';
 import Loader from '../components/Loader';
 import DisplayModal from '../components/DisplayModal';
-import { ViewUser, } from '../components/ViewData';
 import UserCreateSchool from '../components/UserCreateSchool';
 import UserCreateCourse from '../components/UserCreateCourse';
 import CreateAdminship from '../components/CreateAdminship';
 import UserCreateCourseMembership from '../components/UserCreateCourseMembership';
-import { subscriptionView, schoolDataView, courseDataView, } from '../utils/utils';
+import { subscriptionView, schoolDataView, courseDataView, adminshipView, courseMembershipView, SchoolData, CourseData, } from '../utils/utils';
+import { AuthenticatedComponentProps } from '@innexgo/frontend-auth-api';
+import { unwrap, } from '@innexgo/frontend-common';
 
 type ResourceCardProps = {
   title: string,
@@ -54,89 +55,67 @@ function AddNewCard(props: AddNewCardProps) {
 }
 
 type DashboardData = {
-  subscription: Subscription | null,
+  subscribed: boolean,
   schoolData: SchoolData[],
-  adminshipRequests: AdminshipRequest[],
-  adminshipRequestResponses: AdminshipRequestResponse[],
   instructorCourseData: CourseData[],
   studentCourseData: CourseData[],
 }
 
 const loadDashboardData = async (props: AsyncProps<DashboardData>) => {
-  const maybeSubscriptions = await subscriptionView({
-    creatorUserId: props.apiKey.creator.userId,
+  const subscriptions = await subscriptionView({
+    creatorUserId: [props.apiKey.creator.userId],
     onlyRecent: true,
-    subscriptionKind: "VALID",
+    subscriptionKind: ["VALID"],
     apiKey: props.apiKey.key
-  });
+  })
+    .then(unwrap);
 
-  const maybeSchoolData = await schoolDataView({
-    recentAdminUserId: props.apiKey.creator.userId,
+  const adminships = await adminshipView({
+    userId: [props.apiKey.creator.userId],
     onlyRecent: true,
+    adminshipKind: ["ADMIN"],
     apiKey: props.apiKey.key
-  });
-
-  const maybeAdminshipRequests = await viewAdminshipRequest({
-    creatorUserId: props.apiKey.creator.userId,
-    responded: false,
-    apiKey: props.apiKey.key
-  });
-
-  const maybeAdminshipRequestResponses = await viewAdminshipRequestResponse({
-    requesterUserId: props.apiKey.creator.userId,
-    responded: false,
-    apiKey: props.apiKey.key
-  });
+  })
+    .then(unwrap);
 
 
-  const maybeInstructorCourseData = await courseDataView({
-    recentInstructorUserId: props.apiKey.creator.userId,
+  const schoolData = await schoolDataView({
+    schoolId: adminships.map(a => a.school.schoolId),
     onlyRecent: true,
     apiKey: props.apiKey.key
-  });
+  })
+    .then(unwrap);
 
-  const maybeStudentCourseData = await courseDataView({
-    recentStudentUserId: props.apiKey.creator.userId,
+  const courseMemberships = await courseMembershipView({
+    userId: [props.apiKey.creator.userId],
     onlyRecent: true,
     apiKey: props.apiKey.key
-  });
+  })
+    .then(unwrap);
+
+  const instructorCourseData = await courseDataView({
+    courseId: courseMemberships.filter(cm => cm.courseMembershipKind == "INSTRUCTOR").map(cm => cm.course.courseId),
+    onlyRecent: true,
+    apiKey: props.apiKey.key
+  })
+    .then(unwrap);
 
 
-  if (
-    isErr(maybeSubscriptions) ||
-    isErr(maybeSchoolData) ||
-    isErr(maybeAdminshipRequests) ||
-    isErr(maybeAdminshipRequestResponses) ||
-    isErr(maybeInstructorCourseData) ||
-    isErr(maybeStudentCourseData)
-  ) {
-    throw Error;
-  }
+  const studentCourseData = await courseDataView({
+    courseId: courseMemberships.filter(cm => cm.courseMembershipKind == "STUDENT").map(cm => cm.course.courseId),
+    onlyRecent: true,
+    apiKey: props.apiKey.key
+  })
+    .then(unwrap);
+
 
   return {
-    subscription: maybeSubscriptions.length === 0 ? null : maybeSubscriptions[0],
-    schoolData: maybeSchoolData,
-    adminshipRequests: maybeAdminshipRequests,
-    adminshipRequestResponses: maybeAdminshipRequestResponses,
-    instructorCourseData: maybeInstructorCourseData,
-    studentCourseData: maybeStudentCourseData,
+    subscribed: subscriptions.length > 0,
+    schoolData,
+    instructorCourseData,
+    studentCourseData,
   }
 }
-
-const loadSchoolData = async (props: AsyncProps<SchoolData>) => {
-  const maybeSchoolData = await schoolDataView({
-    schoolId: props.schoolId,
-    onlyRecent: true,
-    apiKey: props.apiKey.key
-  });
-
-  if (isErr(maybeSchoolData) || maybeSchoolData.length === 0) {
-    throw Error;
-  } else {
-    return maybeSchoolData[0];
-  }
-}
-
 
 function Dashboard(props: AuthenticatedComponentProps) {
 
@@ -158,10 +137,7 @@ function Dashboard(props: AuthenticatedComponentProps) {
             </Async.Rejected>
             <Async.Fulfilled<DashboardData>>{ddata => <>
               {
-                ddata.subscription === null &&
-                  ddata.schoolData.length === 0 &&
-                  ddata.adminshipRequests.length === 0 &&
-                  ddata.adminshipRequestResponses.length === 0
+                !(ddata.subscribed || ddata.schoolData.length > 0)
                   ? <> </>
                   : <Section id="my_schools" name="My Schools">
                     <Form.Check
@@ -183,27 +159,8 @@ function Dashboard(props: AuthenticatedComponentProps) {
                             />
                           </div>
                         )}
-                      {ddata.adminshipRequestResponses
-                        .filter(arr => showHiddenSchools || arr.accepted)
-                        .map(arr =>
-                          <div className="my-3 mx-3">
-                            <AdminshipRequestResponseCard
-                              adminshipRequestResponse={arr}
-                              apiKey={props.apiKey}
-                              postSubmit={reloadDashboardData}
-                            />
-                          </div>
-                        )}
-                      {ddata.adminshipRequests
-                        .map(ar =>
-                          <div className="my-3 mx-3">
-                            <AdminshipRequestCard
-                              adminshipRequest={ar}
-                              apiKey={props.apiKey}
-                            />
-                          </div>
-                        )}
-                      {ddata.subscription === null
+
+                      {!ddata.subscribed
                         ? <> </>
                         : <div className="my-3 mx-3">
                           <AddNewCard setShow={setShowNewAdminshipModal} />
@@ -222,14 +179,7 @@ function Dashboard(props: AuthenticatedComponentProps) {
                                 />
                               </Tab>
                               <Tab title="Join School" eventKey="school_join" className="py-4">
-                                <UserCreateAdminshipRequest
-                                  hiddenSchoolIds={[
-                                    ...ddata.adminshipRequests.map(ar => ar.school.schoolId),
-                                    ...ddata.adminshipRequestResponses
-                                      .filter(arr => arr.accepted)
-                                      .map(arr => arr.adminshipRequest.school.schoolId),
-                                    ...ddata.schoolData.map(sd => sd.school.schoolId),
-                                  ]}
+                                <CreateAdminship
                                   apiKey={props.apiKey}
                                   postSubmit={() => {
                                     setShowNewAdminshipModal(false);

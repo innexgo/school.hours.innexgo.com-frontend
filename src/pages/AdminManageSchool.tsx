@@ -2,6 +2,7 @@ import { Container, Popover, Form, Table } from 'react-bootstrap';
 import DashboardLayout from '../components/DashboardLayout';
 import Loader from '../components/Loader';
 import AdminManageAdminships from '../components/AdminManageAdminships';
+import AdminManageSchoolKeys from '../components/AdminManageSchoolKeys'
 import UtilityWrapper from '../components/UtilityWrapper';
 import { ViewSchool, ViewUser } from '../components/ViewData';
 import AdminManageSchoolData from '../components/AdminManageSchoolData';
@@ -71,7 +72,7 @@ function AdminManageSchool(props: AuthenticatedComponentProps) {
             <div className="mx-3 my-3">
               <UtilityWrapper title="Administrator Requests">
                 <Popover id="information-tooltip"> Shows the current administrators of this school. </Popover>
-                <AdminManageAdminshipRequests school={school} apiKey={props.apiKey} />
+                <AdminManageSchoolKeys schoolId={school.schoolId} apiKey={props.apiKey} />
               </UtilityWrapper>
             </div>
 
@@ -99,7 +100,7 @@ function AdminManageSchool(props: AuthenticatedComponentProps) {
                           {data.map((cd: CourseData) =>
                             <tr>
                               <td>{cd.name}</td>
-                              <td><ViewUser user={cd.course.creator} apiKey={props.apiKey} expanded={false} /></td>
+                              <td><ViewUser userId={cd.course.creator} apiKey={props.apiKey} expanded={false} /></td>
                               <td>{format(cd.course.creationTime, "MMM do")}</td>
                               <th>
                                 <a href={`/instructor_manage_course?courseId=${cd.course.courseId}`} className="text-dark">

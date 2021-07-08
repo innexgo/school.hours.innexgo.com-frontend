@@ -12,7 +12,7 @@ import format from "date-fns/format";
 import { Async, AsyncProps } from 'react-async';
 import { courseMembershipView, CourseMembership, Committment, CommittmentResponse, CourseData, committmentView, committmentResponseView, courseDataView, } from '../utils/utils';
 
-import { isErr } from '@innexgo/frontend-common';
+import { unwrap } from '@innexgo/frontend-common';
 import { ApiKey } from '@innexgo/frontend-auth-api';
 
 
@@ -63,11 +63,11 @@ function InternalCourseViewStatsReport(props: InternalCourseViewStatsReportProps
                 data.courseMemberships.length === 0
                   ? <tr><td colSpan={3} className="text-center">No current members.</td></tr>
                   : data.courseMemberships.map((a: CourseMembership) => {
-                    let scr = data.committmentResponses.filter(cr => a.user.userId === cr.committment.attendee.userId);
-                    let sc = data.unrespondedCommittments.filter(c => a.user.userId === c.attendee.userId);
+                    let scr = data.committmentResponses.filter(cr => a.userId === cr.committment.attendeeUserId);
+                    let sc = data.unrespondedCommittments.filter(c => a.userId === c.attendeeUserId);
                     let presentCommittmentResponses = scr.filter(cr => cr.kind === "PRESENT");
                     return <tr>
-                      <td><ViewUser user={a.user} apiKey={props.apiKey} expanded={false} /></td>
+                      <td><ViewUser userId={a.userId} apiKey={props.apiKey} expanded={false} /></td>
                       <td>{format(a.creationTime, "MMM do")}</td>
                       <td>{scr.length}</td>
                       <td>{presentCommittmentResponses.length}</td>
@@ -95,52 +95,46 @@ type CourseViewStatsReportProps = {
   apiKey: ApiKey,
 }
 
-
-
-
 function CourseViewStatsReport(props: CourseViewStatsReportProps) {
   return <InternalCourseViewStatsReport
     courseId={props.courseId}
     apiKey={props.apiKey}
     loadMemberships={async (fprops: AsyncProps<CourseStatsReportData>) => {
-      const maybeCourseMemberships = await courseMembershipView({
-        courseMembershipKind: "STUDENT",
-        courseId: props.courseId,
+      const courseMemberships = await courseMembershipView({
+        courseMembershipKind: ["STUDENT"],
+        courseId: [props.courseId],
         onlyRecent: true,
         apiKey: props.apiKey.key
-      });
-      const maybeUnrespondedCommittments = await committmentView({
-        courseId: props.courseId,
+      })
+      .then(unwrap);
+      const unrespondedCommittments  = await committmentView({
+        courseId: [props.courseId],
         responded: false,
         minStartTime: fprops.minStartTime,
         apiKey: props.apiKey.key
-      });
-      const maybeCommittmentResponses = await committmentResponseView({
-        courseId: props.courseId,
+      })
+      .then(unwrap);
+
+      const committmentResponses  = await committmentResponseView({
+        courseId: [props.courseId],
         minStartTime: fprops.minStartTime,
         apiKey: props.apiKey.key
-      });
-      const maybeCourseData = await courseDataView({
-        courseId: props.courseId,
+      })
+      .then(unwrap);
+
+      const courseData = await courseDataView({
+        courseId: [props.courseId],
         onlyRecent: true,
         apiKey: props.apiKey.key
-      });
-      if (
-        isErr(maybeCourseMemberships) ||
-        isErr(maybeUnrespondedCommittments) ||
-        isErr(maybeCommittmentResponses) ||
-        isErr(maybeCourseData) ||
-        maybeCourseData.length == 0
-      ) {
-        throw Error;
-      } else {
+      })
+      .then(unwrap);
+
         return {
-          courseMemberships: maybeCourseMemberships,
-          unrespondedCommittments: maybeUnrespondedCommittments,
-          committmentResponses: maybeCommittmentResponses,
-          courseData: maybeCourseData[0],
-        };
-      }
+          courseMemberships,
+          unrespondedCommittments,
+          committmentResponses,
+          courseData: courseData[0],
+        }
     }}
   />
 }

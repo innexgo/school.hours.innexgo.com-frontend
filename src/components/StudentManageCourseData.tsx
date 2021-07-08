@@ -2,7 +2,7 @@ import React from 'react';
 import { Form, Button, Table } from 'react-bootstrap'; import Loader from '../components/Loader';
 import { Async, AsyncProps } from 'react-async';
 import DisplayModal from '../components/DisplayModal';
-import { CourseData, courseMembershipView, courseDataView, courseMembershipNewCancel } from '../utils/utils';
+import { CourseData, CourseMembership , courseMembershipView, courseDataView, courseMembershipNewCancel } from '../utils/utils';
 import { ViewUser } from '../components/ViewData';
 import { Cancel } from '@material-ui/icons';
 import { Formik, FormikHelpers } from 'formik'

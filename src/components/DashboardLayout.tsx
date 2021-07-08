@@ -2,6 +2,7 @@ import React from 'react';
 import { Dashboard, Event, Settings} from '@material-ui/icons';
 
 import InnerLayout from '../components/InnerLayout';
+import {AuthenticatedComponentProps } from '@innexgo/frontend-auth-api';
 
 export default function DashboardLayout(props: React.PropsWithChildren<AuthenticatedComponentProps>) {
   return (<InnerLayout name={props.apiKey.creator.name} logoutCallback={() => props.setApiKey(null)} >
