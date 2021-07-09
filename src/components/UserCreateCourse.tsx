@@ -1,14 +1,14 @@
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
 import { Button, Form } from "react-bootstrap";
-import { CourseData, schoolDataView, courseNew, normalizeCourseName} from "../utils/utils";
-import {isErr} from '@innexgo/frontend-common';
-import {ApiKey } from '@innexgo/frontend-auth-api';
+import { SchoolData, CourseData, schoolDataView, courseNew, normalizeCourseName, adminshipView } from "../utils/utils";
+import { isErr, unwrap } from '@innexgo/frontend-common';
+import { ApiKey } from '@innexgo/frontend-auth-api';
 
 import SearchSingleSchool from "../components/SearchSingleSchool";
 
 type UserCreateCourseProps = {
   apiKey: ApiKey;
-  postSubmit: (cd:CourseData) => void;
+  postSubmit: (cd: CourseData) => void;
 }
 
 function UserCreateCourse(props: UserCreateCourseProps) {
@@ -44,15 +44,15 @@ function UserCreateCourse(props: UserCreateCourseProps) {
       return;
     }
 
-    const maybeCourse = await courseNew({
+    const maybeCourseData = await courseNew({
       schoolId: values.schoolId!,
       description: values.description,
       name: values.name,
       apiKey: props.apiKey.key,
     });
 
-    if (isErr(maybeCourse)) {
-      switch (maybeCourse.Err) {
+    if (isErr(maybeCourseData)) {
+      switch (maybeCourseData.Err) {
         case "API_KEY_NONEXISTENT": {
           fprops.setStatus({
             failureResult: "You have been automatically logged out. Please relogin.",
@@ -83,7 +83,7 @@ function UserCreateCourse(props: UserCreateCourseProps) {
       successResult: "Course Created"
     });
     // execute callback
-    props.postSubmit(maybeCourse.Ok);
+    props.postSubmit(maybeCourseData.Ok);
   }
 
   return <>
@@ -109,14 +109,24 @@ function UserCreateCourse(props: UserCreateCourseProps) {
               <SearchSingleSchool
                 name="courseId"
                 search={async (input: string) => {
-                  const maybeSchoolData = await schoolDataView({
+
+                  const adminships = await adminshipView({
+                    userId: [props.apiKey.creator.userId],
+                    adminshipKind: ["ADMIN"],
+                    onlyRecent: true,
+                    apiKey: props.apiKey.key,
+                  })
+                    .then(unwrap);
+
+                  const schoolData = await schoolDataView({
+                    schoolId: adminships.map(a => a.school.schoolId),
                     partialName: input,
                     onlyRecent: true,
-                    recentAdminUserId: props.apiKey.creator.userId,
                     apiKey: props.apiKey.key,
-                  });
+                  })
+                    .then(unwrap);
 
-                  return isErr(maybeSchoolData) ? [] : maybeSchoolData;
+                  return schoolData;
 
                 }}
                 isInvalid={!!fprops.errors.schoolId}

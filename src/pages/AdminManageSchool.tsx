@@ -100,7 +100,7 @@ function AdminManageSchool(props: AuthenticatedComponentProps) {
                           {data.map((cd: CourseData) =>
                             <tr>
                               <td>{cd.name}</td>
-                              <td><ViewUser userId={cd.course.creator} apiKey={props.apiKey} expanded={false} /></td>
+                              <td><ViewUser userId={cd.course.creatorUserId} apiKey={props.apiKey} expanded={false} /></td>
                               <td>{format(cd.course.creationTime, "MMM do")}</td>
                               <th>
                                 <a href={`/instructor_manage_course?courseId=${cd.course.courseId}`} className="text-dark">

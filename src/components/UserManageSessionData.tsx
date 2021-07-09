@@ -9,7 +9,7 @@ import { Edit, Archive, Unarchive } from '@material-ui/icons';
 import { Formik, FormikHelpers } from 'formik'
 import format from 'date-fns/format';
 
-import { unwrap } from '@innexgo/frontend-common';
+import { isErr, unwrap } from '@innexgo/frontend-common';
 import { ApiKey } from '@innexgo/frontend-auth-api';
 
 type EditSessionDataProps = {
@@ -22,7 +22,6 @@ function EditSessionData(props: EditSessionDataProps) {
 
   type EditSessionDataValue = {
     name: string,
-    makePublic: boolean,
   }
 
   const onSubmit = async (values: EditSessionDataValue,
@@ -85,7 +84,6 @@ function EditSessionData(props: EditSessionDataProps) {
       onSubmit={onSubmit}
       initialValues={{
         name: props.sessionData.name,
-        makePublic: !props.sessionData.hidden
       }}
       initialStatus={{
         failureResult: "",
@@ -110,12 +108,6 @@ function EditSessionData(props: EditSessionDataProps) {
               />
               <Form.Control.Feedback type="invalid">{fprops.errors.name}</Form.Control.Feedback>
             </Form.Group>
-            <Form.Check
-              name="makePublic"
-              checked={fprops.values.makePublic}
-              onChange={fprops.handleChange}
-              label="Visible to all students"
-            />
             <br />
             <Button type="submit">Submit</Button>
             <br />
@@ -159,7 +151,7 @@ const UserManageSessionData = (props: {
           <tbody>
             <tr>
               <th>Time</th>
-              <td>{format(sessionData.startTime, "MMM do, h:mm a")} - {format(sessionData.startTime + sessionData.duration, "h:mm a")}</td>
+              <td>{format(sessionData.startTime, "MMM do, h:mm a")} - {format(sessionData.endTime, "h:mm a")}</td>
             </tr>
             <tr>
               <th>Name</th>
@@ -167,7 +159,7 @@ const UserManageSessionData = (props: {
             </tr>
             <tr>
               <th>Creator</th>
-              <td><ViewUser user={sessionData.session.creator} apiKey={props.apiKey} expanded={false} /></td>
+              <td><ViewUser userId={sessionData.session.creatorUserId} apiKey={props.apiKey} expanded={false} /></td>
             </tr>
             <tr>
               <th>Creation Time</th>
@@ -181,7 +173,6 @@ const UserManageSessionData = (props: {
           title="Edit Session"
           show={showEditSessionData}
           onClose={() => setShowEditSessionData(false)}
-          small
         >
           <EditSessionData
             sessionData={sessionData}

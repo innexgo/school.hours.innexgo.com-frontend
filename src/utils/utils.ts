@@ -280,7 +280,7 @@ interface CourseNewProps {
   apiKey: string,
 }
 
-export function courseNew(props: CourseNewProps): Promise<Result<Course, InnexgoHoursErrorCode>> {
+export function courseNew(props: CourseNewProps): Promise<Result<CourseData, InnexgoHoursErrorCode>> {
   return fetchApiOrNetworkError("innexgo_hours/course/new", props);
 }
 
@@ -345,7 +345,7 @@ interface SchoolNewProps {
   apiKey: string,
 }
 
-export function schoolNew(props: SchoolNewProps): Promise<Result<School, InnexgoHoursErrorCode>> {
+export function schoolNew(props: SchoolNewProps): Promise<Result<SchoolData, InnexgoHoursErrorCode>> {
   return fetchApiOrNetworkError("innexgo_hours/school/new", props);
 }
 
@@ -369,7 +369,7 @@ interface SchoolKeyNewProps {
   apiKey: string,
 }
 
-export function schoolKeyNew(props: SchoolKeyNewProps): Promise<Result<SchoolKey, InnexgoHoursErrorCode>> {
+export function schoolKeyNew(props: SchoolKeyNewProps): Promise<Result<SchoolKeyData, InnexgoHoursErrorCode>> {
   return fetchApiOrNetworkError("innexgo_hours/school_key/new", props);
 }
 
@@ -412,7 +412,7 @@ interface SessionNewProps {
   apiKey: string,
 }
 
-export function sessionNew(props: SessionNewProps): Promise<Result<Session, InnexgoHoursErrorCode>> {
+export function sessionNew(props: SessionNewProps): Promise<Result<SessionData, InnexgoHoursErrorCode>> {
   return fetchApiOrNetworkError("innexgo_hours/session/new", props);
 }
 

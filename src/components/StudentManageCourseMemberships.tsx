@@ -5,10 +5,10 @@ import { ViewUser, } from '../components/ViewData';
 import format from "date-fns/format";
 
 import { Async, AsyncProps } from 'react-async';
-import { CourseMembership, CourseMembershipKind, courseMembershipView} from '../utils/utils';
-import {isErr} from '@innexgo/frontend-common';
+import { CourseMembership, CourseMembershipKind, courseMembershipView } from '../utils/utils';
+import { isErr, unwrap } from '@innexgo/frontend-common';
 
-import {ApiKey} from '@innexgo/frontend-auth-api';
+import { ApiKey } from '@innexgo/frontend-auth-api';
 
 
 type InternalStudentManageCourseMembershipsProps = {
@@ -42,7 +42,7 @@ function InternalStudentManageCourseMemberships(props: InternalStudentManageCour
                   ? <tr><td colSpan={3} className="text-center">No current members.</td></tr>
                   : data.map((a: CourseMembership) =>
                     <tr>
-                      <td><ViewUser user={a.user} apiKey={props.apiKey} expanded={false} /></td>
+                      <td><ViewUser userId={a.userId} apiKey={props.apiKey} expanded={false} /></td>
                       <td>{format(a.creationTime, "MMM do")}</td>
                     </tr>
                   )}
@@ -69,20 +69,15 @@ function StudentManageCourseMemberships(props: StudentManageCourseMembershipsPro
   return <InternalStudentManageCourseMemberships
     courseId={props.courseId}
     apiKey={props.apiKey}
-    loadMemberships={async (_: AsyncProps<CourseMembership[]>) => {
-      const maybeCourseMemberships = await courseMembershipView({
-        courseId: props.courseId,
-        courseMembershipKind: props.courseMembershipKind,
+    loadMemberships={async (_: AsyncProps<CourseMembership[]>) =>
+      await courseMembershipView({
+        courseId: [props.courseId],
+        courseMembershipKind: [props.courseMembershipKind],
         onlyRecent: true,
         apiKey: props.apiKey.key
-      });
-
-      if (isErr(maybeCourseMemberships)) {
-        throw Error;
-      } else {
-        return maybeCourseMemberships;
-      }
-    }}
+      })
+        .then(unwrap)
+    }
   />
 }
 

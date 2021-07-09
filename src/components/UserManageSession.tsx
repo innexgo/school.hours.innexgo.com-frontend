@@ -1,4 +1,3 @@
-import React from "react";
 import { Async, AsyncProps } from 'react-async';
 import { Row, Col, Card, Tabs, Tab, Table, Form, Button, } from 'react-bootstrap';
 import { Formik, FormikHelpers, } from 'formik';
@@ -8,8 +7,8 @@ import { ViewSession, ViewUser, ViewSessionRequestResponse } from '../components
 import SearchMultiUser from '../components/SearchMultiUser';
 import { Committment, Session, CommittmentResponseKind, SessionRequestResponse, CommittmentResponse, committmentNew, committmentResponseView, committmentView, committmentResponseNew, courseMembershipView, sessionRequestResponseView } from '../utils/utils';
 
-import {isErr} from '@innexgo/frontend-common';
-import {User, ApiKey} from '@innexgo/frontend-auth-api';
+import { isErr, unwrap } from '@innexgo/frontend-common';
+import { userView, ApiKey } from '@innexgo/frontend-auth-api';
 
 type ManageSessionModalProps = {
   session: Session;
@@ -17,47 +16,38 @@ type ManageSessionModalProps = {
 }
 
 type UserManageSessionData = {
-  requestResponses: SessionRequestResponse[],
+  sessionRequestResponses: SessionRequestResponse[],
   committments: Committment[],
   committmentResponses: CommittmentResponse[]
 }
 
 const loadData = async (props: AsyncProps<UserManageSessionData>) => {
 
-  const maybeRequestResponses = await sessionRequestResponseView({
+  const sessionRequestResponses  = await sessionRequestResponseView({
     sessionId: props.session.sessionId,
     apiKey: props.apiKey.key
   })
+  .then(unwrap);
 
-  if (isErr(maybeRequestResponses)) {
-    throw Error;
-  }
 
-  const maybeCommittments = await committmentView({
+  const committments = await committmentView({
     sessionId: props.session.sessionId,
     responded: false,
     apiKey: props.apiKey.key
-  });
+  })
+  .then(unwrap);
 
 
-
-  if (isErr(maybeCommittments)) {
-    throw Error;
-  }
-
-
-  const maybeCommittmentResponses = await committmentResponseView({
+  const committmentResponses  = await committmentResponseView({
     sessionId: props.session.sessionId,
     apiKey: props.apiKey.key
-  });
+  })
+  .then(unwrap);
 
-  if (isErr(maybeCommittmentResponses)) {
-    throw Error;
-  }
   return {
-    requestResponses: maybeRequestResponses,
-    committments: maybeCommittments,
-    committmentResponses: maybeCommittmentResponses
+    sessionRequestResponses,
+    committments,
+    committmentResponses
   };
 }
 
@@ -87,17 +77,17 @@ function ManageSessionModal(props: ManageSessionModalProps) {
             </Card.Body>
           </Card>
           <br />
-          {data.requestResponses.length === 0 ? <> </> :
+          {data.sessionRequestResponses.length === 0 ? <> </> :
             <>
               <Card>
                 <Card.Body>
                   <Card.Title>Initial Response</Card.Title>
                   <Table>
-                  {data.requestResponses.map(srr =>
-                    <tr>
-                      <ViewSessionRequestResponse expanded={false} apiKey={props.apiKey} sessionRequestResponse={srr} />
-                    </tr>
-                  )}
+                    {data.sessionRequestResponses.map(srr =>
+                      <tr>
+                        <ViewSessionRequestResponse expanded={false} apiKey={props.apiKey} sessionRequestResponse={srr} />
+                      </tr>
+                    )}
                   </Table>
                 </Card.Body>
               </Card>
@@ -165,7 +155,7 @@ function ManageSessionModal(props: ManageSessionModalProps) {
                       <tbody>
                         {fprops.values.map((c: CreateCommittmentResponseValues, i: number) =>
                           <tr key={c.committment.committmentId}>
-                            <td><ViewUser expanded={false} apiKey={props.apiKey} user={c.committment.attendee} /></td>
+                            <td><ViewUser expanded={false} apiKey={props.apiKey} userId={c.committment.attendeeUserId} /></td>
                             <td>
                               <Form.Control
                                 as="select"
@@ -191,7 +181,7 @@ function ManageSessionModal(props: ManageSessionModalProps) {
                         )}
                         {
                           data.committmentResponses.map((cr: CommittmentResponse) => <tr>
-                            <td><ViewUser expanded={false} apiKey={props.apiKey} user={cr.committment.attendee} /></td>
+                            <td><ViewUser expanded={false} apiKey={props.apiKey} userId={cr.committment.attendeeUserId} /></td>
                             <td>{cr.kind}</td>
                           </tr>)
                         }
@@ -276,18 +266,21 @@ function ManageSessionModal(props: ManageSessionModalProps) {
                           name="studentList"
                           isInvalid={fprops.status.studentList !== ""}
                           search={async (input: string) => {
-                            const maybeCourseMemberships = await courseMembershipView({
-                              courseId: props.session.course.courseId,
-                              courseMembershipKind: "STUDENT",
-                              partialUserName: input,
+                            const courseMemberships = await courseMembershipView({
+                              courseId: [props.session.course.courseId],
+                              courseMembershipKind: ["STUDENT"],
                               onlyRecent: true,
                               apiKey: props.apiKey.key,
-                            });
-                            return isErr(maybeCourseMemberships)
-                              ? []
-                              : maybeCourseMemberships
-                                .map(cm => cm.user)
-                                .filter(u => !fprops.values.studentList.includes(u.userId))
+                            })
+                              .then(unwrap);
+
+                            const users = await userView({
+                              userId: courseMemberships.map(cm => cm.userId).filter(u => !fprops.values.studentList.includes(u)),
+                              partialUserName: input,
+                              apiKey: props.apiKey.key,
+                            }).then(unwrap);
+
+                            return users;
                           }}
                           setFn={e => fprops.setFieldValue("studentList", e.map(s => s.userId))} />
                         <Form.Text className="text-danger">{fprops.status.studentList}</Form.Text>

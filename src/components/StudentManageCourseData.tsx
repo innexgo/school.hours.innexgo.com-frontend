@@ -2,14 +2,14 @@ import React from 'react';
 import { Form, Button, Table } from 'react-bootstrap'; import Loader from '../components/Loader';
 import { Async, AsyncProps } from 'react-async';
 import DisplayModal from '../components/DisplayModal';
-import { CourseData, CourseMembership , courseMembershipView, courseDataView, courseMembershipNewCancel } from '../utils/utils';
+import { CourseData, CourseMembership, courseMembershipView, courseDataView, courseMembershipNewCancel } from '../utils/utils';
 import { ViewUser } from '../components/ViewData';
 import { Cancel } from '@material-ui/icons';
 import { Formik, FormikHelpers } from 'formik'
 import format from 'date-fns/format';
 
-import {isErr} from '@innexgo/frontend-common';
-import {ApiKey} from '@innexgo/frontend-auth-api';
+import { isErr, unwrap } from '@innexgo/frontend-common';
+import { ApiKey } from '@innexgo/frontend-auth-api';
 
 type LeaveCourseProps = {
   courseData: CourseData,
@@ -122,34 +122,28 @@ type CourseDataMembership = {
 }
 
 const loadCourseDataMembership = async (props: AsyncProps<CourseDataMembership>) => {
-  const maybeCourseData = await courseDataView({
+  const courseData = await courseDataView({
     courseId: props.courseId,
     onlyRecent: true,
     apiKey: props.apiKey.key
-  });
+  })
+    .then(unwrap);
 
-
-  const maybeCourseMemberships = await courseMembershipView({
+  const courseMemberships = await courseMembershipView({
     courseId: props.courseId,
     userId: props.apiKey.creator.userId,
     onlyRecent: true,
     apiKey: props.apiKey.key
-  });
-
-  if (isErr(maybeCourseData)
-    || maybeCourseData.length === 0
-    || isErr(maybeCourseMemberships)) {
-    throw Error;
-  } else {
-    return {
-      courseData: maybeCourseData[0],
-      courseMembership: maybeCourseMemberships.length === 0
-        ? null
-        : maybeCourseMemberships[0]
-    };
-  }
+  })
+    .then(unwrap);
 
 
+  return {
+    courseData: courseData[0],
+    courseMembership: courseMemberships.length === 0
+      ? null
+      : courseMemberships[0]
+  };
 }
 
 
@@ -186,7 +180,7 @@ const StudentManageCourseData = (props: {
             </tr>
             <tr>
               <th>Creator</th>
-              <td><ViewUser user={cdm.courseData.course.creator} apiKey={props.apiKey} expanded={false} /></td>
+              <td><ViewUser userId={cdm.courseData.course.creatorUserId} apiKey={props.apiKey} expanded={false} /></td>
             </tr>
             <tr>
               <th>Creation Time</th>
@@ -194,9 +188,9 @@ const StudentManageCourseData = (props: {
             </tr>
           </tbody>
         </Table>
-        { cdm.courseMembership != null && cdm.courseMembership.courseMembershipKind == "STUDENT"
-            ? <Button variant="danger" onClick={_ => setShowLeaveCourse(true)}>Leave <Cancel /></Button>
-            : <> </>
+        {cdm.courseMembership != null && cdm.courseMembership.courseMembershipKind == "STUDENT"
+          ? <Button variant="danger" onClick={_ => setShowLeaveCourse(true)}>Leave <Cancel /></Button>
+          : <> </>
         }
         <DisplayModal
           title="Leave Course"

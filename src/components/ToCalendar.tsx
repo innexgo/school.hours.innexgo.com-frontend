@@ -1,4 +1,6 @@
 import { EventInput } from '@fullcalendar/react';
+import { SessionData, CourseData, Committment, CommittmentResponse, SessionRequest, SessionRequestResponse, CourseMembership, CourseMembershipKind } from '../utils/utils';
+import { ApiKey, User } from '@innexgo/frontend-auth-api';
 
 export const sessionToEvent = (props: {
   sessionData: SessionData,
@@ -9,7 +11,7 @@ export const sessionToEvent = (props: {
 }): EventInput => ({
   id: `Session:${props.sessionData.session.sessionId}`,
   start: new Date(props.sessionData.startTime),
-  end: new Date(props.sessionData.startTime + props.sessionData.duration),
+  end: new Date(props.sessionData.endTime),
   color: "#00000000",
   borderColor: "#00000000",
   extendedProps: props
@@ -18,39 +20,43 @@ export const sessionToEvent = (props: {
 export const sessionRequestToEvent = (props: {
   sessionRequest: SessionRequest,
   courseData: CourseData,
+  creator: User,
   relation: CourseMembershipKind
 }): EventInput => ({
   id: `SessionRequest:${props.sessionRequest.sessionRequestId}`,
   start: new Date(props.sessionRequest.startTime),
-  end: new Date(props.sessionRequest.startTime + props.sessionRequest.duration),
+  end: new Date(props.sessionRequest.endTime),
   color: "#00000000",
   borderColor: "#00000000",
   extendedProps: props
 })
 
-export const sessionRequestResponseToEvent = (props: {
+export const acceptedSessionRequestResponseToEvent = (props: {
   sessionRequestResponse: SessionRequestResponse,
   courseData: CourseData,
-  sessionData?: SessionData,
+  sessionData: SessionData,
   relation: CourseMembershipKind
-}): EventInput =>
-  props.sessionRequestResponse.accepted
-    ? {
-      id: `SessionRequestResponse:${props.sessionRequestResponse.sessionRequest.sessionRequestId}`,
-      start: new Date(props.sessionData!.startTime),
-      end: new Date(props.sessionData!.startTime + props.sessionData!.duration),
-      color: "#00000000",
-      borderColor: "#00000000",
-      extendedProps: props
-    }
-    : {
-      id: `SessionRequestResponse:${props.sessionRequestResponse.sessionRequest.sessionRequestId}`,
-      start: new Date(props.sessionRequestResponse.sessionRequest.startTime),
-      end: new Date(props.sessionRequestResponse.sessionRequest.startTime + props.sessionRequestResponse.sessionRequest.duration),
-      color: "#00000000",
-      borderColor: "#00000000",
-      extendedProps: props
-    }
+}): EventInput => ({
+  id: `SessionRequestResponse:${props.sessionRequestResponse.sessionRequest.sessionRequestId}`,
+  start: new Date(props.sessionData!.startTime),
+  end: new Date(props.sessionData!.endTime),
+  color: "#00000000",
+  borderColor: "#00000000",
+  extendedProps: props
+})
+
+export const rejectedSessionRequestResponseToEvent = (props: {
+  sessionRequestResponse: SessionRequestResponse,
+  courseData: CourseData,
+  relation: CourseMembershipKind
+}): EventInput => ({
+  id: `SessionRequestResponse:${props.sessionRequestResponse.sessionRequest.sessionRequestId}`,
+  start: new Date(props.sessionRequestResponse.sessionRequest.startTime),
+  end: new Date(props.sessionRequestResponse.sessionRequest.endTime),
+  color: "#00000000",
+  borderColor: "#00000000",
+  extendedProps: props
+})
 
 export const committmentToEvent = (props: {
   committment: Committment,
@@ -60,7 +66,7 @@ export const committmentToEvent = (props: {
 }): EventInput => ({
   id: `Committment:${props.committment.committmentId}`,
   start: new Date(props.sessionData.startTime),
-  end: new Date(props.sessionData.startTime + props.sessionData.duration),
+  end: new Date(props.sessionData.endTime),
   color: "#00000000",
   borderColor: "#00000000",
   extendedProps: props
@@ -69,11 +75,12 @@ export const committmentToEvent = (props: {
 export const committmentResponseToEvent = (props: {
   committmentResponse: CommittmentResponse,
   sessionData: SessionData,
-  relation: CourseMembershipKind
+  attendee: User,
+  relation: CourseMembershipKind,
 }): EventInput => ({
   id: `CommittmentResponse:${props.committmentResponse.committment.committmentId}`,
   start: new Date(props.sessionData.startTime),
-  end: new Date(props.sessionData.startTime + props.sessionData.duration),
+  end: new Date(props.sessionData.endTime),
   color: "#00000000",
   borderColor: "#00000000",
   extendedProps: props

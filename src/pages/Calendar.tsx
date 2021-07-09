@@ -1,19 +1,19 @@
 import React from 'react'
 import { Async, AsyncProps } from 'react-async';
 import Loader from '../components/Loader';
-import FullCalendar, { EventInput, DateSelectArg, EventClickArg } from '@fullcalendar/react'
+import FullCalendar, { DateSelectArg, EventClickArg } from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import DashboardLayout from '../components/DashboardLayout';
 import CalendarCard from '../components/CalendarCard';
 
-import {isErr} from '@innexgo/frontend-common';
-import {ApiKey, AuthenticatedComponentProps} from '@innexgo/frontend-auth-api';
+import { unwrap } from '@innexgo/frontend-common';
+import { userView, ApiKey, AuthenticatedComponentProps } from '@innexgo/frontend-auth-api';
 
 import { Tab, Tabs, Form, Popover, Container, Row, Col, Card } from 'react-bootstrap';
 import { Session, SessionData, SessionRequest, SessionRequestResponse, CourseMembership, CourseData, Committment, CommittmentResponse } from '../utils/utils';
 import { sessionDataView, sessionRequestView, courseMembershipView } from '../utils/utils';
-import { sessionRequestResponseView , committmentView, courseDataView, committmentResponseView } from '../utils/utils';
+import { sessionRequestResponseView, committmentView, courseDataView, committmentResponseView } from '../utils/utils';
 
 import { ViewSession, ViewSessionRequestResponse, ViewCommittment, ViewCommittmentResponse } from '../components/ViewData';
 
@@ -25,14 +25,15 @@ import UserReviewSessionRequest from '../components/UserReviewSessionRequest';
 import UserManageSession from '../components/UserManageSession';
 import StudentManageSessionRequest from '../components/StudentManageSessionRequest';
 import DisplayModal from '../components/DisplayModal';
-import { sessionToEvent, sessionRequestToEvent, sessionRequestResponseToEvent, committmentToEvent, committmentResponseToEvent } from '../components/ToCalendar';
+import { sessionToEvent, sessionRequestToEvent, rejectedSessionRequestResponseToEvent, acceptedSessionRequestResponseToEvent, committmentToEvent, committmentResponseToEvent } from '../components/ToCalendar';
 
 type EventCalendarProps = {
   apiKey: ApiKey,
   showAllHours: boolean,
   showHiddenEvents: boolean,
-  instructorCourseDatas: CourseData[]
-  studentCourseDatas: CourseData[]
+  instructorCourseDatas: CourseData[],
+  studentCourseDatas: CourseData[],
+  courseMemberships: CourseMembership[],
 }
 
 // TODO make it so that selected data and selected modals are equivalent
@@ -70,235 +71,204 @@ function EventCalendar(props: EventCalendarProps) {
     }) => {
 
 
-    const maybeSessionRequests = await sessionRequestView({
-      creatorUserId: props.apiKey.creator.userId,
+    const sessionRequests = await sessionRequestView({
+      creatorUserId: [props.apiKey.creator.userId],
+      courseId: props.studentCourseDatas.map(cd => cd.course.courseId),
       minStartTime: args.start.valueOf(),
       maxStartTime: args.end.valueOf(),
       responded: false,
       apiKey: props.apiKey.key
-    });
+    })
+      .then(unwrap);
 
-    const maybeSessionRequestResponses = await sessionRequestResponseView({
-      attendeeUserId: props.apiKey.creator.userId,
+    const rejectedSessionRequestResponses = await sessionRequestResponseView({
+      attendeeUserId: [props.apiKey.creator.userId],
+      courseId: props.studentCourseDatas.map(cd => cd.course.courseId),
       minStartTime: args.start.valueOf(),
       maxStartTime: args.end.valueOf(),
       accepted: false,
       apiKey: props.apiKey.key
-    });
+    })
+      .then(unwrap);
 
-    const maybeCommittments = await committmentView({
-      attendeeUserId: props.apiKey.creator.userId,
+    const acceptedSessionRequestResponses = await sessionRequestResponseView({
+      attendeeUserId: [props.apiKey.creator.userId],
+      courseId: props.studentCourseDatas.map(cd => cd.course.courseId),
+      minStartTime: args.start.valueOf(),
+      maxStartTime: args.end.valueOf(),
+      accepted: true,
+      apiKey: props.apiKey.key
+    })
+      .then(unwrap);
+
+    const committments = await committmentView({
+      attendeeUserId: [props.apiKey.creator.userId],
+      courseId: props.studentCourseDatas.map(cd => cd.course.courseId),
       minStartTime: args.start.valueOf(),
       maxStartTime: args.end.valueOf(),
       fromRequestResponse: false,
       responded: false,
       apiKey: props.apiKey.key
-    });
+    })
+      .then(unwrap);
 
-    const maybeCommittmentResponses = await committmentResponseView({
-      attendeeUserId: props.apiKey.creator.userId,
+
+    const committmentResponses = await committmentResponseView({
+      attendeeUserId: [props.apiKey.creator.userId],
+      courseId: props.studentCourseDatas.map(cd => cd.course.courseId),
       minStartTime: args.start.valueOf(),
       maxStartTime: args.end.valueOf(),
       apiKey: props.apiKey.key
-    });
+    })
+      .then(unwrap);
+
+    // many of these need session data, which we grab now
+    const sessionData = await sessionDataView({
+      sessionId: [
+        ...acceptedSessionRequestResponses.map(x => x.committment!.session.sessionId),
+        ...committments.map(x => x.session.sessionId),
+        ...committmentResponses.map(x => x.committment.session.sessionId),
+      ],
+      onlyRecent: true,
+      apiKey: props.apiKey.key
+    })
+      .then(unwrap);
 
     // note that we mark these with "STUDENT" to show that these are existing in our student capacity
     const studentEvents = [
-      ...isErr(maybeSessionRequests)
-        ? []
-        : maybeSessionRequests.Ok
-          .map(x => {
-            const courseData = props.activeCourseDatas
-              .find(cd => cd.course.courseId === x.course.courseId);
-            // means that course is hidden
-            if (courseData === undefined) {
-              return null;
-            }
-            return sessionRequestToEvent({
-              sessionRequest: x,
-              courseData: courseData,
-              relation: "STUDENT"
-            });
-          })
-          // remove nulls
-          .filter((x): x is EventInput => x !== null)
-      ,
+      ...sessionRequests
+        // match with a course
+        .map(sr => ({ sr, cd: props.studentCourseDatas.find(cd => cd.course.courseId === sr.course.courseId)! }))
+        // map to event
+        .map(({ sr, cd }) =>
+          sessionRequestToEvent({
+            sessionRequest: sr,
+            courseData: cd!,
+            relation: "STUDENT",
+            creator: props.apiKey.creator,
+          })),
 
-      ...isErr(maybeSessionRequestResponses)
-        ? []
-        : (await Promise.all(maybeSessionRequestResponses.Ok
-          // hide things you cancelled yourself
-          .filter(x => x.creatorUserId !== props.apiKey.creator.userId|| props.showHiddenEvents)
-          .map(async x => {
-            const courseData = props.activeCourseDatas
-              .find(cd => cd.course.courseId === x.sessionRequest.course.courseId);
-            // means that course is hidden
-            if (courseData === undefined) {
-              return null;
-            }
+      ...rejectedSessionRequestResponses
+        // hide things you cancelled yourself
+        .filter(x => x.creatorUserId !== props.apiKey.creator.userId || props.showHiddenEvents)
+        // match with a course
+        .map(srr => ({ srr, cd: props.studentCourseDatas.find(cd => cd.course.courseId === srr.sessionRequest.course.courseId)! }))
+        // map to event
+        .map(({ srr, cd }) => rejectedSessionRequestResponseToEvent({
+          sessionRequestResponse: srr,
+          courseData: cd!,
+          relation: "STUDENT"
+        })),
 
-            if (!x.committment) {
-              return sessionRequestResponseToEvent({
-                sessionRequestResponse: x,
-                courseData: courseData,
-                relation: "STUDENT"
-              });
-            }
+      ...acceptedSessionRequestResponses
+        // match with a course
+        .map(srr => ({ srr, cd: props.studentCourseDatas.find(cd => cd.course.courseId === srr.sessionRequest.course.courseId)! }))
+        // match with a session
+        .map(({ srr, cd }) => ({ srr, cd, sd: sessionData.find(sd => sd.session.sessionId === srr.committment!.session.sessionId)! }))
+        // map to event
+        .map(({ srr, cd, sd }) => acceptedSessionRequestResponseToEvent({
+          sessionRequestResponse: srr,
+          courseData: cd,
+          sessionData: sd,
+          relation: "STUDENT"
+        })),
 
-            // if accepted, we need to get the location of the committment
-            const maybeSessionData = await sessionDataView({
-              sessionId: x.committment.session.sessionId,
-              onlyRecent: true,
-              apiKey: props.apiKey.key
-            });
-            if (isErr(maybeSessionData)) {
-              return null;
-            }
 
-            // we have an invariant that any session must have at least one session data, so its ok
-            return sessionRequestResponseToEvent({
-              sessionRequestResponse: x,
-              sessionData: maybeSessionData.Ok[0],
-              courseData: courseData,
-              relation: "STUDENT"
-            });
-          })))
-          // remove nulls
-          .filter((x): x is EventInput => x !== null)
-      ,
+      ...committments
+        // match with a course
+        .map(c => ({ c, cd: props.studentCourseDatas.find(cd => cd.course.courseId === c.session.course.courseId)! }))
+        // match with a session
+        .map(({ c, cd }) => ({ c, cd, sd: sessionData.find(sd => sd.session.sessionId === c.session.sessionId)! }))
+        // map to event
+        .map(({ c, cd, sd }) => committmentToEvent({
+          committment: c,
+          courseData: cd,
+          sessionData: sd,
+          relation: "STUDENT"
+        })),
 
-      ...isErr(maybeCommittments)
-        ? []
-        : (await Promise.all(maybeCommittments.Ok
-          .map(async x => {
-            const courseData = props.activeCourseDatas
-              .find(cd => cd.course.courseId === x.session.course.courseId);
-            // means that course is hidden
-            if (courseData === undefined) {
-              return null;
-            }
-
-            const maybeSessionData = await sessionDataView({
-              sessionId: x.session.sessionId,
-              onlyRecent: true,
-              apiKey: props.apiKey.key
-            });
-
-            if (isErr(maybeSessionData)) {
-              return null;
-            }
-
-            // we have an invariant that any session must have at least one session data, so its ok
-            return committmentToEvent({
-              committment: x,
-              sessionData: maybeSessionData.Ok[0],
-              courseData: courseData,
-              relation: "STUDENT"
-            });
-          })))
-          .filter((x): x is EventInput => x !== null)
-      ,
-
-      ...isErr(maybeCommittmentResponses)
-        ? []
-        : (await Promise.all(maybeCommittmentResponses.Ok
-          .map(async x => {
-            const courseData = props.activeCourseDatas
-              .find(cd => cd.course.courseId === x.committment.session.course.courseId);
-            // means that course is hidden
-            if (courseData === undefined) {
-              return null;
-            }
-
-            const maybeSessionData = await sessionDataView({
-              sessionId: x.committment.session.sessionId,
-              onlyRecent: true,
-              apiKey: props.apiKey.key
-            });
-
-            if (isErr(maybeSessionData)) {
-              return null;
-            }
-
-            // we have an invariant that any session must have at least one session data, so its ok
-            return committmentResponseToEvent({
-              committmentResponse: x,
-              sessionData: maybeSessionData.Ok[0],
-              relation: "STUDENT"
-            });
-          })))
-          .filter((x): x is EventInput => x !== null)
-      ,
-
+      ...committmentResponses
+        // match with a session
+        .map(cr => ({ cr, sd: sessionData.find(sd => sd.session.sessionId === cr.committment.session.sessionId)! }))
+        // map to event
+        .map(({ cr, sd }) => committmentResponseToEvent({
+          committmentResponse: cr,
+          attendee: props.apiKey.creator,
+          sessionData: sd,
+          relation: "STUDENT"
+        })),
     ];
 
-    const instructorEvents = // promise all waits on an array of promises
-      (await Promise.all(props.courseMemberships
-        .filter(x => x.courseMembershipKind === "INSTRUCTOR")
-        .map(async (x: CourseMembership) => {
-          // for each membership i have:
 
-          // if no matches
-          const courseData = props.activeCourseDatas.find(cd => cd.course.courseId === x.course.courseId);
-          if (courseData === undefined) {
-            return [];
-          }
+    const iSessionData = await sessionDataView({
+      courseId: props.instructorCourseDatas.map(cd => cd.course.courseId),
+      minStartTime: args.start.valueOf(),
+      maxStartTime: args.end.valueOf(),
+      onlyRecent: true,
+      active: true,
+      apiKey: props.apiKey.key,
+    })
+      .then(unwrap);
 
-          const maybeSessionData = await sessionDataView({
-            courseId: x.course.courseId,
-            minStartTime: args.start.valueOf(),
-            maxStartTime: args.end.valueOf(),
-            onlyRecent: true,
-            active: true,
-            apiKey: props.apiKey.key,
-          });
+    const iSessionRequests = await sessionRequestView({
+      courseId: props.instructorCourseDatas.map(cd => cd.course.courseId),
+      minStartTime: args.start.valueOf(),
+      maxStartTime: args.end.valueOf(),
+      responded: false,
+      apiKey: props.apiKey.key
+    })
+      .then(unwrap);
 
-          const maybeSessionRequests = await sessionRequestView({
-            courseId: x.course.courseId,
-            minStartTime: args.start.valueOf(),
-            maxStartTime: args.end.valueOf(),
-            responded: false,
-            apiKey: props.apiKey.key
-          });
+    const iRejectedSessionRequestResponses = await sessionRequestResponseView({
+      courseId: props.instructorCourseDatas.map(cd => cd.course.courseId),
+      minStartTime: args.start.valueOf(),
+      maxStartTime: args.end.valueOf(),
+      accepted: false,
+      apiKey: props.apiKey.key,
+    })
+      .then(unwrap);
 
-          const maybeSessionRequestResponses = await sessionRequestResponseView({
-            courseId: x.course.courseId,
-            minStartTime: args.start.valueOf(),
-            maxStartTime: args.end.valueOf(),
-            accepted: false,
-            apiKey: props.apiKey.key,
-          });
-          console.log(maybeSessionRequestResponses);
-          // return an array made out of each session / session request converted to a calendar event
-          // note that we mark these with "INSTRUCTOR" to show that these are existing in our instructor capacity
-          return [
-            ...isErr(maybeSessionRequests)
-              ? []
-              : maybeSessionRequests.Ok.map(x => sessionRequestToEvent({
-                sessionRequest: x,
-                courseData: courseData,
-                relation: "INSTRUCTOR"
-              })),
-            ...isErr(maybeSessionData)
-              ? []
-              : maybeSessionData.Ok.map(x => sessionToEvent({
-                sessionData: x,
-                relation: "INSTRUCTOR",
-                apiKey:props.apiKey,
-                muted:false,
-                permitted:true
-              })),
-              ...isErr(maybeSessionRequestResponses)
-              ? []
-              : maybeSessionRequestResponses.Ok
-                  .filter(_ => props.showHiddenEvents)
-                  .map(x => sessionRequestResponseToEvent({
-                    sessionRequestResponse: x,
-                    courseData: courseData,
-                    relation: "INSTRUCTOR"
-              })),
-          ];
-        }))).flat();
+    // fetch the session requesters
+    const sessionRequesters = await userView({
+      userId: iSessionRequests.map(sr => sr.creatorUserId),
+      apiKey: props.apiKey.key,
+    })
+      .then(unwrap);
+
+
+    const instructorEvents = [
+      ...iSessionData
+        .map(sd => sessionToEvent({
+          sessionData: sd,
+          relation: "INSTRUCTOR",
+          apiKey: props.apiKey,
+          muted: false,
+          permitted: true
+        })),
+
+      ...iSessionRequests
+        // match with a course
+        .map(sr => ({ sr, cd: props.studentCourseDatas.find(cd => cd.course.courseId === sr.course.courseId)! }))
+        // match with a user
+        .map(({ sr, cd }) => ({ sr, cd, u: sessionRequesters.find(u => u.userId === sr.creatorUserId)! }))
+        .map(({ sr, cd, u }) => sessionRequestToEvent({
+          sessionRequest: sr,
+          courseData: cd,
+          creator: u,
+          relation: "INSTRUCTOR"
+        })),
+
+      ...iRejectedSessionRequestResponses
+        // hide if show all not enabled
+        .filter(_ => props.showHiddenEvents)
+        // match with a course
+        .map(srr => ({ srr, cd: props.studentCourseDatas.find(cd => cd.course.courseId === srr.sessionRequest.course.courseId)! }))
+        .map(({ srr, cd }) => rejectedSessionRequestResponseToEvent({
+          sessionRequestResponse: srr,
+          courseData: cd,
+          relation: "INSTRUCTOR"
+        })),
+    ];
 
     return [...studentEvents, ...instructorEvents];
   }
@@ -523,31 +493,39 @@ function EventCalendar(props: EventCalendarProps) {
   </>
 }
 
-const loadCourseMemberships = async (props: AsyncProps<CourseMembership[]>) => {
-  const maybeCourseMembership = await courseMembershipView({
+type CalendarCourseData = {
+  courseMemberships: CourseMembership[],
+  studentCourseDatas: CourseData[],
+  instructorCourseDatas: CourseData[]
+}
+
+const loadCalendarCourseData = async (props: AsyncProps<CalendarCourseData>) => {
+  const courseMemberships = await courseMembershipView({
     userId: props.apiKey.creatorUserId,
     onlyRecent: true,
     apiKey: props.apiKey.key,
-  });
-  if (isErr(maybeCourseMembership)) {
-    throw Error;
-  }
-  return maybeCourseMembership;
-}
+  })
+    .then(unwrap);
 
-
-const loadCourseData = async (props: AsyncProps<CourseData[]>) => {
-  const maybeCourseData = await courseDataView({
-    recentMemberUserId: props.apiKey.creator.userId,
+  const instructorCourseDatas = await courseDataView({
+    courseId: courseMemberships.filter(cm => cm.courseMembershipKind === "INSTRUCTOR").map(cm => cm.course.courseId),
     onlyRecent: true,
     apiKey: props.apiKey.key,
-  });
+  })
+    .then(unwrap);
 
-  if (isErr(maybeCourseData)) {
-    throw Error;
-  }
-  // there's an invariant that there must always be one course data per valid course id
-  return maybeCourseData;
+  const studentCourseDatas = await courseDataView({
+    courseId: courseMemberships.filter(cm => cm.courseMembershipKind === "STUDENT").map(cm => cm.course.courseId),
+    onlyRecent: true,
+    apiKey: props.apiKey.key,
+  })
+    .then(unwrap);
+
+  return {
+    courseMemberships,
+    studentCourseDatas,
+    instructorCourseDatas,
+  };
 }
 
 
@@ -564,14 +542,14 @@ function CalendarWidget(props: AuthenticatedComponentProps) {
       You can click any date to add an appointment on that date,
       or click an existing appointment to delete it.
     </Popover>
-    <Async promiseFn={loadCourseData} apiKey={props.apiKey}>
+    <Async promiseFn={loadCalendarCourseData} apiKey={props.apiKey}>
       <Async.Pending>
         <Loader />
       </Async.Pending>
       <Async.Rejected>
         <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
       </Async.Rejected>
-      <Async.Fulfilled<CourseData[]>>{cds =>
+      <Async.Fulfilled<CalendarCourseData>>{ccd =>
         <Row>
           <Col sm>
             <Card className="my-3 mx-3">
@@ -587,44 +565,35 @@ function CalendarWidget(props: AuthenticatedComponentProps) {
                   onChange={_ => setShowHiddenEvents(!showHiddenEvents)}
                   label="Show Hidden Events"
                 />
-                {cds.length === 0
+                {ccd.courseMemberships.length === 0
                   ? <> </>
                   : <Card.Subtitle className="my-2"> Hide Courses </Card.Subtitle>
                 }
-                {cds.map((cd: CourseData) =>
-                  <Form.Check
-                    checked={hiddenCourses.includes(cd.course.courseId)}
-                    onChange={_ => setHiddenCourses(
-                      hiddenCourses.includes(cd.course.courseId)
-                        // if its included, remove it
-                        ? hiddenCourses.filter(ci => ci !== cd.course.courseId)
-                        // if its not included, disinclude it
-                        : [...hiddenCourses, cd.course.courseId]
-                    )}
-                    label={`Hide ${cd.name}`}
-                  />)}
+                {[...ccd.studentCourseDatas, ...ccd.instructorCourseDatas]
+                  .map((cd: CourseData) =>
+                    <Form.Check
+                      checked={hiddenCourses.includes(cd.course.courseId)}
+                      onChange={_ => setHiddenCourses(
+                        hiddenCourses.includes(cd.course.courseId)
+                          // if its included, remove it
+                          ? hiddenCourses.filter(ci => ci !== cd.course.courseId)
+                          // if its not included, disinclude it
+                          : [...hiddenCourses, cd.course.courseId]
+                      )}
+                      label={`Hide ${cd.name}`}
+                    />)}
               </Card.Body>
             </Card>
           </Col>
           <Col lg={10}>
-            <Async promiseFn={loadCourseMemberships} apiKey={props.apiKey}>
-              <Async.Pending>
-                <Loader />
-              </Async.Pending>
-              <Async.Rejected>
-                <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
-              </Async.Rejected>
-              <Async.Fulfilled<CourseMembership[]>>{cms =>
-                <EventCalendar
-                  activeCourseDatas={cds.filter(cm => !hiddenCourses.includes(cm.course.courseId))}
-                  apiKey={props.apiKey}
-                  showAllHours={showAllHours}
-                  showHiddenEvents={showHiddenEvents}
-                  courseMemberships={cms}
-                />
-              }
-              </Async.Fulfilled>
-            </Async>
+            <EventCalendar
+              apiKey={props.apiKey}
+              showAllHours={showAllHours}
+              showHiddenEvents={showHiddenEvents}
+              courseMemberships={ccd.courseMemberships}
+              studentCourseDatas={ccd.studentCourseDatas.filter(cm => !hiddenCourses.includes(cm.course.courseId))}
+              instructorCourseDatas={ccd.instructorCourseDatas.filter(cm => !hiddenCourses.includes(cm.course.courseId))}
+            />
           </Col>
         </Row>}
       </Async.Fulfilled>

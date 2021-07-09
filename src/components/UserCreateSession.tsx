@@ -3,10 +3,10 @@ import SearchSingleCourse from '../components/SearchSingleCourse';
 import { Formik, FormikHelpers } from 'formik';
 
 import { Row, Col, Button, Form } from 'react-bootstrap';
-import { CourseData, sessionNew, committmentNew, courseMembershipView, courseDataView} from '../utils/utils';
+import { CourseData, sessionNew, committmentNew, courseMembershipView, courseDataView } from '../utils/utils';
 import format from 'date-fns/format';
-import {isErr} from '@innexgo/frontend-common';
-import {ApiKey, User} from '@innexgo/frontend-auth-api';
+import { isErr, unwrap } from '@innexgo/frontend-common';
+import { ApiKey, userView } from '@innexgo/frontend-auth-api';
 
 type CreateSessionProps = {
   start: number;
@@ -19,7 +19,6 @@ function CreateSession(props: CreateSessionProps) {
   type CreateSessionValue = {
     name: string,
     courseId: number | null,
-    makePublic: boolean,
     studentList: number[],
   }
 
@@ -38,7 +37,7 @@ function CreateSession(props: CreateSessionProps) {
       return;
     }
 
-    const maybeSession = await sessionNew({
+    const maybeSessionData = await sessionNew({
       name: sessionName,
       courseId: values.courseId,
       startTime: props.start,
@@ -46,8 +45,8 @@ function CreateSession(props: CreateSessionProps) {
       apiKey: props.apiKey.key,
     });
 
-    if (isErr(maybeSession)) {
-      switch (maybeSession.Err) {
+    if (isErr(maybeSessionData)) {
+      switch (maybeSessionData.Err) {
         case "API_KEY_NONEXISTENT": {
           setStatus({
             studentList: "",
@@ -84,11 +83,11 @@ function CreateSession(props: CreateSessionProps) {
       return;
     }
 
-    let session = maybeSession.Ok;
+    let sessionData = maybeSessionData.Ok;
 
     for (const studentId of values.studentList) {
       const maybeCommittment = await committmentNew({
-        sessionId: session.sessionId,
+        sessionId: sessionData.session.sessionId,
         attendeeUserId: studentId,
         apiKey: props.apiKey.key
       });
@@ -191,14 +190,25 @@ function CreateSession(props: CreateSessionProps) {
               <SearchSingleCourse
                 name="courseId"
                 search={async (input: string) => {
-                 const maybeCourseData = await courseDataView({
-                    recentMemberUserId: props.apiKey.creator.userId,
+
+                  // get memberships in which i am a teacher
+                  const courseMemberships = await courseMembershipView({
+                    userId: [props.apiKey.creator.userId],
+                    courseMembershipKind: ["INSTRUCTOR"],
+                    onlyRecent: true,
+                    apiKey: props.apiKey.key,
+                  })
+                    .then(unwrap);
+
+                  const courseData = await courseDataView({
+                    courseId: courseMemberships.map(cm => cm.course.courseId),
                     partialName: input,
                     onlyRecent: true,
                     apiKey: props.apiKey.key,
-                  });
+                  })
+                    .then(unwrap);
 
-                  return isErr(maybeCourseData) ? [] : maybeCourseData;
+                  return courseData;
                 }}
                 isInvalid={fprops.status.courseId !== ""}
                 setFn={(e: CourseData | null) => {
@@ -232,18 +242,20 @@ function CreateSession(props: CreateSessionProps) {
                 disabled={fprops.values.courseId == null}
                 isInvalid={fprops.status.studentList !== ""}
                 search={async (input: string) => {
-                  const maybeCourseMemberships = await courseMembershipView({
+                  const courseMemberships = await courseMembershipView({
                     courseId: [fprops.values.courseId!],
                     courseMembershipKind: ["STUDENT"],
-                    partialUserName: input,
-                    onlyRecent:true,
+                    onlyRecent: true,
                     apiKey: props.apiKey.key,
-                  });
-                  return isErr(maybeCourseMemberships)
-                    ? []
-                    : maybeCourseMemberships
-                        .map(cm => cm.user)
-                        .filter(u => !fprops.values.studentList.includes(u.userId))
+                  }).then(unwrap);
+
+                  const users = await userView({
+                    userId: courseMemberships.map(cm => cm.userId).filter(u => !fprops.values.studentList.includes(u)),
+                    partialUserName: input,
+                    apiKey: props.apiKey.key,
+                  }).then(unwrap);
+
+                  return users;
                 }}
                 setFn={e => {
                   fprops.setFieldValue("studentList", e.map(s => s.userId));

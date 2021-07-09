@@ -3,9 +3,9 @@ import { Async, AsyncProps } from 'react-async';
 import { Table } from 'react-bootstrap';
 import Loader from '../components/Loader';
 import format from 'date-fns/format';
-import { CommittmentResponse, CourseData, SchoolData, SessionData, schoolDataView, courseDataView, sessionDataView } from "../utils/utils";
+import { Committment, SessionRequest, SessionRequestResponse, CommittmentResponse, CourseData, SchoolData, SessionData, schoolDataView, courseDataView, sessionDataView } from "../utils/utils";
 import { ApiKey, User, userView } from '@innexgo/frontend-auth-api';
-import { isErr } from '@innexgo/frontend-common';
+import { isErr, unwrap } from '@innexgo/frontend-common';
 
 const ToggleExpandButton = (props: { expanded: boolean, setExpanded: (b: boolean) => void }) =>
   <button className="btn btn-link px-0 py-0 float-right"
@@ -19,31 +19,27 @@ const ToggleExpandButton = (props: { expanded: boolean, setExpanded: (b: boolean
 
 
 const loadCourseData = async (props: AsyncProps<CourseData>) => {
-  const maybeCourseData = await courseDataView({
+  const courseData= await courseDataView({
     courseId: [props.courseId],
     onlyRecent: true,
     apiKey: props.apiKey.key,
-  });
+  })
+    .then(unwrap);
 
-  if (isErr(maybeCourseData)) {
-    throw Error(maybeCourseData.Err);
-  }
   // there's an invariant that there must always be one course data per valid course id
-  return maybeCourseData.Ok[0];
+  return courseData[0];
 }
 
 const loadSchoolData = async (props: AsyncProps<SchoolData>) => {
-  const maybeSchoolData = await schoolDataView({
-    schoolId: props.schoolId,
+  const schoolData = await schoolDataView({
+    schoolId: [props.schoolId],
     onlyRecent: true,
     apiKey: props.apiKey.key,
-  });
+  })
+    .then(unwrap);
 
-  if (isErr(maybeSchoolData)) {
-    throw Error(maybeSchoolData.Err);
-  }
   // there's an invariant that there must always be one school data per valid school id
-  return maybeSchoolData.Ok[0];
+  return schoolData[0];
 }
 
 const loadSessionData = async (props: AsyncProps<SessionData>) => {
@@ -63,15 +59,12 @@ const loadSessionData = async (props: AsyncProps<SessionData>) => {
 
 const loadUser = async (props: AsyncProps<User>) => {
   const maybeUser = await userView({
-    userId: props.courseId,
+    userId: [props.userId],
     apiKey: props.apiKey.key,
-  });
-
-  if (isErr(maybeUser)) {
-    throw Error(maybeUser.Err);
-  }
+  })
+    .then(unwrap);
   // there's an invariant that there must always be one course data per valid course id
-  return maybeUser.Ok[0];
+  return maybeUser[0];
 }
 
 export const ViewSchool = (props: {
@@ -196,12 +189,8 @@ export const ViewSession = (props: {
             <th>Time</th>
             <td>
               {format(props.sessionData.startTime, "h:mm a - ")}
-              {format(props.sessionData.startTime + props.sessionData.duration, "h:mm a")}
+              {format(props.sessionData.endTime, "h:mm a")}
             </td>
-          </tr>
-          <tr>
-            <th>Private</th>
-            <td>{`${props.sessionData.hidden}`}</td>
           </tr>
           <tr>
             <th>Course</th>
@@ -232,9 +221,18 @@ export const ViewSessionRequest = (props: {
 }) => {
   const [expanded, setExpanded] = React.useState(props.expanded);
   if (!expanded) {
-    return <span> {props.sessionRequest.attendee.name} - {format(props.sessionRequest.startTime, "MMM do")}
-      <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
-    </span>
+    return <Async promiseFn={loadUser} apiKey={props.apiKey} userId={props.sessionRequest.creatorUserId}>
+      <Async.Pending><Loader /></Async.Pending>
+      <Async.Rejected>
+        <span className="text-danger">Unable to load session.</span>
+      </Async.Rejected>
+      <Async.Fulfilled<User>>{user =>
+        <span> {user.name} - {format(props.sessionRequest.startTime, "MMM do")}
+          <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
+        </span>
+      }
+      </Async.Fulfilled>
+    </Async>
   } else {
     return <div>
       <Table hover bordered>
@@ -247,7 +245,7 @@ export const ViewSessionRequest = (props: {
             <th>Requested Time</th>
             <td>
               {format(props.sessionRequest.startTime, "h:mm a - ")}
-              {format(props.sessionRequest.startTime + props.sessionRequest.duration, "h:mm a")}
+              {format(props.sessionRequest.endTime, "h:mm a")}
             </td>
           </tr>
           <tr>
@@ -260,7 +258,7 @@ export const ViewSessionRequest = (props: {
           </tr>
           <tr>
             <th>Attendee</th>
-            <td><ViewUser user={props.sessionRequest.attendee} apiKey={props.apiKey} expanded={false} /></td>
+            <td><ViewUser userId={props.sessionRequest.creatorUserId} apiKey={props.apiKey} expanded={false} /></td>
           </tr>
           <tr>
             <th>Course</th>
@@ -292,10 +290,20 @@ export const ViewSessionRequestResponse = (props: {
 }) => {
   const [expanded, setExpanded] = React.useState(props.expanded);
   if (!expanded) {
-    return <span>
-      {props.sessionRequestResponse.sessionRequest.attendee.name} - {props.sessionRequestResponse.accepted ? "ACCEPTED" : "REJECTED"}
-      <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
-    </span>
+    return <Async promiseFn={loadUser} apiKey={props.apiKey} userId={props.sessionRequestResponse.sessionRequest.creatorUserId}>
+      <Async.Pending><Loader /></Async.Pending>
+      <Async.Rejected>
+        <span className="text-danger">Unable to load session.</span>
+      </Async.Rejected>
+      <Async.Fulfilled<User>>{user =>
+        <span>
+          {user.name} - {props.sessionRequestResponse.committment ? "ACCEPTED" : "REJECTED"}
+          <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
+        </span>
+      }
+      </Async.Fulfilled>
+    </Async>
+
   } else {
     return <div>
       <Table hover bordered>
@@ -314,7 +322,7 @@ export const ViewSessionRequestResponse = (props: {
           </tr>
           <tr>
             <th>Accepted</th>
-            <td>{props.sessionRequestResponse.accepted ? "Yes" : "No"}</td>
+            <td>{props.sessionRequestResponse.committment ? "Yes" : "No"}</td>
           </tr>
           {props.sessionRequestResponse.committment == null
             ? <> </>
@@ -349,7 +357,7 @@ export const ViewCommittment = (props: {
         !expanded
           ? <span>
             {format(sessionData.startTime, "h:mm a - ")}
-            {format(sessionData.startTime + sessionData.duration, "h:mm a")}
+            {format(sessionData.endTime, "h:mm a")}
             <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
           </span>
           : <div>
@@ -373,11 +381,7 @@ export const ViewCommittment = (props: {
                 </tr>
                 <tr>
                   <th>Attendee</th>
-                  <td><ViewUser user={props.committment.attendee} apiKey={props.apiKey} expanded={false} /></td>
-                </tr>
-                <tr>
-                  <th>Mandatory</th>
-                  <td>{props.committment.cancellable ? "Yes" : "No"}</td>
+                  <td><ViewUser userId={props.committment.attendeeUserId} apiKey={props.apiKey} expanded={false} /></td>
                 </tr>
               </tbody>
             </Table>

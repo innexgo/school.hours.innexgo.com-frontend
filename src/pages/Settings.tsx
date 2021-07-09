@@ -7,6 +7,7 @@ import DashboardLayout from '../components/DashboardLayout';
 import CreatePassword from '../components/CreatePassword';
 import CreateSubscription from '../components/CreateSubscription';
 
+import {AuthenticatedComponentProps} from '@innexgo/frontend-auth-api';
 
 function Settings(props: AuthenticatedComponentProps) {
 

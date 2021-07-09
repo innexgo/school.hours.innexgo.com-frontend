@@ -11,10 +11,10 @@ import Loader from "../components/Loader";
 import CalendarCard from '../components/CalendarCard';
 import { sessionToEvent } from '../components/ToCalendar';
 import { ViewSessionRequest } from '../components/ViewData';
-import { CourseData, SessionRequest, SessionRequestResponse, sessionRequestResponseNew, sessionNew, committmentNew, sessionDataView, courseDataView, courseMembershipView} from '../utils/utils';
+import { CourseData, SessionRequest, sessionRequestResponseNew, sessionNew, sessionDataView, courseDataView, courseMembershipView } from '../utils/utils';
 
-import {ApiKey, User} from '@innexgo/frontend-auth-api';
-import {isErr} from '@innexgo/frontend-common';
+import { ApiKey, } from '@innexgo/frontend-auth-api';
+import { isErr, unwrap } from '@innexgo/frontend-common';
 
 type CalendarWidgetProps = {
   sessionRequest: SessionRequest;
@@ -68,39 +68,32 @@ class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
             endStr: string;
             timeZone: string;
           }) => {
-          const maybeCourseMemberships = await courseMembershipView({
-            userId: this.props.apiKey.creator.userId,
-            courseMembershipKind: "INSTRUCTOR",
+          const courseMemberships = await courseMembershipView({
+            userId: [this.props.apiKey.creator.userId],
+            courseMembershipKind: ["INSTRUCTOR"],
             onlyRecent: true,
             apiKey: this.props.apiKey.key
-          });
+          })
+            .then(unwrap);
 
-          if (isErr(maybeCourseMemberships)) {
-            return [];
-          }
+          const maybeSessionData = await sessionDataView({
+            courseId: courseMemberships.map(cm => cm.course.courseId),
+            minStartTime: args.start.valueOf(),
+            maxStartTime: args.end.valueOf(),
+            onlyRecent: true,
+            apiKey: this.props.apiKey.key,
+          })
+            .then(unwrap);
 
-          return (await Promise.all(maybeCourseMemberships.map(async cm => {
-            const maybeSessionData = await sessionDataView({
-              courseId: cm.course.courseId,
-              minStartTime: args.start.valueOf(),
-              maxStartTime: args.end.valueOf(),
-              onlyRecent: true,
-              apiKey: this.props.apiKey.key,
-            });
-            return isErr(maybeSessionData)
-              ? []
-              : maybeSessionData;
 
-          })))
-            .flat()
-            .map(s =>
-              sessionToEvent({
-                sessionData: s,
-                relation: "INSTRUCTOR",
-                apiKey: this.props.apiKey,
-                muted: s.session.sessionId !== this.props.sessionId,
-                permitted: s.session.course.courseId === this.props.sessionRequest.course.courseId
-              }));
+          return maybeSessionData.map(s =>
+            sessionToEvent({
+              sessionData: s,
+              relation: "INSTRUCTOR",
+              apiKey: this.props.apiKey,
+              muted: s.session.sessionId !== this.props.sessionId,
+              permitted: s.session.course.courseId === this.props.sessionRequest.course.courseId
+            }));
         },
       ]}
       slotLabelContent={_ => <> </>}
@@ -138,7 +131,7 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
   type ReviewSessionRequestValues = {
     sessionId: number | null,
     startTime: number | null,
-    duration: number | null,
+    endTime: number | null,
     accepted: boolean | null,
     sessionNewName: string,
     sessionNewPublic: boolean
@@ -154,7 +147,7 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
     }
 
     if (!values.accepted) {
-      const maybeSessionRequestResponse = await newRejectSessionRequestResponse({
+      const maybeSessionRequestResponse = await sessionRequestResponseNew({
         sessionRequestId: props.sessionRequest.sessionRequestId,
         message: values.message,
         apiKey: props.apiKey.key
@@ -191,22 +184,21 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
     if (values.sessionId != null) {
       sessionId = values.sessionId
     } else {
-      if (values.duration === null || values.startTime === null) {
+      if (values.endTime === null || values.startTime === null) {
         setErrors({ sessionId: "Please click on a preexisting session or drag to create a new one." });
         return;
       }
 
-      const maybeSession = await sessionNew({
+      const maybeSessionData = await sessionNew({
         name: values.sessionNewName,
         courseId: props.sessionRequest.course.courseId,
         startTime: values.startTime,
-        duration: values.duration,
-        hidden: !values.sessionNewPublic,
+        endTime: values.endTime,
         apiKey: props.apiKey.key,
       });
 
-      if (isErr(maybeSession)) {
-        switch (maybeSession.Err) {
+      if (isErr(maybeSessionData)) {
+        switch (maybeSessionData.Err) {
           case "API_KEY_NONEXISTENT": {
             setStatus("You have been automatically logged out. Please relogin.");
             break;
@@ -226,38 +218,14 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
         }
         return;
       }
-      sessionId = maybeSession.sessionId;
-    }
-
-    // create committment
-    const maybeCommittment = await committmentNew({
-      sessionId: sessionId,
-      attendeeUserId: props.sessionRequest.attendee.userId,
-      cancellable: values.sessionNewPublic,
-      apiKey: props.apiKey.key
-    });
-
-    // TODO handle all other error codes that are possible
-    // TODO if committment exists, we can just grab that
-    if (isErr(maybeCommittment)) {
-      switch (maybeCommittment.Err) {
-        case "COMMITTMENT_EXISTENT": {
-          setStatus("Student is already scheduled for this session.");
-          break;
-        }
-        default: {
-          setStatus("An unknown error has occurred while creating committment.");
-          break;
-        }
-      }
-      return;
+      sessionId = maybeSessionData.Ok.session.sessionId;
     }
 
     // create session request response
-    const maybeSessionRequestResponse = await newAcceptSessionRequestResponse({
+    const maybeSessionRequestResponse = await sessionRequestResponseNew({
       sessionRequestId: props.sessionRequest.sessionRequestId,
       message: values.message,
-      committmentId: maybeCommittment.committmentId,
+      sessionId: sessionId,
       apiKey: props.apiKey.key
     });
 
@@ -294,7 +262,7 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
         message: "",
         accepted: null,
         startTime: null,
-        duration: null,
+        endTime: null,
         sessionId: null,
         sessionNewName: "",
         sessionNewPublic: false
@@ -324,7 +292,7 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
               />
             </Form.Group>
             <br />
-            <Form.Group hidden={fprops.values.startTime === null || fprops.values.duration === null} >
+            <Form.Group hidden={fprops.values.startTime === null || fprops.values.endTime === null} >
               <Form.Label>New Session Name</Form.Label>
               <Form.Control
                 name="sessionNewName"
@@ -336,7 +304,7 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
               />
               <Form.Text className="text-danger">{fprops.errors.sessionNewName}</Form.Text>
             </Form.Group>
-            <Form.Group hidden={fprops.values.startTime === null || fprops.values.duration === null} >
+            <Form.Group hidden={fprops.values.startTime === null || fprops.values.endTime === null} >
               <Form.Check
                 name="sessionNewPublic"
                 checked={fprops.values.sessionNewPublic}
@@ -413,7 +381,7 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
                     events={[{
                       id: `SessionRequest:${props.sessionRequest.sessionRequestId}`,
                       start: new Date(props.sessionRequest.startTime),
-                      end: new Date(props.sessionRequest.startTime + props.sessionRequest.duration),
+                      end: new Date(props.sessionRequest.endTime),
                       display: "background",
                       sessionRequest: props.sessionRequest,
                     }]}
@@ -456,11 +424,8 @@ const loadCourseData = async (props: AsyncProps<CourseData>) => {
     courseId: props.courseId,
     onlyRecent: true,
     apiKey: props.apiKey.key,
-  });
+  }).then(unwrap);
 
-  if (isErr(maybeCourseData)) {
-    throw Error;
-  }
   // there's an invariant that there must always be one course data per valid course id
   return maybeCourseData[0];
 }

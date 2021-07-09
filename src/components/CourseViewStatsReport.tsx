@@ -1,5 +1,3 @@
-
-import React from 'react';
 import { Button, Form, Table } from 'react-bootstrap';
 import Loader from '../components/Loader';
 import { ViewCommittmentResponse, ViewCourse, ViewUser, } from '../components/ViewData';
@@ -13,7 +11,7 @@ import { Async, AsyncProps } from 'react-async';
 import { courseMembershipView, CourseMembership, Committment, CommittmentResponse, CourseData, committmentView, committmentResponseView, courseDataView, } from '../utils/utils';
 
 import { unwrap } from '@innexgo/frontend-common';
-import { ApiKey } from '@innexgo/frontend-auth-api';
+import { ApiKey, AuthenticatedComponentProps} from '@innexgo/frontend-auth-api';
 
 
 type CourseStatsReportData = {

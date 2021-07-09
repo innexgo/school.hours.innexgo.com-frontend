@@ -1,9 +1,10 @@
-import React from 'react';
 import { Container, Popover } from 'react-bootstrap';
 import DashboardLayout from '../components/DashboardLayout';
 import StudentManageCourseData from '../components/StudentManageCourseData';
 import StudentManageCourseMemberships from '../components/StudentManageCourseMemberships'
 import UtilityWrapper from '../components/UtilityWrapper';
+
+import {AuthenticatedComponentProps} from '@innexgo/frontend-auth-api';
 
 function StudentManageCourse(props: AuthenticatedComponentProps) {
   const courseId = parseInt(new URLSearchParams(window.location.search).get("courseId") ?? "");

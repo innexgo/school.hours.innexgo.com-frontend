@@ -1,9 +1,10 @@
-import React from 'react';
 import { Container, Popover } from 'react-bootstrap';
 import DashboardLayout from '../components/DashboardLayout';
 
 import CourseViewStatsReport from '../components/CourseViewStatsReport';
 import UtilityWrapper from '../components/UtilityWrapper';
+
+import {AuthenticatedComponentProps} from '@innexgo/frontend-auth-api';
 
 
 function CourseStatsReport(props: AuthenticatedComponentProps) {
