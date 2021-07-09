@@ -61,7 +61,7 @@ function EventCalendar(props: EventCalendarProps) {
 
   const calendarRef = React.useRef<FullCalendar | null>(null);
 
-  const eventSource = async (
+  const studentEventSource = async (
     args: {
       start: Date;
       end: Date;
@@ -69,7 +69,6 @@ function EventCalendar(props: EventCalendarProps) {
       endStr: string;
       timeZone: string;
     }) => {
-
 
     const sessionRequests = await sessionRequestView({
       creatorUserId: [props.apiKey.creator.userId],
@@ -135,7 +134,7 @@ function EventCalendar(props: EventCalendarProps) {
       .then(unwrap);
 
     // note that we mark these with "STUDENT" to show that these are existing in our student capacity
-    const studentEvents = [
+    return [
       ...sessionRequests
         // match with a course
         .map(sr => ({ sr, cd: props.studentCourseDatas.find(cd => cd.course.courseId === sr.course.courseId)! }))
@@ -198,7 +197,18 @@ function EventCalendar(props: EventCalendarProps) {
           relation: "STUDENT"
         })),
     ];
+  }
 
+  // get instructor data
+
+  const instructorEventSource = async (
+    args: {
+      start: Date;
+      end: Date;
+      startStr: string;
+      endStr: string;
+      timeZone: string;
+    }) => {
 
     const iSessionData = await sessionDataView({
       courseId: props.instructorCourseDatas.map(cd => cd.course.courseId),
@@ -236,7 +246,7 @@ function EventCalendar(props: EventCalendarProps) {
       .then(unwrap);
 
 
-    const instructorEvents = [
+    return [
       ...iSessionData
         .map(sd => sessionToEvent({
           sessionData: sd,
@@ -248,7 +258,7 @@ function EventCalendar(props: EventCalendarProps) {
 
       ...iSessionRequests
         // match with a course
-        .map(sr => ({ sr, cd: props.studentCourseDatas.find(cd => cd.course.courseId === sr.course.courseId)! }))
+        .map(sr => ({ sr, cd: props.instructorCourseDatas.find(cd => cd.course.courseId === sr.course.courseId)! }))
         // match with a user
         .map(({ sr, cd }) => ({ sr, cd, u: sessionRequesters.find(u => u.userId === sr.creatorUserId)! }))
         .map(({ sr, cd, u }) => sessionRequestToEvent({
@@ -262,15 +272,13 @@ function EventCalendar(props: EventCalendarProps) {
         // hide if show all not enabled
         .filter(_ => props.showHiddenEvents)
         // match with a course
-        .map(srr => ({ srr, cd: props.studentCourseDatas.find(cd => cd.course.courseId === srr.sessionRequest.course.courseId)! }))
+        .map(srr => ({ srr, cd: props.instructorCourseDatas.find(cd => cd.course.courseId === srr.sessionRequest.course.courseId)! }))
         .map(({ srr, cd }) => rejectedSessionRequestResponseToEvent({
           sessionRequestResponse: srr,
           courseData: cd,
           relation: "INSTRUCTOR"
         })),
     ];
-
-    return [...studentEvents, ...instructorEvents];
   }
 
   //this handler runs any time we recieve a click on an event
@@ -338,7 +346,7 @@ function EventCalendar(props: EventCalendarProps) {
       editable={false}
       selectable={true}
       selectMirror={true}
-      events={eventSource}
+      eventSources={[studentEventSource, instructorEventSource]}
       eventContent={CalendarCard}
       unselectCancel=".modal-content"
       eventClick={clickHandler}
@@ -501,7 +509,7 @@ type CalendarCourseData = {
 
 const loadCalendarCourseData = async (props: AsyncProps<CalendarCourseData>) => {
   const courseMemberships = await courseMembershipView({
-    userId: props.apiKey.creatorUserId,
+    userId: [props.apiKey.creator.userId],
     onlyRecent: true,
     apiKey: props.apiKey.key,
   })

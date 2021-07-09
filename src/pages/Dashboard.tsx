@@ -108,7 +108,6 @@ const loadDashboardData = async (props: AsyncProps<DashboardData>) => {
   })
     .then(unwrap);
 
-
   return {
     subscribed: subscriptions.length > 0,
     schoolData,

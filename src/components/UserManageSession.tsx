@@ -24,14 +24,14 @@ type UserManageSessionData = {
 const loadData = async (props: AsyncProps<UserManageSessionData>) => {
 
   const sessionRequestResponses  = await sessionRequestResponseView({
-    sessionId: props.session.sessionId,
+    sessionId: [props.session.sessionId],
     apiKey: props.apiKey.key
   })
   .then(unwrap);
 
 
   const committments = await committmentView({
-    sessionId: props.session.sessionId,
+    sessionId: [props.session.sessionId],
     responded: false,
     apiKey: props.apiKey.key
   })
@@ -39,7 +39,7 @@ const loadData = async (props: AsyncProps<UserManageSessionData>) => {
 
 
   const committmentResponses  = await committmentResponseView({
-    sessionId: props.session.sessionId,
+    sessionId: [props.session.sessionId],
     apiKey: props.apiKey.key
   })
   .then(unwrap);

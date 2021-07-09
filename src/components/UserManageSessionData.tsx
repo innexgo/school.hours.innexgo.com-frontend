@@ -123,7 +123,7 @@ function EditSessionData(props: EditSessionDataProps) {
 
 const loadSessionData = async (props: AsyncProps<SessionData>) =>
   unwrap(await sessionDataView({
-    sessionId: props.sessionId,
+    sessionId: [props.sessionId],
     onlyRecent: true,
     apiKey: props.apiKey.key
   }))[0];

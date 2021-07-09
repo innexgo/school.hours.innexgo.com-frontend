@@ -60,6 +60,13 @@ function UserCreateCourse(props: UserCreateCourseProps) {
           });
           break;
         }
+        case "SCHOOL_ARCHIVED": {
+          fprops.setStatus({
+            failureResult: "This school has been archived",
+            successResult: ""
+          });
+          break;
+        }
         case "USER_NONEXISTENT": {
           fprops.setStatus({
             failureResult: "This user does not exist.",
@@ -69,7 +76,7 @@ function UserCreateCourse(props: UserCreateCourseProps) {
         }
         default: {
           fprops.setStatus({
-            failureResult: "An unknown or network error has occured while trying to delete course.",
+            failureResult: "An unknown or network error has occured while trying to create  course.",
             successResult: ""
           });
           break;

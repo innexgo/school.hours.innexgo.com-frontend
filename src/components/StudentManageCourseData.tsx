@@ -123,15 +123,15 @@ type CourseDataMembership = {
 
 const loadCourseDataMembership = async (props: AsyncProps<CourseDataMembership>) => {
   const courseData = await courseDataView({
-    courseId: props.courseId,
+    courseId: [props.courseId],
     onlyRecent: true,
     apiKey: props.apiKey.key
   })
     .then(unwrap);
 
   const courseMemberships = await courseMembershipView({
-    courseId: props.courseId,
-    userId: props.apiKey.creator.userId,
+    courseId: [props.courseId],
+    userId: [props.apiKey.creator.userId],
     onlyRecent: true,
     apiKey: props.apiKey.key
   })

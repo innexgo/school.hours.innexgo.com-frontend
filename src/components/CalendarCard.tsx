@@ -144,7 +144,7 @@ function CalendarCard(eventInfo: EventContentArg) {
         creator={props.creator}
       />
     case "SessionRequestResponse":
-      if (props.sessionRequestResponse.accepted) {
+      if (props.sessionRequestResponse.committment) {
         return <AcceptedSessionRequestResponseCard
           sessionRequestResponse={props.sessionRequestResponse}
           courseData={props.courseData}

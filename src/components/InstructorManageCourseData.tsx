@@ -228,7 +228,7 @@ function ArchiveCourse(props: ArchiveCourseProps) {
 
 const loadCourseData = async (props: AsyncProps<CourseData>) => {
   const courseData  = await courseDataView({
-    courseId: props.courseId,
+    courseId: [props.courseId],
     onlyRecent: true,
     apiKey: props.apiKey.key
   })

@@ -27,7 +27,7 @@ class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
 
   render() {
     const setStartTime = (x: number | null) => this.props.setFieldValue("startTime", x);
-    const setDuration = (x: number | null) => this.props.setFieldValue("duration", x);
+    const setEndTime = (x: number | null) => this.props.setFieldValue("endTime", x);
     const setSessionId = (x: number | null) => this.props.setFieldValue("sessionId", x);
 
     return <FullCalendar
@@ -48,12 +48,12 @@ class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
       datesSet={({ view }) => /* Keeps window size in sync */view.calendar.updateSize()}
       select={(dsa: DateSelectArg) => {
         setStartTime(dsa.start.valueOf());
-        setDuration(dsa.end.valueOf() - dsa.start.valueOf());
+        setEndTime(dsa.end.valueOf());
         setSessionId(null);
       }}
       unselect={() => {
         setStartTime(null);
-        setDuration(null);
+        setEndTime(null);
       }}
       eventClick={(eca: EventClickArg) => {
         eca.view.calendar.unselect();
@@ -421,7 +421,7 @@ type UserReviewSessionRequestProps = {
 
 const loadCourseData = async (props: AsyncProps<CourseData>) => {
   const maybeCourseData = await courseDataView({
-    courseId: props.courseId,
+    courseId: [props.courseId],
     onlyRecent: true,
     apiKey: props.apiKey.key,
   }).then(unwrap);

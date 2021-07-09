@@ -14,7 +14,7 @@ import addDays from "date-fns/addDays";
 
 import { Async, AsyncProps } from 'react-async';
 import { INT_MAX, CourseKey, courseKeyDataNew, courseKeyNew, courseKeyDataView, } from '../utils/utils';
-import { isErr } from '@innexgo/frontend-common';
+import { isErr, unwrap } from '@innexgo/frontend-common';
 import { ApiKey } from '@innexgo/frontend-auth-api';
 
 type RevokeCourseKeyProps = {
@@ -112,19 +112,17 @@ function RevokeCourseKey(props: RevokeCourseKeyProps) {
 
 
 const loadCourseKeys = async (props: AsyncProps<CourseKey[]>) => {
-  const maybeCourseKeys = await courseKeyDataView({
-    courseId: props.courseId,
+  let courseKeyData = await courseKeyDataView({
+    courseId: [props.courseId],
     active: true,
     onlyRecent: true,
     apiKey: props.apiKey.key
-  });
+  })
+    .then(unwrap);
 
-  if (isErr(maybeCourseKeys)) {
-    throw Error(maybeCourseKeys.Err);
-  } else {
-    return maybeCourseKeys.Ok.map(x => x.courseKey);
-  }
+  return courseKeyData.map(ckd => ckd.courseKey);
 }
+
 
 type InstructorManageCourseKeysProps = {
   courseId: number,
