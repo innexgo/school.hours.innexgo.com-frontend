@@ -4,7 +4,7 @@ import { Table } from 'react-bootstrap';
 import Loader from '../components/Loader';
 import format from 'date-fns/format';
 import { Committment, SessionRequest, SessionRequestResponse, CommittmentResponse, CourseData, SchoolData, SessionData, schoolDataView, courseDataView, sessionDataView } from "../utils/utils";
-import { ApiKey, User, userView } from '@innexgo/frontend-auth-api';
+import { ApiKey, UserData, userDataView } from '@innexgo/frontend-auth-api';
 import { isErr, unwrap } from '@innexgo/frontend-common';
 
 const ToggleExpandButton = (props: { expanded: boolean, setExpanded: (b: boolean) => void }) =>
@@ -57,9 +57,10 @@ const loadSessionData = async (props: AsyncProps<SessionData>) => {
 }
 
 
-const loadUser = async (props: AsyncProps<User>) => {
-  const maybeUser = await userView({
-    userId: [props.userId],
+const loadUserData = async (props: AsyncProps<UserData>) => {
+  const maybeUser = await userDataView({
+    creatorUserId: [props.userId],
+    onlyRecent: true,
     apiKey: props.apiKey.key,
   })
     .then(unwrap);
@@ -131,12 +132,12 @@ export const ViewUser = (props: {
   expanded: boolean
 }) => {
   const [expanded, setExpanded] = React.useState(props.expanded);
-  return <Async promiseFn={loadUser} apiKey={props.apiKey} userId={props.userId}>
+  return <Async promiseFn={loadUserData} apiKey={props.apiKey} userId={props.userId}>
     <Async.Pending><Loader /></Async.Pending>
     <Async.Rejected>
       <span className="text-danger">Unable to load session.</span>
     </Async.Rejected>
-    <Async.Fulfilled<User>>{user =>
+    <Async.Fulfilled<UserData>>{user =>
       !expanded
         ? <span>
           {user.name}
@@ -148,10 +149,6 @@ export const ViewUser = (props: {
               <tr>
                 <th>Name</th>
                 <td>{user.name}</td>
-              </tr>
-              <tr>
-                <th>Email</th>
-                <td>{user.email}</td>
               </tr>
             </tbody>
           </Table>
@@ -221,12 +218,12 @@ export const ViewSessionRequest = (props: {
 }) => {
   const [expanded, setExpanded] = React.useState(props.expanded);
   if (!expanded) {
-    return <Async promiseFn={loadUser} apiKey={props.apiKey} userId={props.sessionRequest.creatorUserId}>
+    return <Async promiseFn={loadUserData} apiKey={props.apiKey} userId={props.sessionRequest.creatorUserId}>
       <Async.Pending><Loader /></Async.Pending>
       <Async.Rejected>
         <span className="text-danger">Unable to load session.</span>
       </Async.Rejected>
-      <Async.Fulfilled<User>>{user =>
+      <Async.Fulfilled<UserData>>{user =>
         <span> {user.name} - {format(props.sessionRequest.startTime, "MMM do")}
           <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
         </span>
@@ -290,12 +287,12 @@ export const ViewSessionRequestResponse = (props: {
 }) => {
   const [expanded, setExpanded] = React.useState(props.expanded);
   if (!expanded) {
-    return <Async promiseFn={loadUser} apiKey={props.apiKey} userId={props.sessionRequestResponse.sessionRequest.creatorUserId}>
+    return <Async promiseFn={loadUserData} apiKey={props.apiKey} userId={props.sessionRequestResponse.sessionRequest.creatorUserId}>
       <Async.Pending><Loader /></Async.Pending>
       <Async.Rejected>
         <span className="text-danger">Unable to load session.</span>
       </Async.Rejected>
-      <Async.Fulfilled<User>>{user =>
+      <Async.Fulfilled<UserData>>{user =>
         <span>
           {user.name} - {props.sessionRequestResponse.committment ? "ACCEPTED" : "REJECTED"}
           <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />

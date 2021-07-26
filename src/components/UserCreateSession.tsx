@@ -6,7 +6,7 @@ import { Row, Col, Button, Form } from 'react-bootstrap';
 import { CourseData, sessionNew, committmentNew, courseMembershipView, courseDataView } from '../utils/utils';
 import format from 'date-fns/format';
 import { isErr, unwrap } from '@innexgo/frontend-common';
-import { ApiKey, userView } from '@innexgo/frontend-auth-api';
+import { ApiKey, userDataView } from '@innexgo/frontend-auth-api';
 
 type CreateSessionProps = {
   start: number;
@@ -249,16 +249,16 @@ function CreateSession(props: CreateSessionProps) {
                     apiKey: props.apiKey.key,
                   }).then(unwrap);
 
-                  const users = await userView({
-                    userId: courseMemberships.map(cm => cm.userId).filter(u => !fprops.values.studentList.includes(u)),
-                    partialUserName: input,
+                  const users = await userDataView({
+                    creatorUserId: courseMemberships.map(cm => cm.userId).filter(u => !fprops.values.studentList.includes(u)),
+                    onlyRecent: true,
                     apiKey: props.apiKey.key,
                   }).then(unwrap);
 
-                  return users;
+                  return users.filter(x => x.name.includes(input));
                 }}
                 setFn={e => {
-                  fprops.setFieldValue("studentList", e.map(s => s.userId));
+                  fprops.setFieldValue("studentList", e.map(s => s.creator.userId));
                 }} />
               <Form.Text className="text-danger">{fprops.status.studentList}</Form.Text>
             </Col>

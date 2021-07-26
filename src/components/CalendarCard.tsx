@@ -2,14 +2,14 @@ import { Async, AsyncProps } from 'react-async';
 import { Card, Form } from "react-bootstrap";
 import Loader from '../components/Loader';
 import { EventContentArg } from "@fullcalendar/react"
-import { Session, SessionData, Committment, SessionRequestResponse, SessionRequest, CourseData, CommittmentResponse, committmentView } from '../utils/utils';
-import { ApiKey, User, userView} from '@innexgo/frontend-auth-api';
+import { SessionData, SessionRequestResponse, SessionRequest, CourseData, CommittmentResponse, committmentView } from '../utils/utils';
+import { ApiKey, UserData, userDataView} from '@innexgo/frontend-auth-api';
 import { unwrap } from '@innexgo/frontend-common';
 
 function SessionRequestCard(props: {
   sessionRequest: SessionRequest;
   courseData: CourseData
-  creator: User
+  creator: UserData
 }) {
   return (
     <Card className="px-1 py-1 h-100 w-100 bg-danger text-light overflow-hidden" >
@@ -51,15 +51,16 @@ function RejectedSessionRequestResponseCard(props: {
   )
 }
 
-async function loadSessionAttendees(props: AsyncProps<User[]>) {
+async function loadSessionAttendees(props: AsyncProps<UserData[]>) {
   const committments = await committmentView({
     sessionId: [props.session.sessionId],
     responded: false,
     apiKey: props.apiKey.key
   }).then(unwrap);
 
-  const attendees = await userView({
-    userId: committments.map(c => c.attendeeUserId),
+  const attendees = await userDataView({
+    creatorUserId: committments.map(c => c.attendeeUserId),
+    onlyRecent: true,
     apiKey: props.apiKey.key
   }).then(unwrap);
 
@@ -96,7 +97,7 @@ function SessionCard(props: {
         <Async.Rejected>
           <Form.Text>An unknown error has occured.</Form.Text>
         </Async.Rejected>
-        <Async.Fulfilled<User[]>>
+        <Async.Fulfilled<UserData[]>>
           {u => "Session: " + u.map(u => u.name).join(', ')}
         </Async.Fulfilled>
       </Async>
@@ -121,7 +122,7 @@ function CommittmentCard(props: {
 function CommittmentResponseCard(props: {
   sessionData: SessionData,
   committmentResponse: CommittmentResponse
-  attendee: User
+  attendee: UserData
 }) {
   return (
     <Card className="px-1 py-1 h-100 w-100 bg-success text-light overflow-hidden" >

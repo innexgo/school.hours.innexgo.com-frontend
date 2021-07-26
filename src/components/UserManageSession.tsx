@@ -8,7 +8,7 @@ import SearchMultiUser from '../components/SearchMultiUser';
 import { Committment, Session, CommittmentResponseKind, SessionRequestResponse, CommittmentResponse, committmentNew, committmentResponseView, committmentView, committmentResponseNew, courseMembershipView, sessionRequestResponseView } from '../utils/utils';
 
 import { isErr, unwrap } from '@innexgo/frontend-common';
-import { userView, ApiKey } from '@innexgo/frontend-auth-api';
+import { userDataView, ApiKey } from '@innexgo/frontend-auth-api';
 
 type ManageSessionModalProps = {
   session: Session;
@@ -274,15 +274,15 @@ function ManageSessionModal(props: ManageSessionModalProps) {
                             })
                               .then(unwrap);
 
-                            const users = await userView({
-                              userId: courseMemberships.map(cm => cm.userId).filter(u => !fprops.values.studentList.includes(u)),
-                              partialUserName: input,
+                            const users = await userDataView({
+                              creatorUserId: courseMemberships.map(cm => cm.userId).filter(u => !fprops.values.studentList.includes(u)),
+                              onlyRecent: true,
                               apiKey: props.apiKey.key,
                             }).then(unwrap);
 
-                            return users;
+                            return users.filter(x => x.name.includes(input)) ;
                           }}
-                          setFn={e => fprops.setFieldValue("studentList", e.map(s => s.userId))} />
+                          setFn={e => fprops.setFieldValue("studentList", e.map(s => s.creator.userId))} />
                         <Form.Text className="text-danger">{fprops.status.studentList}</Form.Text>
                       </Col>
                     </Form.Group>
