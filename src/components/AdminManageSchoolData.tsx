@@ -229,7 +229,7 @@ function ArchiveSchool(props: ArchiveSchoolProps) {
 
 const loadSchoolData = async (props: AsyncProps<SchoolData>) => {
   const schoolData = await schoolDataView({
-    schoolId: props.schoolId,
+    schoolId: [props.schoolId],
     onlyRecent: true,
     apiKey: props.apiKey.key
   })

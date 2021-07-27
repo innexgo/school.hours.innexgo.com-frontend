@@ -14,7 +14,7 @@ import addDays from "date-fns/addDays";
 
 import { Async, AsyncProps } from 'react-async';
 import { INT_MAX, SchoolKey, schoolKeyDataNew, schoolKeyNew, schoolKeyDataView, } from '../utils/utils';
-import { isErr } from '@innexgo/frontend-common';
+import { unwrap, isErr } from '@innexgo/frontend-common';
 import { ApiKey } from '@innexgo/frontend-auth-api';
 
 type RevokeSchoolKeyProps = {
@@ -112,18 +112,15 @@ function RevokeSchoolKey(props: RevokeSchoolKeyProps) {
 
 
 const loadSchoolKeys = async (props: AsyncProps<SchoolKey[]>) => {
-  const maybeSchoolKeys = await schoolKeyDataView({
-    schoolId: props.schoolId,
+  const skds = await schoolKeyDataView({
+    schoolId: [props.schoolId],
     active: true,
     onlyRecent: true,
     apiKey: props.apiKey.key
-  });
+  })
+  .then(unwrap);
 
-  if (isErr(maybeSchoolKeys)) {
-    throw Error(maybeSchoolKeys.Err);
-  } else {
-    return maybeSchoolKeys.Ok.map(x => x.schoolKey);
-  }
+  return skds.map(x => x.schoolKey);
 }
 
 type AdminManageSchoolKeysProps = {
@@ -160,8 +157,6 @@ function AdminManageSchoolKeys(props: AdminManageSchoolKeysProps) {
                   <tr>
                     <th>Key</th>
                     <th>Expires</th>
-                    <th>Uses</th>
-                    <th>Adds</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -172,7 +167,6 @@ function AdminManageSchoolKeys(props: AdminManageSchoolKeysProps) {
                       <tr>
                         <td><code>{a.schoolKeyKey}</code></td>
                         <td>{a.endTime === INT_MAX ? "Never" : format(a.endTime, "MMM dd yyyy")}</td>
-                        <td>{a.maxUses === INT_MAX ? "Infinite" : a.maxUses}</td>
                         <td>{a.endTime > Date.now()
                           ?
                           <Button variant="link" className="text-dark" onClick={() => setConfirmRevokeSchoolKey(a)}>

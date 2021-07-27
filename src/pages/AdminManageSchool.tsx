@@ -7,26 +7,24 @@ import UtilityWrapper from '../components/UtilityWrapper';
 import { ViewSchool, ViewUser } from '../components/ViewData';
 import AdminManageSchoolData from '../components/AdminManageSchoolData';
 
+import {unwrap} from '@innexgo/frontend-common';
+
 import { Visibility } from '@material-ui/icons'
 
 import format from "date-fns/format";
 
 import { Async, AsyncProps } from 'react-async';
 import { CourseData, School, schoolView, courseDataView, } from '../utils/utils';
-import {isErr} from '@innexgo/frontend-common';
 import {AuthenticatedComponentProps, ApiKey} from '@innexgo/frontend-auth-api';
 
 const loadSchool = async (props: AsyncProps<School>) => {
   const maybeSchools = await schoolView({
     schoolId: [parseInt(new URLSearchParams(window.location.search).get("schoolId") ?? "")],
     apiKey: props.apiKey.key
-  });
+  })
+  .then(unwrap);
 
-  if (isErr(maybeSchools)) {
-    throw Error(maybeSchools.Err);
-  } else {
-    return maybeSchools.Ok[0];
-  }
+  return maybeSchools[0];
 }
 
 
@@ -35,13 +33,11 @@ const loadCourseData = async (props: AsyncProps<CourseData[]>) => {
     schoolId: [props.school.schoolId],
     onlyRecent: true,
     apiKey: props.apiKey.key
-  });
+  })
+  .then(unwrap);
 
-  if (isErr(maybeCourseData)) {
-    throw Error(maybeCourseData.Err);
-  } else {
-    return maybeCourseData.Ok;
-  }
+  return maybeCourseData;
+
 }
 
 // TODO can someone clean this up later
