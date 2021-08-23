@@ -1,14 +1,14 @@
 import React from 'react'
 import { Async, AsyncProps } from 'react-async';
 import { Table } from 'react-bootstrap';
-import Loader from '../components/Loader';
+import { Loader } from '@innexgo/common-react-components';
 import format from 'date-fns/format';
 import { Committment, SessionRequest, SessionRequestResponse, CommittmentResponse, CourseData, SchoolData, SessionData, schoolDataView, courseDataView, sessionDataView } from "../utils/utils";
 import { ApiKey, UserData, userDataView } from '@innexgo/frontend-auth-api';
 import { isErr, unwrap } from '@innexgo/frontend-common';
 
 const ToggleExpandButton = (props: { expanded: boolean, setExpanded: (b: boolean) => void }) =>
-  <button className="btn btn-link px-0 py-0 float-right"
+  <button className="btn btn-link px-0 py-0 float-end"
     style={{
       fontWeight: "normal" as const,
       fontSize: "0.875rem"
@@ -75,7 +75,7 @@ export const ViewSchool = (props: {
 }) => {
   const [expanded, setExpanded] = React.useState(props.expanded);
   return !expanded
-    ? <span>
+    ? <span className="clearfix">
       {props.schoolData.name}
       <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
     </span>
@@ -104,7 +104,7 @@ export const ViewCourse = (props: {
 }) => {
   const [expanded, setExpanded] = React.useState(props.expanded);
   return !expanded
-    ? <span>
+    ? <span className="clearfix">
       {props.courseData.name}
       <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
     </span>
@@ -139,7 +139,7 @@ export const ViewUser = (props: {
     </Async.Rejected>
     <Async.Fulfilled<UserData>>{user =>
       !expanded
-        ? <span>
+        ? <span className="clearfix">
           {user.name}
           <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
         </span>
@@ -167,7 +167,7 @@ export const ViewSession = (props: {
 }) => {
   const [expanded, setExpanded] = React.useState(props.expanded);
   return !expanded
-    ? <span>
+    ? <span className="clearfix">
       {props.sessionData.name} - {format(props.sessionData.startTime, "MMM do")}
       <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
     </span>
@@ -224,7 +224,7 @@ export const ViewSessionRequest = (props: {
         <span className="text-danger">Unable to load session.</span>
       </Async.Rejected>
       <Async.Fulfilled<UserData>>{user =>
-        <span> {user.name} - {format(props.sessionRequest.startTime, "MMM do")}
+        <span className="clearfix">{user.name} - {format(props.sessionRequest.startTime, "MMM do")}
           <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
         </span>
       }
@@ -293,7 +293,7 @@ export const ViewSessionRequestResponse = (props: {
         <span className="text-danger">Unable to load session.</span>
       </Async.Rejected>
       <Async.Fulfilled<UserData>>{user =>
-        <span>
+        <span className="clearfix">
           {user.name} - {props.sessionRequestResponse.committment ? "ACCEPTED" : "REJECTED"}
           <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
         </span>
@@ -352,7 +352,7 @@ export const ViewCommittment = (props: {
       </Async.Rejected>
       <Async.Fulfilled<SessionData>>{sessionData =>
         !expanded
-          ? <span>
+          ? <span className="clearfix">
             {format(sessionData.startTime, "h:mm a - ")}
             {format(sessionData.endTime, "h:mm a")}
             <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
@@ -397,7 +397,7 @@ export const ViewCommittmentResponse = (props: {
 }) => {
   const [expanded, setExpanded] = React.useState(props.expanded);
   if (!expanded) {
-    return <span>
+    return <span className="clearfix">
       {props.committmentResponse.kind}
       <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
     </span>

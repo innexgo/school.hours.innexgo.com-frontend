@@ -27,6 +27,9 @@ import Dashboard from './pages/Dashboard';
 import Calendar from './pages/Calendar';
 // report
 
+// account
+import Account from './pages/Account';
+
 // settings
 import Settings from './pages/Settings';
 
@@ -124,6 +127,9 @@ function App() {
         </Route>
         <Route path="/settings" >
           <AuthenticatedRoute branding={branding} {...apiKeyGetSetter} component={Settings} />
+        </Route>
+        <Route path="/account" >
+          <AuthenticatedRoute branding={branding} {...apiKeyGetSetter} component={Account} />
         </Route>
         <Route path="/admin_manage_school" >
           <AuthenticatedRoute branding={branding} {...apiKeyGetSetter} component={AdminManageSchool} />

@@ -4,7 +4,7 @@ import DashboardLayout from '../components/DashboardLayout';
 import CourseViewStatsReport from '../components/CourseViewStatsReport';
 import UtilityWrapper from '../components/UtilityWrapper';
 
-import {AuthenticatedComponentProps} from '@innexgo/frontend-auth-api';
+import {AuthenticatedComponentProps} from '@innexgo/auth-react-components';
 
 
 function CourseStatsReport(props: AuthenticatedComponentProps) {

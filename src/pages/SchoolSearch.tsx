@@ -1,8 +1,8 @@
-import React from 'react';
+import { SimpleLayout, BrandedComponentProps } from '@innexgo/common-react-components';
 import { Link } from 'react-router-dom';
 
-function Error404() {
-  return (
+function SchoolSearch(props: BrandedComponentProps) {
+  return <SimpleLayout branding={props.branding}>
     <div style={{
       display: "flex",
       height: "100vh",
@@ -14,7 +14,7 @@ function Error404() {
         <Link to="/">Return Home</Link>
       </div>
     </div>
-  )
+  </SimpleLayout>
 }
 
-export default Error404
+export default SchoolSearch

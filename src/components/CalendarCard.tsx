@@ -1,6 +1,6 @@
 import { Async, AsyncProps } from 'react-async';
 import { Card, Form } from "react-bootstrap";
-import Loader from '../components/Loader';
+import { Loader } from '@innexgo/common-react-components';
 import { EventContentArg } from "@fullcalendar/react"
 import { SessionData, SessionRequestResponse, SessionRequest, CourseData, CommittmentResponse, committmentView } from '../utils/utils';
 import { ApiKey, UserData, userDataView} from '@innexgo/frontend-auth-api';
@@ -9,13 +9,13 @@ import { unwrap } from '@innexgo/frontend-common';
 function SessionRequestCard(props: {
   sessionRequest: SessionRequest;
   courseData: CourseData
-  creator: UserData
+  creatorUserData: UserData
 }) {
   return (
     <Card className="px-1 py-1 h-100 w-100 bg-danger text-light overflow-hidden" >
       Course: {props.courseData.name}
       <br />
-      From: {props.sessionRequest.creatorUserId}
+      From: {props.creatorUserData.name}
       <br />
       Msg: {props.sessionRequest.message}
     </Card>
@@ -122,13 +122,13 @@ function CommittmentCard(props: {
 function CommittmentResponseCard(props: {
   sessionData: SessionData,
   committmentResponse: CommittmentResponse
-  attendee: UserData
+  attendeeUserData: UserData
 }) {
   return (
     <Card className="px-1 py-1 h-100 w-100 bg-success text-light overflow-hidden" >
       Appt: {props.sessionData.name}
       <br />
-      Attendee: {props.attendee.name}
+      Attendee: {props.attendeeUserData.name}
       <br />
       Status: {props.committmentResponse.kind}
     </Card>
@@ -142,7 +142,7 @@ function CalendarCard(eventInfo: EventContentArg) {
       return <SessionRequestCard
         sessionRequest={props.sessionRequest}
         courseData={props.courseData}
-        creator={props.creator}
+        creatorUserData={props.creatorUserData}
       />
     case "SessionRequestResponse":
       if (props.sessionRequestResponse.committment) {
@@ -167,7 +167,7 @@ function CalendarCard(eventInfo: EventContentArg) {
       return <CommittmentResponseCard
         committmentResponse={props.committmentResponse}
         sessionData={props.sessionData}
-        attendee={props.attendee}
+        attendeeUserData={props.attendeeUserData}
       />
     case "Committment":
       return <CommittmentCard

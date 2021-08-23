@@ -1,10 +1,10 @@
 import React from 'react';
 import { Button, Form, Table } from 'react-bootstrap';
-import Loader from '../components/Loader';
+import { Loader } from '@innexgo/common-react-components';
 import DisplayModal from '../components/DisplayModal';
 import { ViewUser, } from '../components/ViewData';
 
-import { Delete, } from '@material-ui/icons'
+import { X as Delete, } from 'react-bootstrap-icons'
 import { Formik, FormikHelpers } from 'formik'
 
 import format from "date-fns/format";
@@ -105,7 +105,7 @@ function CancelAdminship(props: CancelAdminshipProps) {
           <div hidden={fprops.status.successResult !== ""}>
             <p>Are you sure you want to remove the following user:</p>
             <ViewUser userId={props.userId} apiKey={props.apiKey} expanded={false} />
-            {props.apiKey.creator.userId === props.userId
+            {props.apiKey.creatorUserId === props.userId
               ? <p className="text-danger">You are removing yourself. You won't be able to add yourself back.</p>
               : <> </>
             }

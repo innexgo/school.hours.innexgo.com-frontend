@@ -1,18 +1,18 @@
 import React from 'react'
 import { Container, Card, Form, Tabs, Tab } from 'react-bootstrap';
-import { Add } from '@material-ui/icons'
+import { Plus as Add } from 'react-bootstrap-icons'
 import { Async, AsyncProps } from 'react-async';
 
 import DashboardLayout from '../components/DashboardLayout';
-import Section from '../components/Section';
-import Loader from '../components/Loader';
+import { Section } from '@innexgo/common-react-components';
+import { Loader } from '@innexgo/common-react-components';
 import DisplayModal from '../components/DisplayModal';
 import UserCreateSchool from '../components/UserCreateSchool';
 import UserCreateCourse from '../components/UserCreateCourse';
 import CreateAdminship from '../components/CreateAdminship';
 import UserCreateCourseMembership from '../components/UserCreateCourseMembership';
 import { subscriptionView, schoolDataView, courseDataView, adminshipView, courseMembershipView, SchoolData, CourseData, } from '../utils/utils';
-import { AuthenticatedComponentProps } from '@innexgo/frontend-auth-api';
+import { AuthenticatedComponentProps } from '@innexgo/auth-react-components';
 import { unwrap, } from '@innexgo/frontend-common';
 
 type ResourceCardProps = {
@@ -25,7 +25,7 @@ type ResourceCardProps = {
 
 function ResourceCard(props: ResourceCardProps) {
   return (
-    <a className="text-dark float-right" href={props.href}>
+    <a className="text-dark" href={props.href}>
       <Card className="h-100" style={{ width: '15rem' }}>
         <Card.Body>
           <Card.Title>{props.title}</Card.Title>
@@ -63,7 +63,7 @@ type DashboardData = {
 
 const loadDashboardData = async (props: AsyncProps<DashboardData>) => {
   const subscriptions = await subscriptionView({
-    creatorUserId: [props.apiKey.creator.userId],
+    creatorUserId: [props.apiKey.creatorUserId],
     onlyRecent: true,
     subscriptionKind: ["VALID"],
     apiKey: props.apiKey.key
@@ -71,7 +71,7 @@ const loadDashboardData = async (props: AsyncProps<DashboardData>) => {
     .then(unwrap);
 
   const adminships = await adminshipView({
-    userId: [props.apiKey.creator.userId],
+    userId: [props.apiKey.creatorUserId],
     onlyRecent: true,
     adminshipKind: ["ADMIN"],
     apiKey: props.apiKey.key
@@ -87,7 +87,7 @@ const loadDashboardData = async (props: AsyncProps<DashboardData>) => {
     .then(unwrap);
 
   const courseMemberships = await courseMembershipView({
-    userId: [props.apiKey.creator.userId],
+    userId: [props.apiKey.creatorUserId],
     onlyRecent: true,
     apiKey: props.apiKey.key
   })
@@ -127,7 +127,7 @@ function Dashboard(props: AuthenticatedComponentProps) {
 
   return (
     <DashboardLayout {...props}>
-      <Container fluid className="py-4 px-4">
+      <Container className="py-4 px-4">
         <Async promiseFn={loadDashboardData} apiKey={props.apiKey}>
           {({ reload: reloadDashboardData }) => <>
             <Async.Pending><Loader /></Async.Pending>

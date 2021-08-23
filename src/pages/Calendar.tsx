@@ -1,6 +1,6 @@
 import React from 'react'
 import { Async, AsyncProps } from 'react-async';
-import Loader from '../components/Loader';
+import { Loader } from '@innexgo/common-react-components';
 import FullCalendar, { DateSelectArg, EventClickArg } from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
@@ -8,9 +8,11 @@ import DashboardLayout from '../components/DashboardLayout';
 import CalendarCard from '../components/CalendarCard';
 
 import { unwrap } from '@innexgo/frontend-common';
-import { userView, ApiKey, AuthenticatedComponentProps } from '@innexgo/frontend-auth-api';
+import assert from 'assert';
+import { userView, ApiKey, userDataView, UserData } from '@innexgo/frontend-auth-api';
+import { AuthenticatedComponentProps } from '@innexgo/auth-react-components';
 
-import { Tab, Tabs, Form, Popover, Container, Row, Col, Card } from 'react-bootstrap';
+import { Tab, Tabs, Form, Container, Row, Col, Card } from 'react-bootstrap';
 import { Session, SessionData, SessionRequest, SessionRequestResponse, CourseMembership, CourseData, Committment, CommittmentResponse } from '../utils/utils';
 import { sessionDataView, sessionRequestView, courseMembershipView } from '../utils/utils';
 import { sessionRequestResponseView, committmentView, courseDataView, committmentResponseView } from '../utils/utils';
@@ -31,6 +33,7 @@ type EventCalendarProps = {
   apiKey: ApiKey,
   showAllHours: boolean,
   showHiddenEvents: boolean,
+  creatorUserData: UserData,
   instructorCourseDatas: CourseData[],
   studentCourseDatas: CourseData[],
   courseMemberships: CourseMembership[],
@@ -71,7 +74,7 @@ function EventCalendar(props: EventCalendarProps) {
     }) => {
 
     const sessionRequests = await sessionRequestView({
-      creatorUserId: [props.apiKey.creator.userId],
+      creatorUserId: [props.apiKey.creatorUserId],
       courseId: props.studentCourseDatas.map(cd => cd.course.courseId),
       minStartTime: args.start.valueOf(),
       maxStartTime: args.end.valueOf(),
@@ -81,7 +84,7 @@ function EventCalendar(props: EventCalendarProps) {
       .then(unwrap);
 
     const rejectedSessionRequestResponses = await sessionRequestResponseView({
-      attendeeUserId: [props.apiKey.creator.userId],
+      attendeeUserId: [props.apiKey.creatorUserId],
       courseId: props.studentCourseDatas.map(cd => cd.course.courseId),
       minStartTime: args.start.valueOf(),
       maxStartTime: args.end.valueOf(),
@@ -91,7 +94,7 @@ function EventCalendar(props: EventCalendarProps) {
       .then(unwrap);
 
     const acceptedSessionRequestResponses = await sessionRequestResponseView({
-      attendeeUserId: [props.apiKey.creator.userId],
+      attendeeUserId: [props.apiKey.creatorUserId],
       courseId: props.studentCourseDatas.map(cd => cd.course.courseId),
       minStartTime: args.start.valueOf(),
       maxStartTime: args.end.valueOf(),
@@ -101,7 +104,7 @@ function EventCalendar(props: EventCalendarProps) {
       .then(unwrap);
 
     const committments = await committmentView({
-      attendeeUserId: [props.apiKey.creator.userId],
+      attendeeUserId: [props.apiKey.creatorUserId],
       courseId: props.studentCourseDatas.map(cd => cd.course.courseId),
       minStartTime: args.start.valueOf(),
       maxStartTime: args.end.valueOf(),
@@ -113,7 +116,7 @@ function EventCalendar(props: EventCalendarProps) {
 
 
     const committmentResponses = await committmentResponseView({
-      attendeeUserId: [props.apiKey.creator.userId],
+      attendeeUserId: [props.apiKey.creatorUserId],
       courseId: props.studentCourseDatas.map(cd => cd.course.courseId),
       minStartTime: args.start.valueOf(),
       maxStartTime: args.end.valueOf(),
@@ -142,14 +145,14 @@ function EventCalendar(props: EventCalendarProps) {
         .map(({ sr, cd }) =>
           sessionRequestToEvent({
             sessionRequest: sr,
-            courseData: cd!,
+            courseData: cd,
             relation: "STUDENT",
-            creator: props.apiKey.creator,
+            creatorUserData: props.creatorUserData,
           })),
 
       ...rejectedSessionRequestResponses
         // hide things you cancelled yourself
-        .filter(x => x.creatorUserId !== props.apiKey.creator.userId || props.showHiddenEvents)
+        .filter(x => x.creatorUserId !== props.apiKey.creatorUserId || props.showHiddenEvents)
         // match with a course
         .map(srr => ({ srr, cd: props.studentCourseDatas.find(cd => cd.course.courseId === srr.sessionRequest.course.courseId)! }))
         // map to event
@@ -192,7 +195,7 @@ function EventCalendar(props: EventCalendarProps) {
         // map to event
         .map(({ cr, sd }) => committmentResponseToEvent({
           committmentResponse: cr,
-          attendee: props.apiKey.creator,
+          attendeeUserData: props.creatorUserData,
           sessionData: sd,
           relation: "STUDENT"
         })),
@@ -239,8 +242,9 @@ function EventCalendar(props: EventCalendarProps) {
       .then(unwrap);
 
     // fetch the session requesters
-    const sessionRequesters = await userView({
-      userId: iSessionRequests.map(sr => sr.creatorUserId),
+    const sessionRequesters = await userDataView({
+      creatorUserId: iSessionRequests.map(sr => sr.creatorUserId),
+      onlyRecent: true,
       apiKey: props.apiKey.key,
     })
       .then(unwrap);
@@ -260,11 +264,12 @@ function EventCalendar(props: EventCalendarProps) {
         // match with a course
         .map(sr => ({ sr, cd: props.instructorCourseDatas.find(cd => cd.course.courseId === sr.course.courseId)! }))
         // match with a user
-        .map(({ sr, cd }) => ({ sr, cd, u: sessionRequesters.find(u => u.userId === sr.creatorUserId)! }))
+        .map(({ sr, cd }) => ({ sr, cd, u: sessionRequesters.find(u => u.creatorUserId === sr.creatorUserId)! }))
+        // now map to event
         .map(({ sr, cd, u }) => sessionRequestToEvent({
           sessionRequest: sr,
           courseData: cd,
-          creator: u,
+          creatorUserData: u,
           relation: "INSTRUCTOR"
         })),
 
@@ -322,8 +327,8 @@ function EventCalendar(props: EventCalendarProps) {
   }
 
   const showAllHoursProps = props.showAllHours ? {} : {
-    slotMinTime: "08:00",
-    slotMaxTime: "18:00",
+    slotMinTime: "10:00",
+    slotMaxTime: "13:00",
     weekends: false
   }
 
@@ -341,7 +346,7 @@ function EventCalendar(props: EventCalendarProps) {
       height={"auto"}
       datesSet={({ view }) => /* Keeps window size in sync */view.calendar.updateSize()}
       allDaySlot={false}
-      slotDuration="00:15:00"
+      slotDuration="00:05:00"
       nowIndicator={true}
       editable={false}
       selectable={true}
@@ -359,7 +364,7 @@ function EventCalendar(props: EventCalendarProps) {
             startRecur: new Date()
           },
           {
-            daysOfWeek: [2, 3, 4, 5], // MTWHF
+            daysOfWeek: [3, 5], // WF
             startTime: "11:40", // 8am
             endTime: "12:30", // 6pm
             startRecur: new Date()
@@ -512,14 +517,27 @@ function EventCalendar(props: EventCalendarProps) {
 }
 
 type CalendarCourseData = {
+  userData: UserData,
   courseMemberships: CourseMembership[],
   studentCourseDatas: CourseData[],
   instructorCourseDatas: CourseData[]
 }
 
 const loadCalendarCourseData = async (props: AsyncProps<CalendarCourseData>) => {
+
+  const userData = await userDataView({
+    creatorUserId: [props.apiKey.creatorUserId],
+    onlyRecent: true,
+    apiKey: props.apiKey.key,
+  })
+    .then(unwrap)
+    .then(x => {
+      assert(x.length > 0);
+      return x[0];
+    })
+
   const courseMemberships = await courseMembershipView({
-    userId: [props.apiKey.creator.userId],
+    userId: [props.apiKey.creatorUserId],
     onlyRecent: true,
     apiKey: props.apiKey.key,
   })
@@ -540,6 +558,7 @@ const loadCalendarCourseData = async (props: AsyncProps<CalendarCourseData>) => 
     .then(unwrap);
 
   return {
+    userData,
     courseMemberships,
     studentCourseDatas,
     instructorCourseDatas,
@@ -553,13 +572,12 @@ function CalendarWidget(props: AuthenticatedComponentProps) {
   const [showHiddenEvents, setShowHiddenEvents] = React.useState(false);
   const [hiddenCourses, setHiddenCourses] = React.useState<number[]>([]);
 
-
   return <UtilityWrapper title="Upcoming Appointments">
-    <Popover id="information-tooltip">
+    <span>
       This screen shows all future appointments.
       You can click any date to add an appointment on that date,
       or click an existing appointment to delete it.
-    </Popover>
+    </span>
     <Async promiseFn={loadCalendarCourseData} apiKey={props.apiKey}>
       <Async.Pending>
         <Loader />
@@ -608,6 +626,7 @@ function CalendarWidget(props: AuthenticatedComponentProps) {
               apiKey={props.apiKey}
               showAllHours={showAllHours}
               showHiddenEvents={showHiddenEvents}
+              creatorUserData={ccd.userData}
               courseMemberships={ccd.courseMemberships}
               studentCourseDatas={ccd.studentCourseDatas.filter(cm => !hiddenCourses.includes(cm.course.courseId))}
               instructorCourseDatas={ccd.instructorCourseDatas.filter(cm => !hiddenCourses.includes(cm.course.courseId))}

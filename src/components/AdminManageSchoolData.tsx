@@ -1,10 +1,10 @@
 import React from 'react';
-import { Form, Button, Table } from 'react-bootstrap'; import Loader from '../components/Loader';
+import { Form, Button, Table } from 'react-bootstrap'; import { Loader } from '@innexgo/common-react-components';
 import { Async, AsyncProps } from 'react-async';
 import DisplayModal from '../components/DisplayModal';
 import { schoolDataView, schoolDataNew, normalizeSchoolName, SchoolData, } from '../utils/utils';
 import { ViewUser } from '../components/ViewData';
-import { Edit, Archive, Unarchive } from '@material-ui/icons';
+import { Pencil as EditIcon, Trash as DeleteIcon, BoxArrowUp as RestoreIcon } from 'react-bootstrap-icons';
 import { Formik, FormikHelpers } from 'formik'
 import format from 'date-fns/format';
 
@@ -282,11 +282,11 @@ const AdminManageSchoolData = (props: {
             </tr>
           </tbody>
         </Table>
-        <Button variant="secondary" onClick={_ => setShowEditSchoolData(true)}>Edit <Edit /></Button>
+        <Button variant="secondary" onClick={_ => setShowEditSchoolData(true)}>Edit <EditIcon /></Button>
 
         {schoolData.active
-          ? <Button variant="danger" onClick={_ => setShowArchiveSchool(true)}>Archive <Archive /></Button>
-          : <Button variant="success" onClick={_ => setShowArchiveSchool(true)}>Unarchive <Unarchive /></Button>
+          ? <Button variant="danger" onClick={_ => setShowArchiveSchool(true)}>Delete <DeleteIcon /></Button>
+          : <Button variant="success" onClick={_ => setShowArchiveSchool(true)}>Restore <RestoreIcon/></Button>
         }
 
         <DisplayModal

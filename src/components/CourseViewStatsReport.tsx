@@ -1,8 +1,8 @@
 import { Button, Form, Table } from 'react-bootstrap';
-import Loader from '../components/Loader';
+import { Loader } from '@innexgo/common-react-components';
 import { ViewCommittmentResponse, ViewCourse, ViewUser, } from '../components/ViewData';
 
-import { Delete, } from '@material-ui/icons'
+import { X as Delete, } from 'react-bootstrap-icons'
 import { Formik, FormikHelpers, } from 'formik'
 
 import format from "date-fns/format";
@@ -11,7 +11,9 @@ import { Async, AsyncProps } from 'react-async';
 import { courseMembershipView, CourseMembership, Committment, CommittmentResponse, CourseData, committmentView, committmentResponseView, courseDataView, } from '../utils/utils';
 
 import { unwrap } from '@innexgo/frontend-common';
-import { ApiKey, AuthenticatedComponentProps} from '@innexgo/frontend-auth-api';
+import { ApiKey} from '@innexgo/frontend-auth-api';
+
+import {AuthenticatedComponentProps} from '@innexgo/auth-react-components';
 
 
 type CourseStatsReportData = {

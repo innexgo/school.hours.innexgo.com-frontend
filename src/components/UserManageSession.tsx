@@ -1,7 +1,7 @@
 import { Async, AsyncProps } from 'react-async';
 import { Row, Col, Card, Tabs, Tab, Table, Form, Button, } from 'react-bootstrap';
 import { Formik, FormikHelpers, } from 'formik';
-import Loader from '../components/Loader';
+import { Loader } from '@innexgo/common-react-components';
 import UserManageSessionData from '../components/UserManageSessionData';
 import { ViewSession, ViewUser, ViewSessionRequestResponse } from '../components/ViewData';
 import SearchMultiUser from '../components/SearchMultiUser';
@@ -157,12 +157,10 @@ function ManageSessionModal(props: ManageSessionModalProps) {
                           <tr key={c.committment.committmentId}>
                             <td><ViewUser expanded={false} apiKey={props.apiKey} userId={c.committment.attendeeUserId} /></td>
                             <td>
-                              <Form.Control
-                                as="select"
+                              <Form.Select
                                 size="sm"
-                                custom
                                 onChange={(e) => {
-                                  fprops.values[i].committmentResponseKind = e.target.value as (CommittmentResponseKind | "default");
+                                  fprops.values[i].committmentResponseKind = (e.target as HTMLSelectElement).value as (CommittmentResponseKind | "default");
                                   fprops.setValues(fprops.values)
                                 }}
                                 placeholder="Message"
@@ -173,7 +171,7 @@ function ManageSessionModal(props: ManageSessionModalProps) {
                                 <option value="TARDY">Tardy</option>
                                 <option value="ABSENT">Absent</option>
                                 <option value="CANCELLED">Cancel</option>
-                              </Form.Control>
+                              </Form.Select>
                               <br />
                               <Form.Text className="text-danger">{fprops.status[i]}</Form.Text>
                             </td>
@@ -282,7 +280,7 @@ function ManageSessionModal(props: ManageSessionModalProps) {
 
                             return users.filter(x => x.name.includes(input)) ;
                           }}
-                          setFn={e => fprops.setFieldValue("studentList", e.map(s => s.creator.userId))} />
+                          setFn={e => fprops.setFieldValue("studentList", e.map(s => s.creatorUserId))} />
                         <Form.Text className="text-danger">{fprops.status.studentList}</Form.Text>
                       </Col>
                     </Form.Group>

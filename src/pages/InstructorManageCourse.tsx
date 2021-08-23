@@ -5,7 +5,7 @@ import InstructorManageCourseKeys from '../components/InstructorManageCourseKeys
 import InstructorManageCourseData from '../components/InstructorManageCourseData';
 import UtilityWrapper from '../components/UtilityWrapper';
 
-import {AuthenticatedComponentProps} from '@innexgo/frontend-auth-api';
+import {AuthenticatedComponentProps} from '@innexgo/auth-react-components';
 
 function InstructorManageCourse(props: AuthenticatedComponentProps) {
   const courseId = parseInt(new URLSearchParams(window.location.search).get("courseId") ?? "");

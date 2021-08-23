@@ -118,7 +118,7 @@ function UserCreateCourse(props: UserCreateCourseProps) {
                 search={async (input: string) => {
 
                   const adminships = await adminshipView({
-                    userId: [props.apiKey.creator.userId],
+                    userId: [props.apiKey.creatorUserId],
                     adminshipKind: ["ADMIN"],
                     onlyRecent: true,
                     apiKey: props.apiKey.key,

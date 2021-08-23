@@ -1,10 +1,10 @@
 import React from 'react';
 import { Button, Tabs, Tab, Form, Table } from 'react-bootstrap';
-import Loader from '../components/Loader';
+import { Loader } from '@innexgo/common-react-components';
 import DisplayModal from '../components/DisplayModal';
 //import { ViewUser, } from '../components/ViewData';
 
-import { Delete, } from '@material-ui/icons'
+import { X  as DeleteIcon, } from 'react-bootstrap-icons'
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
 
 //import SearchMultiUser from "../components/SearchMultiUser";
@@ -175,7 +175,7 @@ function InstructorManageCourseKeys(props: InstructorManageCourseKeysProps) {
                         <td>{a.endTime > Date.now()
                           ?
                           <Button variant="link" className="text-dark" onClick={() => setConfirmRevokeCourseKey(a)}>
-                            <Delete />
+                            <DeleteIcon />
                           </Button>
                           : <div />
                         }</td>

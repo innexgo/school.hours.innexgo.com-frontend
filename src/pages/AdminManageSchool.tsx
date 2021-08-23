@@ -1,6 +1,6 @@
-import { Container, Popover, Form, Table } from 'react-bootstrap';
+import { Container, Form, Table } from 'react-bootstrap';
 import DashboardLayout from '../components/DashboardLayout';
-import Loader from '../components/Loader';
+import { Loader } from '@innexgo/common-react-components';
 import AdminManageAdminships from '../components/AdminManageAdminships';
 import AdminManageSchoolKeys from '../components/AdminManageSchoolKeys'
 import UtilityWrapper from '../components/UtilityWrapper';
@@ -9,13 +9,14 @@ import AdminManageSchoolData from '../components/AdminManageSchoolData';
 
 import {unwrap} from '@innexgo/frontend-common';
 
-import { Visibility } from '@material-ui/icons'
+import { Eye as Visibility } from 'react-bootstrap-icons'
 
 import format from "date-fns/format";
 
 import { Async, AsyncProps } from 'react-async';
 import { CourseData, School, schoolView, courseDataView, } from '../utils/utils';
-import {AuthenticatedComponentProps, ApiKey} from '@innexgo/frontend-auth-api';
+import { ApiKey} from '@innexgo/frontend-auth-api';
+import {AuthenticatedComponentProps } from '@innexgo/auth-react-components';
 
 const loadSchool = async (props: AsyncProps<School>) => {
   const maybeSchools = await schoolView({
@@ -53,21 +54,21 @@ function AdminManageSchool(props: AuthenticatedComponentProps) {
           <Async.Fulfilled<School>>{school => <>
             <div className="mx-3 my-3">
               <UtilityWrapper title="School Data">
-                <Popover id="information-tooltip"> Shows basic information about this school. </Popover>
+                <span> Shows basic information about this school.</span>
                 <AdminManageSchoolData schoolId={school.schoolId} apiKey={props.apiKey} />
               </UtilityWrapper>
             </div>
 
             <div className="mx-3 my-3">
               <UtilityWrapper title="Administrators">
-                <Popover id="information-tooltip"> Shows the current administrators of this school. </Popover>
+                <span>Shows the current administrators of this school.</span>
                 <AdminManageAdminships school={school} apiKey={props.apiKey} />
               </UtilityWrapper>
             </div>
 
             <div className="mx-3 my-3">
               <UtilityWrapper title="Administrator Requests">
-                <Popover id="information-tooltip"> Shows the current administrators of this school. </Popover>
+                <span> Shows the current administrators of this school.</span>
                 <AdminManageSchoolKeys schoolId={school.schoolId} apiKey={props.apiKey} />
               </UtilityWrapper>
             </div>
@@ -75,7 +76,7 @@ function AdminManageSchool(props: AuthenticatedComponentProps) {
 
             <div className="mx-3 my-3">
               <UtilityWrapper title="Courses">
-                <Popover id="information-tooltip"> Shows the current courses hosted by this school. </Popover>
+                <span>Shows the current courses hosted by this school.</span>
                 <Async promiseFn={loadCourseData} apiKey={props.apiKey} school={school}>
                   {({ reload }) => <>
                     <Async.Pending><Loader /></Async.Pending>

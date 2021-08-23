@@ -69,7 +69,7 @@ class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
             timeZone: string;
           }) => {
           const courseMemberships = await courseMembershipView({
-            userId: [this.props.apiKey.creator.userId],
+            userId: [this.props.apiKey.creatorUserId],
             courseMembershipKind: ["INSTRUCTOR"],
             onlyRecent: true,
             apiKey: this.props.apiKey.key
@@ -102,8 +102,8 @@ class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
 }
 
 function ColorExplainer(props: { color: string; text: string }) {
-  return <Media>
-    <div
+  return <div>
+    <span
       className="mr-2"
       style={{
         borderStyle: "solid",
@@ -112,10 +112,8 @@ function ColorExplainer(props: { color: string; text: string }) {
         backgroundColor: props.color
       }}
     />
-    <Media.Body>
-      <p>{props.text}</p>
-    </Media.Body>
-  </Media>
+      <span>{props.text}</span>
+  </div>
 }
 
 

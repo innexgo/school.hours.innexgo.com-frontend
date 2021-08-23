@@ -3,7 +3,8 @@ import { Formik, FormikHelpers, FormikErrors } from 'formik'
 import { Button, Form } from "react-bootstrap";
 import { schoolNew, normalizeSchoolName } from "../utils/utils";
 import {isErr } from '@innexgo/frontend-common';
-import {AuthenticatedComponentProps, ApiKey} from '@innexgo/frontend-auth-api';
+import {ApiKey} from '@innexgo/frontend-auth-api';
+import {AuthenticatedComponentProps} from '@innexgo/auth-react-components';
 
 
 type UserCreateSchoolProps = {

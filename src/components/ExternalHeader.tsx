@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Menu } from '@material-ui/icons'
+import { List as MenuIcon } from 'react-bootstrap-icons'
 
 interface ExternalHeaderProps {
   fixed: boolean;
@@ -62,8 +62,8 @@ class ExternalHeader extends React.Component<ExternalHeaderProps, ExternalHeader
         <nav style={navStyle} className={"navbar navbar-expand-lg py-3" + (this.props.fixed ? " fixed-top" : "")}>
           <div className="container">
             <Link style={linkStyle} className="navbar-brand font-weight-bold" to="/">{this.props.children}</Link>
-            <button className="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
-              <Menu style={linkStyle} />
+            <button className="navbar-toggler navbar-toggler-right" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
+              <MenuIcon  style={linkStyle} />
             </button>
             <div className="collapse navbar-collapse"
               id="navbarSupportedContent">

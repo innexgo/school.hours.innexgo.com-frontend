@@ -193,7 +193,7 @@ function CreateSession(props: CreateSessionProps) {
 
                   // get memberships in which i am a teacher
                   const courseMemberships = await courseMembershipView({
-                    userId: [props.apiKey.creator.userId],
+                    userId: [props.apiKey.creatorUserId],
                     courseMembershipKind: ["INSTRUCTOR"],
                     onlyRecent: true,
                     apiKey: props.apiKey.key,
@@ -258,7 +258,7 @@ function CreateSession(props: CreateSessionProps) {
                   return users.filter(x => x.name.includes(input));
                 }}
                 setFn={e => {
-                  fprops.setFieldValue("studentList", e.map(s => s.creator.userId));
+                  fprops.setFieldValue("studentList", e.map(s => s.creatorUserId));
                 }} />
               <Form.Text className="text-danger">{fprops.status.studentList}</Form.Text>
             </Col>

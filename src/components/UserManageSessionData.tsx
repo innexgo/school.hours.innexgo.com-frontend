@@ -1,11 +1,11 @@
 import React from 'react';
 import { Form, Button, Table } from 'react-bootstrap';
-import Loader from '../components/Loader';
+import { Loader } from '@innexgo/common-react-components';
 import { Async, AsyncProps } from 'react-async';
 import DisplayModal from '../components/DisplayModal';
 import { sessionDataView, sessionDataNew, SessionData } from '../utils/utils';
 import { ViewUser } from '../components/ViewData';
-import { Edit, Archive, Unarchive } from '@material-ui/icons';
+import { Pencil as EditIcon, Trash as DeleteIcon, BoxArrowUp as RestoreIcon } from 'react-bootstrap-icons';
 import { Formik, FormikHelpers } from 'formik'
 import format from 'date-fns/format';
 
@@ -167,7 +167,7 @@ const UserManageSessionData = (props: {
             </tr>
           </tbody>
         </Table>
-        <Button variant="secondary" onClick={_ => setShowEditSessionData(true)}>Edit <Edit /></Button>
+        <Button variant="secondary" onClick={_ => setShowEditSessionData(true)}>Edit <EditIcon /></Button>
 
         <DisplayModal
           title="Edit Session"

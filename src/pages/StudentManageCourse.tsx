@@ -4,7 +4,7 @@ import StudentManageCourseData from '../components/StudentManageCourseData';
 import StudentManageCourseMemberships from '../components/StudentManageCourseMemberships'
 import UtilityWrapper from '../components/UtilityWrapper';
 
-import {AuthenticatedComponentProps} from '@innexgo/frontend-auth-api';
+import {AuthenticatedComponentProps} from '@innexgo/auth-react-components';
 
 function StudentManageCourse(props: AuthenticatedComponentProps) {
   const courseId = parseInt(new URLSearchParams(window.location.search).get("courseId") ?? "");
@@ -24,8 +24,6 @@ function StudentManageCourse(props: AuthenticatedComponentProps) {
             <StudentManageCourseMemberships courseId={courseId} apiKey={props.apiKey} courseMembershipKind="INSTRUCTOR" />
           </UtilityWrapper>
         </div>
-
-   
       </Container>
     </DashboardLayout>
   )

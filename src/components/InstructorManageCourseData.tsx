@@ -1,14 +1,14 @@
 import React from 'react';
-import { Form, Button, Table } from 'react-bootstrap'; import Loader from '../components/Loader';
+import { Form, Button, Table } from 'react-bootstrap'; import { Loader } from '@innexgo/common-react-components';
 import { Async, AsyncProps } from 'react-async';
 import DisplayModal from '../components/DisplayModal';
 import { courseDataView, courseDataNew, CourseData, normalizeCourseName } from '../utils/utils';
 import { ViewUser } from '../components/ViewData';
-import { Edit, Archive, Unarchive} from '@material-ui/icons';
+import { Pencil as EditIcon, Trash as DeleteIcon, BoxArrowUp as RestoreIcon } from 'react-bootstrap-icons';
 import { Formik, FormikHelpers } from 'formik'
 import format from 'date-fns/format';
-import {isErr, unwrap} from '@innexgo/frontend-common';
-import {ApiKey} from '@innexgo/frontend-auth-api';
+import { isErr, unwrap } from '@innexgo/frontend-common';
+import { ApiKey } from '@innexgo/frontend-auth-api';
 
 
 type EditCourseDataProps = {
@@ -227,12 +227,12 @@ function ArchiveCourse(props: ArchiveCourseProps) {
 
 
 const loadCourseData = async (props: AsyncProps<CourseData>) => {
-  const courseData  = await courseDataView({
+  const courseData = await courseDataView({
     courseId: [props.courseId],
     onlyRecent: true,
     apiKey: props.apiKey.key
   })
-  .then(unwrap);
+    .then(unwrap);
 
   return courseData[0];
 }
@@ -281,11 +281,11 @@ const InstructorManageCourseData = (props: {
             </tr>
           </tbody>
         </Table>
-        <Button variant="secondary" onClick={_ => setShowEditCourseData(true)}>Edit <Edit /></Button>
+        <Button variant="secondary" onClick={_ => setShowEditCourseData(true)}>Edit <EditIcon /></Button>
 
-        { courseData.active
-            ? <Button variant="danger" onClick={_ => setShowArchiveCourse(true)}>Archive <Archive /></Button>
-            : <Button variant="success" onClick={_ => setShowArchiveCourse(true)}>Unarchive <Unarchive /></Button>
+        {courseData.active
+          ? <Button variant="danger" onClick={_ => setShowArchiveCourse(true)}>Delete <DeleteIcon /></Button>
+          : <Button variant="success" onClick={_ => setShowArchiveCourse(true)}>Restore <RestoreIcon /></Button>
         }
 
         <DisplayModal

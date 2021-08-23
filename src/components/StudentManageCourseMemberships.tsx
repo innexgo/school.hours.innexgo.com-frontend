@@ -1,5 +1,5 @@
 import { Form, Table } from 'react-bootstrap';
-import Loader from '../components/Loader';
+import { Loader } from '@innexgo/common-react-components';
 import { ViewUser, } from '../components/ViewData';
 
 import format from "date-fns/format";

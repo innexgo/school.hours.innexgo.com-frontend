@@ -1,10 +1,10 @@
 import React from 'react';
-import { Form, Button, Table } from 'react-bootstrap'; import Loader from '../components/Loader';
+import { Form, Button, Table } from 'react-bootstrap'; import { Loader } from '@innexgo/common-react-components';
 import { Async, AsyncProps } from 'react-async';
 import DisplayModal from '../components/DisplayModal';
 import { CourseData, CourseMembership, courseMembershipView, courseDataView, courseMembershipNewCancel } from '../utils/utils';
 import { ViewUser } from '../components/ViewData';
-import { Cancel } from '@material-ui/icons';
+import { X as CancelIcon } from 'react-bootstrap-icons';
 import { Formik, FormikHelpers } from 'formik'
 import format from 'date-fns/format';
 
@@ -26,7 +26,7 @@ function LeaveCourse(props: LeaveCourseProps) {
 
 
     const maybeCancelCourseMembership = await courseMembershipNewCancel({
-      userId: props.apiKey.creator.userId,
+      userId: props.apiKey.creatorUserId,
       courseId: props.courseData.course.courseId,
       apiKey: props.apiKey.key,
     });
@@ -131,7 +131,7 @@ const loadCourseDataMembership = async (props: AsyncProps<CourseDataMembership>)
 
   const courseMemberships = await courseMembershipView({
     courseId: [props.courseId],
-    userId: [props.apiKey.creator.userId],
+    userId: [props.apiKey.creatorUserId],
     onlyRecent: true,
     apiKey: props.apiKey.key
   })
@@ -189,7 +189,7 @@ const StudentManageCourseData = (props: {
           </tbody>
         </Table>
         {cdm.courseMembership != null && cdm.courseMembership.courseMembershipKind == "STUDENT"
-          ? <Button variant="danger" onClick={_ => setShowLeaveCourse(true)}>Leave <Cancel /></Button>
+          ? <Button variant="danger" onClick={_ => setShowLeaveCourse(true)}>Leave <CancelIcon /></Button>
           : <> </>
         }
         <DisplayModal

@@ -122,7 +122,7 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
                 search={async input => {
 
                   const courseMemberships = await courseMembershipView( {
-                      userId: [props.apiKey.creator.userId],
+                      userId: [props.apiKey.creatorUserId],
                       courseMembershipKind: ["STUDENT"],
                       onlyRecent: true,
                       apiKey: props.apiKey.key,
