@@ -1,11 +1,10 @@
-import React from 'react';
 import { Container } from 'react-bootstrap';
 
-import SimpleLayout from '../components/SimpleLayout';
+import {SimpleLayout, BrandedComponentProps} from '@innexgo/common-react-components';
 
-function TermsOfService() {
+function TermsOfService(props: BrandedComponentProps) {
   return (
-    <SimpleLayout>
+    <SimpleLayout branding={props.branding}>
       <section>
         <Container>
           <h2>Our Terms of Service</h2>

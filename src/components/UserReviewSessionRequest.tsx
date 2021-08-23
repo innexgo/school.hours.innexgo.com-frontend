@@ -3,10 +3,10 @@ import { Async, AsyncProps } from 'react-async';
 import FullCalendar, { EventClickArg, DateSelectArg } from "@fullcalendar/react"
 import interactionPlugin from '@fullcalendar/interaction'
 import timeGridPlugin from '@fullcalendar/timegrid'
-import { Media, Card, Row, Col, Button, Form } from 'react-bootstrap';
+import { Card, Row, Col, Button, Form } from 'react-bootstrap';
 import ToggleButton from "react-bootstrap/ToggleButton";
 import { Formik, FormikHelpers } from 'formik';
-import Loader from "../components/Loader";
+import { Loader } from '@innexgo/common-react-components';
 
 import CalendarCard from '../components/CalendarCard';
 import { sessionToEvent } from '../components/ToCalendar';

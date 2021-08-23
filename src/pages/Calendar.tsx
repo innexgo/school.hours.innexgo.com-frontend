@@ -350,12 +350,22 @@ function EventCalendar(props: EventCalendarProps) {
       eventContent={CalendarCard}
       unselectCancel=".modal-content"
       eventClick={clickHandler}
-      businessHours={{
-        daysOfWeek: [1, 2, 3, 4, 5], // MTWHF
-        startTime: "08:00", // 8am
-        endTime: "18:00", // 6pm
-        startRecur: new Date()
-      }}
+      businessHours={
+        [
+          {
+            daysOfWeek: [1], // M
+            startTime: "10:25", // 8am
+            endTime: "10:55", // 6pm
+            startRecur: new Date()
+          },
+          {
+            daysOfWeek: [2, 3, 4, 5], // MTWHF
+            startTime: "11:40", // 8am
+            endTime: "12:30", // 6pm
+            startRecur: new Date()
+          },
+        ]
+      }
       selectConstraint="businessHours"
       unselect={() => {
         setSelectedSpan(null);
