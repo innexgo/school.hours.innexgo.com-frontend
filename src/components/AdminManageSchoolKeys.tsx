@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Tabs, Tab, Form, Table } from 'react-bootstrap';
-import { Loader } from '@innexgo/common-react-components';
+import { Loader, Action } from '@innexgo/common-react-components';
 import DisplayModal from '../components/DisplayModal';
 //import { ViewUser, } from '../components/ViewData';
 
@@ -14,7 +14,7 @@ import addDays from "date-fns/addDays";
 
 import { Async, AsyncProps } from 'react-async';
 import { INT_MAX, SchoolKey, schoolKeyDataNew, schoolKeyNew, schoolKeyDataView, } from '../utils/utils';
-import { unwrap, isErr } from '@innexgo/frontend-common';
+import { unwrap, isErr, isEmpty} from '@innexgo/frontend-common';
 import { ApiKey } from '@innexgo/frontend-auth-api';
 
 type RevokeSchoolKeyProps = {
@@ -118,7 +118,7 @@ const loadSchoolKeys = async (props: AsyncProps<SchoolKey[]>) => {
     onlyRecent: true,
     apiKey: props.apiKey.key
   })
-  .then(unwrap);
+    .then(unwrap);
 
   return skds.map(x => x.schoolKey);
 }
@@ -167,13 +167,15 @@ function AdminManageSchoolKeys(props: AdminManageSchoolKeysProps) {
                       <tr>
                         <td><code>{a.schoolKeyKey}</code></td>
                         <td>{a.endTime === INT_MAX ? "Never" : format(a.endTime, "MMM dd yyyy")}</td>
-                        <td>{a.endTime > Date.now()
-                          ?
-                          <Button variant="link" className="text-dark" onClick={() => setConfirmRevokeSchoolKey(a)}>
-                            <DeleteIcon />
-                          </Button>
-                          : <div />
-                        }</td>
+                        <td>
+                          <Action
+                            title="Delete"
+                            icon={DeleteIcon}
+                            variant="danger"
+                            onClick={() => setConfirmRevokeSchoolKey(a)}
+                            hidden={a.endTime < Date.now()}
+                          />
+                        </td>
                       </tr>
                     )}
                 </tbody>
@@ -200,19 +202,16 @@ function AdminManageSchoolKeys(props: AdminManageSchoolKeysProps) {
                   fprops: FormikHelpers<CreateSchoolKeyValue>) => {
 
                   let errors: FormikErrors<CreateSchoolKeyValue> = {};
-                  let hasErrors = false;
+
                   if (values.expires && values.expiryDays === "") {
                     errors.expiryDays = "Please enter the number of days after which the key will expire";
-                    hasErrors = true;
                   }
                   if (!values.infiniteUses && values.maxUses === "") {
                     errors.maxUses = "Please enter the maximum number of times this key may be used.";
-                    hasErrors = true;
                   }
 
-
                   fprops.setErrors(errors);
-                  if (hasErrors) {
+                  if (!isEmpty(errors)) {
                     return;
                   }
 
@@ -285,8 +284,7 @@ function AdminManageSchoolKeys(props: AdminManageSchoolKeysProps) {
                     noValidate
                     onSubmit={fprops.handleSubmit} >
                     <div hidden={fprops.status.successResult !== ""}>
-
-                      <Form.Check>
+                      <Form.Check className="form-check mb-3">
                         <Form.Check.Input
                           name="infiniteUses"
                           checked={fprops.values.infiniteUses}
@@ -297,7 +295,7 @@ function AdminManageSchoolKeys(props: AdminManageSchoolKeysProps) {
                         <Form.Control.Feedback type="invalid">{fprops.errors.infiniteUses}</Form.Control.Feedback>
                       </Form.Check>
 
-                      <Form.Group >
+                      <Form.Group className="mb-3">
                         <Form.Label >Max Uses</Form.Label>
                         <Form.Control
                           name="maxUses"
@@ -310,7 +308,7 @@ function AdminManageSchoolKeys(props: AdminManageSchoolKeysProps) {
                         <Form.Control.Feedback type="invalid">{fprops.errors.maxUses}</Form.Control.Feedback>
                       </Form.Group>
 
-                      <Form.Check>
+                      <Form.Check className="form-check mb-3">
                         <Form.Check.Input
                           name="expires"
                           checked={fprops.values.expires}
@@ -321,7 +319,7 @@ function AdminManageSchoolKeys(props: AdminManageSchoolKeysProps) {
                         <Form.Control.Feedback type="invalid">{fprops.errors.expires}</Form.Control.Feedback>
                       </Form.Check>
 
-                      <Form.Group >
+                      <Form.Group className="mb-3">
                         <Form.Label >Days till expiry</Form.Label>
                         <Form.Control
                           name="expiryDays"
@@ -334,8 +332,7 @@ function AdminManageSchoolKeys(props: AdminManageSchoolKeysProps) {
                         <Form.Control.Feedback type="invalid">{fprops.errors.expiryDays}</Form.Control.Feedback>
                       </Form.Group>
 
-
-                      <Form.Check>
+                      <Form.Check className="form-check mb-3">
                         <Form.Check.Input
                           name="adminPermissions"
                           checked={fprops.values.adminPermissions}
@@ -345,8 +342,9 @@ function AdminManageSchoolKeys(props: AdminManageSchoolKeysProps) {
                         <Form.Check.Label>Key promotes to admin.</Form.Check.Label>
                         <Form.Control.Feedback type="invalid">{fprops.errors.adminPermissions}</Form.Control.Feedback>
                       </Form.Check>
-                      <Button type="submit">Submit Form</Button>
-                      <br />
+                      <Form.Group className="mb-3">
+                        <Button type="submit">Submit Form</Button>
+                      </Form.Group>
                       <Form.Text className="text-danger">{fprops.status.failureResult}</Form.Text>
                     </div>
                     <Form.Text className="text-success">{fprops.status.successResult}</Form.Text>

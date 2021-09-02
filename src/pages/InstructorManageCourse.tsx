@@ -1,11 +1,11 @@
-import { Container, Popover } from 'react-bootstrap';
+import { Container } from 'react-bootstrap';
 import DashboardLayout from '../components/DashboardLayout';
 import InstructorManageCourseMemberships from '../components/InstructorManageCourseMemberships';
 import InstructorManageCourseKeys from '../components/InstructorManageCourseKeys';
 import InstructorManageCourseData from '../components/InstructorManageCourseData';
-import UtilityWrapper from '../components/UtilityWrapper';
+import { WidgetWrapper } from '@innexgo/common-react-components';
 
-import {AuthenticatedComponentProps} from '@innexgo/auth-react-components';
+import { AuthenticatedComponentProps } from '@innexgo/auth-react-components';
 
 function InstructorManageCourse(props: AuthenticatedComponentProps) {
   const courseId = parseInt(new URLSearchParams(window.location.search).get("courseId") ?? "");
@@ -13,31 +13,31 @@ function InstructorManageCourse(props: AuthenticatedComponentProps) {
     <DashboardLayout {...props}>
       <Container fluid className="py-4 px-4">
         <div className="mx-3 my-3">
-          <UtilityWrapper title="Course Data">
-            <Popover id="information-tooltip"> Shows basic information about this course. </Popover>
+          <WidgetWrapper title="Course Data">
+            <span>Shows basic information about this course.</span>
             <InstructorManageCourseData courseId={courseId} apiKey={props.apiKey} />
-          </UtilityWrapper>
+          </WidgetWrapper>
         </div>
 
         <div className="mx-3 my-3">
-          <UtilityWrapper title="Current Instructors">
-            <Popover id="information-tooltip"> Shows the current instructors of this course.</Popover>
+          <WidgetWrapper title="Current Instructors">
+            <span>Shows the current instructors of this course.</span>
             <InstructorManageCourseMemberships courseId={courseId} apiKey={props.apiKey} courseMembershipKind="INSTRUCTOR" />
-          </UtilityWrapper>
+          </WidgetWrapper>
         </div>
 
         <div className="mx-3 my-3">
-          <UtilityWrapper title="Current Students">
-            <Popover id="information-tooltip"> Shows the current students in this course.</Popover>
+          <WidgetWrapper title="Current Students">
+            <span>Shows the current students in this course.</span>
             <InstructorManageCourseMemberships courseId={courseId} apiKey={props.apiKey} courseMembershipKind="STUDENT" />
-          </UtilityWrapper>
+          </WidgetWrapper>
         </div>
 
         <div className="mx-3 my-3">
-          <UtilityWrapper title="Active Course Keys">
-            <Popover id="information-tooltip"> Shows the currently active course keys.</Popover>
+          <WidgetWrapper title="Active Course Keys">
+            <span>Shows the currently active course keys.</span>
             <InstructorManageCourseKeys courseId={courseId} apiKey={props.apiKey} />
-          </UtilityWrapper>
+          </WidgetWrapper>
         </div>
       </Container>
     </DashboardLayout>

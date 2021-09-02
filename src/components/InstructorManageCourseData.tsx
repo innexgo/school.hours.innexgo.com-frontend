@@ -1,5 +1,6 @@
 import React from 'react';
-import { Form, Button, Table } from 'react-bootstrap'; import { Loader } from '@innexgo/common-react-components';
+import { Form, Button, Table } from 'react-bootstrap';
+import { Loader, Action } from '@innexgo/common-react-components';
 import { Async, AsyncProps } from 'react-async';
 import DisplayModal from '../components/DisplayModal';
 import { courseDataView, courseDataNew, CourseData, normalizeCourseName } from '../utils/utils';
@@ -95,7 +96,7 @@ function EditCourseData(props: EditCourseDataProps) {
           noValidate
           onSubmit={fprops.handleSubmit} >
           <div hidden={fprops.status.successResult !== ""}>
-            <Form.Group >
+            <Form.Group className="mb-3">
               <Form.Label>Course Name</Form.Label>
               <Form.Control
                 name="name"
@@ -108,7 +109,7 @@ function EditCourseData(props: EditCourseDataProps) {
               />
               <Form.Control.Feedback type="invalid">{fprops.errors.name}</Form.Control.Feedback>
             </Form.Group>
-            <Form.Group >
+            <Form.Group className="mb-3">
               <Form.Label >Course Description</Form.Label>
               <Form.Control
                 name="description"
@@ -120,8 +121,9 @@ function EditCourseData(props: EditCourseDataProps) {
               />
               <Form.Control.Feedback type="invalid">{fprops.errors.description}</Form.Control.Feedback>
             </Form.Group>
-            <Button type="submit">Submit</Button>
-            <br />
+            <Form.Group className="mb-3">
+              <Button type="submit">Submit</Button>
+            </Form.Group>
             <Form.Text className="text-danger">{fprops.status.failureResult}</Form.Text>
           </div>
           <Form.Text className="text-success">{fprops.status.successResult}</Form.Text>
@@ -281,11 +283,25 @@ const InstructorManageCourseData = (props: {
             </tr>
           </tbody>
         </Table>
-        <Button variant="secondary" onClick={_ => setShowEditCourseData(true)}>Edit <EditIcon /></Button>
+        <Action
+          title="Edit"
+          icon={EditIcon}
+          onClick={() => setShowEditCourseData(true)}
+        />
 
         {courseData.active
-          ? <Button variant="danger" onClick={_ => setShowArchiveCourse(true)}>Delete <DeleteIcon /></Button>
-          : <Button variant="success" onClick={_ => setShowArchiveCourse(true)}>Restore <RestoreIcon /></Button>
+          ? <Action
+            title="Delete"
+            icon={DeleteIcon}
+            variant="danger"
+            onClick={() => setShowArchiveCourse(true)}
+          />
+          : <Action
+            title="Restore"
+            icon={RestoreIcon}
+            variant="danger"
+            onClick={() => setShowArchiveCourse(true)}
+          />
         }
 
         <DisplayModal

@@ -114,7 +114,7 @@ function UserCreateSchool(props: UserCreateSchoolProps) {
           noValidate
           onSubmit={fprops.handleSubmit} >
           <div hidden={fprops.status.successResult !== ""}>
-            <Form.Group >
+            <Form.Group className="mb-3">
               <Form.Label>School Name</Form.Label>
               <Form.Control
                 name="name"
@@ -127,7 +127,7 @@ function UserCreateSchool(props: UserCreateSchoolProps) {
               />
               <Form.Control.Feedback type="invalid">{fprops.errors.name}</Form.Control.Feedback>
             </Form.Group>
-            <Form.Group >
+            <Form.Group className="mb-3">
               <Form.Label>Description</Form.Label>
               <Form.Control
                 name="description"

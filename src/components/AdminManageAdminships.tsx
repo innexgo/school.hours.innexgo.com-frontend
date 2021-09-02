@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Form, Table } from 'react-bootstrap';
-import { Loader } from '@innexgo/common-react-components';
+import { Loader, Action } from '@innexgo/common-react-components';
 import DisplayModal from '../components/DisplayModal';
 import { ViewUser, } from '../components/ViewData';
 
@@ -165,10 +165,12 @@ function AdminManageAdminships(props: AdminManageAdminshipsProps) {
                   <td><ViewUser userId={a.userId} apiKey={props.apiKey} expanded={false} /></td>
                   <td>{format(a.creationTime, "MMM do")}</td>
                   <th>
-                    <Button variant="link" className="text-dark"
-                      onClick={() => setConfirmRemoveUser(a.userId)}>
-                      <Delete />
-                    </Button>
+                    <Action
+                      title="Delete"
+                      icon={Delete}
+                      variant="danger"
+                      onClick={() => setConfirmRemoveUser(a.userId)}
+                    />
                   </th>
                 </tr>
               )}

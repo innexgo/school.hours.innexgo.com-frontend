@@ -2,7 +2,7 @@ import { Button, Form, Table } from 'react-bootstrap';
 import { Loader } from '@innexgo/common-react-components';
 import { ViewCommittmentResponse, ViewCourse, ViewUser, } from '../components/ViewData';
 
-import { X as Delete, } from 'react-bootstrap-icons'
+import { X as DeleteIcon, } from 'react-bootstrap-icons'
 import { Formik, FormikHelpers, } from 'formik'
 
 import format from "date-fns/format";

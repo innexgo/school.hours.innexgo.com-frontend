@@ -1,9 +1,8 @@
 import { Container, Form, Table } from 'react-bootstrap';
 import DashboardLayout from '../components/DashboardLayout';
-import { Loader } from '@innexgo/common-react-components';
+import { Loader, WidgetWrapper } from '@innexgo/common-react-components';
 import AdminManageAdminships from '../components/AdminManageAdminships';
 import AdminManageSchoolKeys from '../components/AdminManageSchoolKeys'
-import UtilityWrapper from '../components/UtilityWrapper';
 import { ViewSchool, ViewUser } from '../components/ViewData';
 import AdminManageSchoolData from '../components/AdminManageSchoolData';
 
@@ -53,29 +52,29 @@ function AdminManageSchool(props: AuthenticatedComponentProps) {
           </Async.Rejected>
           <Async.Fulfilled<School>>{school => <>
             <div className="mx-3 my-3">
-              <UtilityWrapper title="School Data">
+              <WidgetWrapper title="School Data">
                 <span> Shows basic information about this school.</span>
                 <AdminManageSchoolData schoolId={school.schoolId} apiKey={props.apiKey} />
-              </UtilityWrapper>
+              </WidgetWrapper>
             </div>
 
             <div className="mx-3 my-3">
-              <UtilityWrapper title="Administrators">
+              <WidgetWrapper title="Administrators">
                 <span>Shows the current administrators of this school.</span>
                 <AdminManageAdminships school={school} apiKey={props.apiKey} />
-              </UtilityWrapper>
+              </WidgetWrapper>
             </div>
 
             <div className="mx-3 my-3">
-              <UtilityWrapper title="Administrator Requests">
-                <span> Shows the current administrators of this school.</span>
+              <WidgetWrapper title="Administrator Requests">
+                <span>Shows the current requests for admin permissions.</span>
                 <AdminManageSchoolKeys schoolId={school.schoolId} apiKey={props.apiKey} />
-              </UtilityWrapper>
+              </WidgetWrapper>
             </div>
 
 
             <div className="mx-3 my-3">
-              <UtilityWrapper title="Courses">
+              <WidgetWrapper title="Courses">
                 <span>Shows the current courses hosted by this school.</span>
                 <Async promiseFn={loadCourseData} apiKey={props.apiKey} school={school}>
                   {({ reload }) => <>
@@ -112,7 +111,7 @@ function AdminManageSchool(props: AuthenticatedComponentProps) {
                     </Async.Fulfilled>
                   </>}
                 </Async>
-              </UtilityWrapper>
+              </WidgetWrapper>
             </div>
           </>}
           </Async.Fulfilled>

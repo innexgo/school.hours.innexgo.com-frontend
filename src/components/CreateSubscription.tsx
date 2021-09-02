@@ -1,9 +1,9 @@
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
 import { Button, Form, } from 'react-bootstrap'
-import { subscriptionNew} from '../utils/utils';
+import { subscriptionNew } from '../utils/utils';
 
-import {ApiKey} from '@innexgo/frontend-auth-api';
-import {isErr} from '@innexgo/frontend-common';
+import { ApiKey } from '@innexgo/frontend-auth-api';
+import { isErr } from '@innexgo/frontend-common';
 
 interface CreateSubscriptionProps {
   apiKey: ApiKey,
@@ -20,7 +20,7 @@ function CreateSubscription(props: CreateSubscriptionProps) {
     let errors: FormikErrors<CreateSubscriptionValue> = {};
     let hasError = false;
     if (values.code !== "innexgo666") {
-      errors.code= "Subscription code invalid.";
+      errors.code = "Subscription code invalid.";
       hasError = true;
     }
     setErrors(errors);
@@ -76,7 +76,7 @@ function CreateSubscription(props: CreateSubscriptionProps) {
         <Form
           noValidate
           onSubmit={props.handleSubmit} >
-          <Form.Group >
+          <Form.Group className="mb-3">
             <Form.Label >Subscription Secret Code</Form.Label>
             <Form.Control
               name="code"
@@ -87,9 +87,9 @@ function CreateSubscription(props: CreateSubscriptionProps) {
             />
             <Form.Control.Feedback type="invalid"> {props.errors.code} </Form.Control.Feedback>
           </Form.Group>
-          <br />
-          <Button type="submit">Change Subscription</Button>
-          <br />
+          <Form.Group className="mb-3">
+            <Button type="submit">Change Subscription</Button>
+          </Form.Group>
           <Form.Text className="text-danger">{props.status.failureMessage}</Form.Text>
           <Form.Text className="text-success">{props.status.successMessage}</Form.Text>
         </Form>

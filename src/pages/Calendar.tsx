@@ -1,6 +1,6 @@
 import React from 'react'
 import { Async, AsyncProps } from 'react-async';
-import { Loader } from '@innexgo/common-react-components';
+import { Loader, WidgetWrapper } from '@innexgo/common-react-components';
 import FullCalendar, { DateSelectArg, EventClickArg } from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
@@ -19,7 +19,6 @@ import { sessionRequestResponseView, committmentView, courseDataView, committmen
 
 import { ViewSession, ViewSessionRequestResponse, ViewCommittment, ViewCommittmentResponse } from '../components/ViewData';
 
-import UtilityWrapper from '../components/UtilityWrapper';
 
 import UserCreateSession from '../components/UserCreateSession';
 import StudentCreateSessionRequest from '../components/StudentCreateSessionRequest';
@@ -572,7 +571,7 @@ function CalendarWidget(props: AuthenticatedComponentProps) {
   const [showHiddenEvents, setShowHiddenEvents] = React.useState(false);
   const [hiddenCourses, setHiddenCourses] = React.useState<number[]>([]);
 
-  return <UtilityWrapper title="Upcoming Appointments">
+  return <WidgetWrapper title="Upcoming Appointments">
     <span>
       This screen shows all future appointments.
       You can click any date to add an appointment on that date,
@@ -635,7 +634,7 @@ function CalendarWidget(props: AuthenticatedComponentProps) {
         </Row>}
       </Async.Fulfilled>
     </Async>
-  </UtilityWrapper>
+  </WidgetWrapper>
 };
 
 function Calendar(props: AuthenticatedComponentProps) {

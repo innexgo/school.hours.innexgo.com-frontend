@@ -1,10 +1,11 @@
 import React from 'react';
-import { Form, Button, Table } from 'react-bootstrap'; import { Loader } from '@innexgo/common-react-components';
+import { Form, Button, Table } from 'react-bootstrap';
+import { Loader, Action } from '@innexgo/common-react-components';
 import { Async, AsyncProps } from 'react-async';
 import DisplayModal from '../components/DisplayModal';
 import { schoolDataView, schoolDataNew, normalizeSchoolName, SchoolData, } from '../utils/utils';
 import { ViewUser } from '../components/ViewData';
-import { Pencil as EditIcon, Trash as DeleteIcon, BoxArrowUp as RestoreIcon } from 'react-bootstrap-icons';
+import { Pencil as EditIcon, X as DeleteIcon, BoxArrowUp as RestoreIcon } from 'react-bootstrap-icons';
 import { Formik, FormikHelpers } from 'formik'
 import format from 'date-fns/format';
 
@@ -96,7 +97,7 @@ function EditSchoolData(props: EditSchoolDataProps) {
           noValidate
           onSubmit={fprops.handleSubmit} >
           <div hidden={fprops.status.successResult !== ""}>
-            <Form.Group >
+            <Form.Group className="mb-3">
               <Form.Label>School Name</Form.Label>
               <Form.Control
                 name="name"
@@ -109,7 +110,7 @@ function EditSchoolData(props: EditSchoolDataProps) {
               />
               <Form.Control.Feedback type="invalid">{fprops.errors.name}</Form.Control.Feedback>
             </Form.Group>
-            <Form.Group >
+            <Form.Group className="mb-3">
               <Form.Label >School Description</Form.Label>
               <Form.Control
                 name="description"
@@ -121,8 +122,9 @@ function EditSchoolData(props: EditSchoolDataProps) {
               />
               <Form.Control.Feedback type="invalid">{fprops.errors.description}</Form.Control.Feedback>
             </Form.Group>
-            <Button type="submit">Submit</Button>
-            <br />
+            <Form.Group className="mb-3">
+              <Button type="submit">Submit</Button>
+            </Form.Group>
             <Form.Text className="text-danger">{fprops.status.failureResult}</Form.Text>
           </div>
           <Form.Text className="text-success">{fprops.status.successResult}</Form.Text>
@@ -282,11 +284,24 @@ const AdminManageSchoolData = (props: {
             </tr>
           </tbody>
         </Table>
-        <Button variant="secondary" onClick={_ => setShowEditSchoolData(true)}>Edit <EditIcon /></Button>
-
+        <Action
+          title="Edit"
+          icon={EditIcon}
+          onClick={() => setShowEditSchoolData(true)}
+        />
         {schoolData.active
-          ? <Button variant="danger" onClick={_ => setShowArchiveSchool(true)}>Delete <DeleteIcon /></Button>
-          : <Button variant="success" onClick={_ => setShowArchiveSchool(true)}>Restore <RestoreIcon/></Button>
+          ? <Action
+            title="Delete"
+            icon={DeleteIcon}
+            variant="danger"
+            onClick={() => setShowArchiveSchool(true)}
+          />
+          : <Action
+            title="Restore"
+            icon={RestoreIcon}
+            variant="danger"
+            onClick={() => setShowArchiveSchool(true)}
+          />
         }
 
         <DisplayModal

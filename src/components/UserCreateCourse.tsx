@@ -111,7 +111,7 @@ function UserCreateCourse(props: UserCreateCourseProps) {
           noValidate
           onSubmit={fprops.handleSubmit} >
           <div hidden={fprops.status.successResult !== ""}>
-            <Form.Group >
+            <Form.Group className="mb-3">
               <Form.Label>School Name</Form.Label>
               <SearchSingleSchool
                 name="courseId"
@@ -140,7 +140,7 @@ function UserCreateCourse(props: UserCreateCourseProps) {
                 setFn={(e: SchoolData | null) => fprops.setFieldValue("schoolId", e?.school.schoolId)} />
               <Form.Control.Feedback type="invalid">{fprops.errors.schoolId}</Form.Control.Feedback>
             </Form.Group>
-            <Form.Group >
+            <Form.Group className="mb-3">
               <Form.Label>Course Name</Form.Label>
               <Form.Control
                 name="name"
@@ -153,7 +153,7 @@ function UserCreateCourse(props: UserCreateCourseProps) {
               />
               <Form.Control.Feedback type="invalid">{fprops.errors.name}</Form.Control.Feedback>
             </Form.Group>
-            <Form.Group >
+            <Form.Group className="mb-3">
               <Form.Label >Course Description</Form.Label>
               <Form.Control
                 name="description"

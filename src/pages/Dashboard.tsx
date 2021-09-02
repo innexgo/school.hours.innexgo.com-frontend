@@ -48,7 +48,7 @@ function AddNewCard(props: AddNewCardProps) {
       style={{ width: '15rem', borderStyle: 'dashed', borderWidth: "medium" }}
       onClick={() => props.setShow(true)}>
       <div className="h-100 w-100 d-flex">
-        <Add className="mx-auto my-auto text-muted" fontSize="large" />
+        <Add className="mx-auto my-auto text-muted" style={{height: "2rem", width: "2rem" }} />
       </div>
     </button>
   )

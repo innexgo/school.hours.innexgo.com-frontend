@@ -1,74 +1,89 @@
 import SearchSingleCourse from "../components/SearchSingleCourse";
-import { Formik, FormikHelpers,} from "formik";
-import { Row, Col, Button, Form } from "react-bootstrap";
+import { Formik, FormikHelpers, FormikErrors } from "formik";
+import { Button, Form } from "react-bootstrap";
 import { SessionRequest, CourseData, sessionRequestNew, courseDataView, courseMembershipView, } from "../utils/utils";
 import format from "date-fns/format";
-import {isErr, unwrap} from '@innexgo/frontend-common';
-import {ApiKey} from '@innexgo/frontend-auth-api';
+import parse from "date-fns/parse";
+import { isErr, isEmpty, unwrap } from '@innexgo/frontend-common';
+import { ApiKey } from '@innexgo/frontend-auth-api';
 
 type StudentCreateSessionRequestProps = {
   start: number;
   end: number;
   apiKey: ApiKey;
-  postSubmit: (sr:SessionRequest) => void;
+  postSubmit: (sr: SessionRequest) => void;
 }
 
 function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
 
   type CreateSessionRequestValue = {
+    start: string,
+    end: string,
     message: string,
     courseId: number | null,
   }
 
-  const onSubmit = async (values: CreateSessionRequestValue,
-    { setErrors, setStatus }: FormikHelpers<CreateSessionRequestValue>) => {
+  const onSubmit = async (values: CreateSessionRequestValue, fprops: FormikHelpers<CreateSessionRequestValue>) => {
 
+    let errors: FormikErrors<CreateSessionRequestValue> = {};
 
-    if (values.courseId == null) {
-      setErrors({
-        courseId: "Please select a course."
-      });
+    if (values.courseId === null) {
+      errors.courseId = "Please select a course.";
+    }
+
+    const parsedStart= parse(values.start, "hh:mm a", props.start).valueOf();
+    const parsedEnd = parse(values.end, "hh:mm a", props.end).valueOf();
+
+    if (isNaN(parsedStart)) {
+      errors.start = `Please provide date in "hh:mm am/pm" format`
+    }
+
+    if (isNaN(parsedEnd)) {
+      errors.end = `Please provide date in "hh:mm am/pm" format`
+    }
+
+    fprops.setErrors(errors);
+    if (!isEmpty(errors)) {
       return;
     }
 
     const maybeSessionRequest = await sessionRequestNew({
-      courseId: values.courseId,
+      courseId: values.courseId!,
       message: values.message,
-      startTime: props.start,
-      endTime: props.end,
+      startTime: parsedStart,
+      endTime: parsedEnd,
       apiKey: props.apiKey.key,
     });
 
     if (isErr(maybeSessionRequest)) {
       switch (maybeSessionRequest.Err) {
         case "API_KEY_NONEXISTENT": {
-          setStatus({
+          fprops.setStatus({
             failureResult: "You have been automatically logged out. Please relogin.",
             successResult: ""
           });
           break;
         }
         case "COURSE_NONEXISTENT": {
-          setErrors({
+          fprops.setErrors({
             courseId: "This course does not exist.",
           });
           break;
         }
         case "COURSE_ARCHIVED": {
-          setErrors({
+          fprops.setErrors({
             courseId: "This course has been archived.",
           });
           break;
         }
         case "NEGATIVE_DURATION": {
-          setStatus({
-            failureResult: "The duration you have selected is not valid.",
-            successResult: ""
+          fprops.setErrors({
+            end: "The end time must be after the start time.",
           });
           break;
         }
         default: {
-          setStatus({
+          fprops.setStatus({
             failureResult: "An unknown or network error has occurred.",
             successResult: ""
           });
@@ -78,7 +93,7 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
       return;
     }
 
-    setStatus({
+    fprops.setStatus({
       failureResult: "",
       successResult: "Request Created",
     });
@@ -90,6 +105,8 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
     <Formik<CreateSessionRequestValue>
       onSubmit={onSubmit}
       initialValues={{
+        start: format(props.start, "hh:mm a"),
+        end: format(props.end, "hh:mm a"),
         message: "",
         courseId: null
       }}
@@ -102,67 +119,75 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
         <Form
           noValidate
           onSubmit={fprops.handleSubmit} >
-          <Form.Group as={Row}>
-            <Form.Label column sm={2}>Start Time</Form.Label>
-            <Col>
-              <span>{format(props.start, "MMM do, hh:mm a")} </span>
-            </Col>
+          <Form.Group className="mb-3">
+            <Form.Label>Start Time</Form.Label>
+            <Form.Control
+              name="start"
+              type="text"
+              placeholder="Start Time (hh:mm am/pm)"
+              onChange={fprops.handleChange}
+              isInvalid={!!fprops.errors.message}
+                value={fprops.values.start}
+            />
+            <Form.Text className="text-danger">{fprops.errors.message}</Form.Text>
           </Form.Group>
-          <Form.Group as={Row}>
-            <Form.Label column sm={2}>End Time</Form.Label>
-            <Col>
-              <span>{format(props.end, "MMM do, hh:mm a")} </span>
-            </Col>
+          <Form.Group className="mb-3">
+            <Form.Label>End Time</Form.Label>
+            <Form.Control
+              name="end"
+              type="text"
+              placeholder="End Time (hh:mm am/pm)"
+                value={fprops.values.end}
+              onChange={fprops.handleChange}
+              isInvalid={!!fprops.errors.message}
+            />
+            <Form.Text className="text-danger">{fprops.errors.message}</Form.Text>
           </Form.Group>
-          <Form.Group as={Row}>
-            <Form.Label column sm={2}>Course Name</Form.Label>
-            <Col>
-              <SearchSingleCourse
-                name="courseId"
-                search={async input => {
-
-                  const courseMemberships = await courseMembershipView( {
-                      userId: [props.apiKey.creatorUserId],
-                      courseMembershipKind: ["STUDENT"],
-                      onlyRecent: true,
-                      apiKey: props.apiKey.key,
-                  })
+          <Form.Group className="mb-3">
+            <Form.Label>Course Name</Form.Label>
+            <SearchSingleCourse
+              name="courseId"
+              search={async input => {
+                const courseMemberships = await courseMembershipView({
+                  userId: [props.apiKey.creatorUserId],
+                  courseMembershipKind: ["STUDENT"],
+                  onlyRecent: true,
+                  apiKey: props.apiKey.key,
+                })
                   .then(unwrap);
 
-                  const courseData = await courseDataView({
-                    courseId: courseMemberships.map(cm => cm.course.courseId),
-                    partialName: input,
-                    onlyRecent: true,
-                    active: true,
-                    apiKey: props.apiKey.key,
-                  })
+                const courseData = await courseDataView({
+                  courseId: courseMemberships.map(cm => cm.course.courseId),
+                  partialName: input,
+                  onlyRecent: true,
+                  active: true,
+                  apiKey: props.apiKey.key,
+                })
                   .then(unwrap);
-                  
 
-                  return courseData;
-                }}
-                isInvalid={!!fprops.errors.courseId}
-                setFn={(e: CourseData | null) => fprops.setFieldValue("courseId", e?.course.courseId)} />
-              <Form.Text className="text-danger">{fprops.errors.courseId}</Form.Text>
-            </Col>
+                return courseData;
+              }}
+              isInvalid={!!fprops.errors.courseId}
+              setFn={(e: CourseData | null) => fprops.setFieldValue("courseId", e?.course.courseId)} />
+            <Form.Text className="text-danger">{fprops.errors.courseId}</Form.Text>
           </Form.Group>
-          <Form.Group as={Row}>
-            <Form.Label column sm={2}>Message</Form.Label>
-            <Col>
-              <Form.Control
-                name="message"
-                type="text"
-                placeholder="Message"
-                as="textarea"
-                rows={3}
-                onChange={fprops.handleChange}
-                isInvalid={!!fprops.errors.message}
-              />
-              <Form.Text className="text-danger">{fprops.errors.message}</Form.Text>
-            </Col>
+          <Form.Group className="mb-3">
+            <Form.Label>Message</Form.Label>
+            <Form.Control
+              name="message"
+              type="text"
+              placeholder="Message"
+              as="textarea"
+              value={fprops.values.message}
+              rows={3}
+              onChange={fprops.handleChange}
+              isInvalid={!!fprops.errors.message}
+            />
+            <Form.Text className="text-danger">{fprops.errors.message}</Form.Text>
           </Form.Group>
-          <Button type="submit"> Submit </Button>
-          <br />
+          <Form.Group className="mb-3">
+            <Button type="submit">Submit</Button>
+          </Form.Group>
           <Form.Text className="text-danger">{fprops.status.failureResult}</Form.Text>
           <br />
           <Form.Text className="text-success">{fprops.status.successResult}</Form.Text>

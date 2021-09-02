@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Form, Table } from 'react-bootstrap';
-import { Loader } from '@innexgo/common-react-components';
+import { Loader, Action } from '@innexgo/common-react-components';
 import DisplayModal from '../components/DisplayModal';
 import { ViewUser, } from '../components/ViewData';
 
@@ -11,7 +11,7 @@ import format from "date-fns/format";
 
 import { Async, AsyncProps } from 'react-async';
 import { CourseMembershipKind, CourseMembership, courseMembershipNewCancel, courseMembershipView } from '../utils/utils';
-import { isErr, unwrap} from '@innexgo/frontend-common';
+import { isErr, unwrap } from '@innexgo/frontend-common';
 import { ApiKey, User } from '@innexgo/frontend-auth-api';
 
 
@@ -154,10 +154,14 @@ function InternalInstructorManageCourseMemberships(props: InternalInstructorMana
                       <td><ViewUser userId={a.userId} apiKey={props.apiKey} expanded={false} /></td>
                       <td>{format(a.creationTime, "MMM do")}</td>
                       <th>
-                        <Button variant="link" className="text-dark"
-                          onClick={() => setConfirmRemoveUserId(a.userId)}>
-                          <DeleteIcon />
-                        </Button>
+                        <td>
+                          <Action
+                            title="Delete"
+                            icon={DeleteIcon}
+                            variant="danger"
+                            onClick={() => setConfirmRemoveUserId(a.userId)}
+                          />
+                        </td>
                       </th>
                     </tr>
                   )}
