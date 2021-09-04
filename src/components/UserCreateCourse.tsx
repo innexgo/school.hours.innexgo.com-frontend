@@ -165,8 +165,9 @@ function UserCreateCourse(props: UserCreateCourseProps) {
               />
               <Form.Control.Feedback type="invalid">{fprops.errors.description}</Form.Control.Feedback>
             </Form.Group>
-            <Button type="submit">Submit Form</Button>
-            <br />
+            <Form.Group className="mb-3">
+              <Button type="submit">Submit Form</Button>
+            </Form.Group>
             <Form.Text className="text-danger">{fprops.status.failureResult}</Form.Text>
           </div>
           <Form.Text className="text-success">{fprops.status.successResult}</Form.Text>

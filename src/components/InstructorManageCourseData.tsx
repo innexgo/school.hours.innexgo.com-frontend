@@ -5,7 +5,7 @@ import { Async, AsyncProps } from 'react-async';
 import DisplayModal from '../components/DisplayModal';
 import { courseDataView, courseDataNew, CourseData, normalizeCourseName } from '../utils/utils';
 import { ViewUser } from '../components/ViewData';
-import { Pencil as EditIcon, Trash as DeleteIcon, BoxArrowUp as RestoreIcon } from 'react-bootstrap-icons';
+import { Pencil as EditIcon, X as DeleteIcon, BoxArrowUp as RestoreIcon } from 'react-bootstrap-icons';
 import { Formik, FormikHelpers } from 'formik'
 import format from 'date-fns/format';
 import { isErr, unwrap } from '@innexgo/frontend-common';

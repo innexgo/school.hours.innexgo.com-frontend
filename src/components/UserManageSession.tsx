@@ -23,11 +23,11 @@ type UserManageSessionData = {
 
 const loadData = async (props: AsyncProps<UserManageSessionData>) => {
 
-  const sessionRequestResponses  = await sessionRequestResponseView({
+  const sessionRequestResponses = await sessionRequestResponseView({
     sessionId: [props.session.sessionId],
     apiKey: props.apiKey.key
   })
-  .then(unwrap);
+    .then(unwrap);
 
 
   const committments = await committmentView({
@@ -35,14 +35,14 @@ const loadData = async (props: AsyncProps<UserManageSessionData>) => {
     responded: false,
     apiKey: props.apiKey.key
   })
-  .then(unwrap);
+    .then(unwrap);
 
 
-  const committmentResponses  = await committmentResponseView({
+  const committmentResponses = await committmentResponseView({
     sessionId: [props.session.sessionId],
     apiKey: props.apiKey.key
   })
-  .then(unwrap);
+    .then(unwrap);
 
   return {
     sessionRequestResponses,
@@ -257,35 +257,34 @@ function ManageSessionModal(props: ManageSessionModalProps) {
                   <Form
                     noValidate
                     onSubmit={fprops.handleSubmit} >
-                    <Form.Group as={Row}>
-                      <Form.Label column sm={2}>Students Invited</Form.Label>
-                      <Col>
-                        <SearchMultiUser
-                          name="studentList"
-                          isInvalid={fprops.status.studentList !== ""}
-                          search={async (input: string) => {
-                            const courseMemberships = await courseMembershipView({
-                              courseId: [props.session.course.courseId],
-                              courseMembershipKind: ["STUDENT"],
-                              onlyRecent: true,
-                              apiKey: props.apiKey.key,
-                            })
-                              .then(unwrap);
+                    <Form.Group className="mb-3">
+                      <Form.Label>Students Invited</Form.Label>
+                      <SearchMultiUser
+                        name="studentList"
+                        isInvalid={fprops.status.studentList !== ""}
+                        search={async (input: string) => {
+                          const courseMemberships = await courseMembershipView({
+                            courseId: [props.session.course.courseId],
+                            courseMembershipKind: ["STUDENT"],
+                            onlyRecent: true,
+                            apiKey: props.apiKey.key,
+                          })
+                            .then(unwrap);
 
-                            const users = await userDataView({
-                              creatorUserId: courseMemberships.map(cm => cm.userId).filter(u => !fprops.values.studentList.includes(u)),
-                              onlyRecent: true,
-                              apiKey: props.apiKey.key,
-                            }).then(unwrap);
+                          const users = await userDataView({
+                            creatorUserId: courseMemberships.map(cm => cm.userId).filter(u => !fprops.values.studentList.includes(u)),
+                            onlyRecent: true,
+                            apiKey: props.apiKey.key,
+                          }).then(unwrap);
 
-                            return users.filter(x => x.name.includes(input)) ;
-                          }}
-                          setFn={e => fprops.setFieldValue("studentList", e.map(s => s.creatorUserId))} />
-                        <Form.Text className="text-danger">{fprops.status.studentList}</Form.Text>
-                      </Col>
+                          return users.filter(x => x.name.includes(input));
+                        }}
+                        setFn={e => fprops.setFieldValue("studentList", e.map(s => s.creatorUserId))} />
+                      <Form.Text className="text-danger">{fprops.status.studentList}</Form.Text>
                     </Form.Group>
-                    <Button type="submit"> Submit </Button>
-                    <br />
+                    <Form.Group className="mb-3">
+                      <Button type="submit">Submit</Button>
+                    </Form.Group>
                     <Form.Text className="text-danger">{fprops.status.resultFailure}</Form.Text>
                   </Form>
                 )}

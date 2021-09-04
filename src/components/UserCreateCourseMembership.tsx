@@ -114,7 +114,7 @@ function UserCreateCourseMembership(props: UserCreateCourseMembershipProps) {
           noValidate
           onSubmit={fprops.handleSubmit} >
           <div hidden={fprops.status.successResult !== ""}>
-            <Form.Group >
+            <Form.Group className="mb-3">
               <Form.Label>Course Key</Form.Label>
               <Form.Control
                 name="key"
@@ -127,8 +127,9 @@ function UserCreateCourseMembership(props: UserCreateCourseMembershipProps) {
               />
               <Form.Control.Feedback type="invalid">{fprops.errors.key}</Form.Control.Feedback>
             </Form.Group>
-            <Button type="submit">Join</Button>
-            <br />
+            <Form.Group className="mb-3">
+              <Button type="submit">Join</Button>
+            </Form.Group>
             <Form.Text className="text-danger">{fprops.status.failureResult}</Form.Text>
           </div>
           <Form.Text className="text-success">{fprops.status.successResult}</Form.Text>

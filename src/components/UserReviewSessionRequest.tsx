@@ -4,7 +4,6 @@ import FullCalendar, { EventClickArg, DateSelectArg } from "@fullcalendar/react"
 import interactionPlugin from '@fullcalendar/interaction'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import { Card, Row, Col, Button, Form } from 'react-bootstrap';
-import ToggleButton from "react-bootstrap/ToggleButton";
 import { Formik, FormikHelpers } from 'formik';
 import { Loader } from '@innexgo/common-react-components';
 
@@ -102,17 +101,16 @@ class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
 }
 
 function ColorExplainer(props: { color: string; text: string }) {
-  return <div>
-    <span
-      className="mr-2"
+  return <div className="d-flex mx-2">
+    <div
+      className="me-2 border rounded d-inline-block"
       style={{
-        borderStyle: "solid",
-        height: 32,
-        width: 32,
+        height: "2rem",
+        width: "2rem",
         backgroundColor: props.color
       }}
     />
-      <span>{props.text}</span>
+    <span className="align-middle">{props.text}</span>
   </div>
 }
 
@@ -272,14 +270,13 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
         onSubmit={fprops.handleSubmit} >
         <Row>
           <Col>
-            <Card>
+            <Card className="mb-5">
               <Card.Body>
                 <Card.Title>Appointment Request</Card.Title>
                 <ViewSessionRequest apiKey={props.apiKey} sessionRequest={props.sessionRequest} expanded />
               </Card.Body>
             </Card>
-            <br />
-            <Form.Group>
+            <Form.Group className="mb-3">
               <Form.Control
                 name="message"
                 type="text"
@@ -289,8 +286,7 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
                 onChange={fprops.handleChange}
               />
             </Form.Group>
-            <br />
-            <Form.Group hidden={fprops.values.startTime === null || fprops.values.endTime === null} >
+            <Form.Group  className="mb-3" hidden={fprops.values.startTime === null || fprops.values.endTime === null} >
               <Form.Label>New Session Name</Form.Label>
               <Form.Control
                 name="sessionNewName"
@@ -302,7 +298,7 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
               />
               <Form.Text className="text-danger">{fprops.errors.sessionNewName}</Form.Text>
             </Form.Group>
-            <Form.Group hidden={fprops.values.startTime === null || fprops.values.endTime === null} >
+            <Form.Group  className="mb-3" hidden={fprops.values.startTime === null || fprops.values.endTime === null} >
               <Form.Check
                 name="sessionNewPublic"
                 checked={fprops.values.sessionNewPublic}
@@ -312,27 +308,30 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
                 feedback={fprops.errors.sessionNewPublic}
               />
             </Form.Group>
-            <Form.Group>
-              <ToggleButton
-                key={0}
-                type="radio"
-                name="radio"
-                value="ACCEPT"
-                checked={fprops.values.accepted === true}
-                onChange={_ => fprops.setFieldValue("accepted", true)}
-                className="btn-success"
-              > Accept </ToggleButton>
-              <ToggleButton
-                key={1}
-                type="radio"
-                name="radio"
-                value="REJECT"
-                checked={fprops.values.accepted === false}
-                onChange={_ => fprops.setFieldValue("accepted", false)}
-                className="btn-danger"
-              > Reject </ToggleButton>
-              <br />
-              <Form.Text className="text-danger">{fprops.errors.accepted}</Form.Text>
+            <Form.Group className="mb-3">
+              <Form.Check className="form-check">
+                <Form.Check.Input
+                  type="radio"
+                  name="accepted"
+                  isInvalid={!!fprops.errors.accepted}
+                  onChange={() => {
+                    fprops.setFieldValue('accepted', true);
+                  }}
+                />
+                <Form.Check.Label>Accept</Form.Check.Label>
+              </Form.Check>
+              <Form.Check className="form-check">
+                <Form.Check.Input
+                  type="radio"
+                  name="accepted"
+                  isInvalid={!!fprops.errors.accepted}
+                  onChange={() => {
+                    fprops.setFieldValue('accepted', false);
+                  }}
+                />
+                <Form.Check.Label>Reject</Form.Check.Label>
+                <Form.Control.Feedback type="invalid">{fprops.errors.accepted}</Form.Control.Feedback>
+              </Form.Check>
             </Form.Group>
             <br />
             <Button type="submit" >Submit</Button>
@@ -340,17 +339,11 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
             <Form.Text className="text-danger">{fprops.status}</Form.Text>
           </Col>
           <Col lg={8}>
-            <Row>
-              <Col>
-                <ColorExplainer color="#28A745" text="Valid Slot" />
-              </Col>
-              <Col>
-                <ColorExplainer color="#6C757D" text="Invalid Slot" />
-              </Col>
-              <Col>
-                <ColorExplainer color="#2788D8" text="Selected" />
-              </Col>
-            </Row>
+            <tr className="mb-3">
+              <td><ColorExplainer color="#28A745" text="Valid Slot" /></td>
+              <td><ColorExplainer color="#6C757D" text="Invalid Slot" /></td>
+              <td><ColorExplainer color="#2788D8" text="Selected" /></td>
+            </tr>
             <table>
               <tr>
                 <td>

@@ -13,14 +13,14 @@ function StudentManageCourse(props: AuthenticatedComponentProps) {
       <Container fluid className="py-4 px-4">
         <div className="mx-3 my-3">
           <WidgetWrapper title="Course Data">
-            <Popover id="information-tooltip"> Shows basic information about this course. </Popover>
+            <span>Shows basic information about this course.</span>
             <StudentManageCourseData courseId={courseId} apiKey={props.apiKey} />
           </WidgetWrapper>
         </div>
 
         <div className="mx-3 my-3">
           <WidgetWrapper title="Current Instructors">
-            <Popover id="information-tooltip"> Shows the current instructors of this course.</Popover>
+            <span>Shows the current instructors of this course.</span>
             <StudentManageCourseMemberships courseId={courseId} apiKey={props.apiKey} courseMembershipKind="INSTRUCTOR" />
           </WidgetWrapper>
         </div>

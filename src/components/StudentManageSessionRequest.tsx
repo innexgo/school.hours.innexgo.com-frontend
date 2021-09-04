@@ -3,8 +3,8 @@ import { Tab, Tabs, Button, Form } from "react-bootstrap";
 import { SessionRequest, sessionRequestResponseNew, } from "../utils/utils";
 import { ViewSessionRequest } from "../components/ViewData";
 
-import {ApiKey} from '@innexgo/frontend-auth-api';
-import {isErr} from '@innexgo/frontend-common';
+import { ApiKey } from '@innexgo/frontend-auth-api';
+import { isErr } from '@innexgo/frontend-common';
 
 type StudentManageSessionRequestProps = {
   apiKey: ApiKey;
@@ -112,7 +112,7 @@ function StudentManageSessionRequest(props: StudentManageSessionRequestProps) {
           noValidate
           onSubmit={fprops.handleSubmit} >
           <div hidden={fprops.status.successResult !== ""}>
-            <Form.Group >
+            <Form.Group className="mb-3">
               <Form.Check
                 name="confirm"
                 checked={fprops.values.confirm}
@@ -122,8 +122,9 @@ function StudentManageSessionRequest(props: StudentManageSessionRequestProps) {
                 feedback={fprops.errors.confirm}
               />
             </Form.Group>
-            <Button type="submit">Submit Form</Button>
-            <br />
+            <Form.Group className="mb-3">
+              <Button type="submit">Submit Form</Button>
+            </Form.Group>
             <Form.Text className="text-danger">{fprops.status.failureResult}</Form.Text>
           </div>
           <Form.Text className="text-success">{fprops.status.successResult}</Form.Text>

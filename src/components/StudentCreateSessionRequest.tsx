@@ -31,7 +31,7 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
       errors.courseId = "Please select a course.";
     }
 
-    const parsedStart= parse(values.start, "hh:mm a", props.start).valueOf();
+    const parsedStart = parse(values.start, "hh:mm a", props.start).valueOf();
     const parsedEnd = parse(values.end, "hh:mm a", props.end).valueOf();
 
     if (isNaN(parsedStart)) {
@@ -126,10 +126,10 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
               type="text"
               placeholder="Start Time (hh:mm am/pm)"
               onChange={fprops.handleChange}
-              isInvalid={!!fprops.errors.message}
-                value={fprops.values.start}
+              isInvalid={!!fprops.errors.start}
+              value={fprops.values.start}
             />
-            <Form.Text className="text-danger">{fprops.errors.message}</Form.Text>
+            <Form.Text className="text-danger">{fprops.errors.start}</Form.Text>
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Label>End Time</Form.Label>
@@ -137,11 +137,11 @@ function StudentCreateSessionRequest(props: StudentCreateSessionRequestProps) {
               name="end"
               type="text"
               placeholder="End Time (hh:mm am/pm)"
-                value={fprops.values.end}
+              value={fprops.values.end}
               onChange={fprops.handleChange}
-              isInvalid={!!fprops.errors.message}
+              isInvalid={!!fprops.errors.end}
             />
-            <Form.Text className="text-danger">{fprops.errors.message}</Form.Text>
+            <Form.Text className="text-danger">{fprops.errors.end}</Form.Text>
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Label>Course Name</Form.Label>

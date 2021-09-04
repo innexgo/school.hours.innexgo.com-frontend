@@ -2,9 +2,9 @@ import React from "react"
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
 import { Button, Form } from "react-bootstrap";
 import { schoolNew, normalizeSchoolName } from "../utils/utils";
-import {isErr } from '@innexgo/frontend-common';
-import {ApiKey} from '@innexgo/frontend-auth-api';
-import {AuthenticatedComponentProps} from '@innexgo/auth-react-components';
+import { isErr } from '@innexgo/frontend-common';
+import { ApiKey } from '@innexgo/frontend-auth-api';
+import { AuthenticatedComponentProps } from '@innexgo/auth-react-components';
 
 
 type UserCreateSchoolProps = {
@@ -140,8 +140,9 @@ function UserCreateSchool(props: UserCreateSchoolProps) {
               />
               <Form.Control.Feedback type="invalid">{fprops.errors.description}</Form.Control.Feedback>
             </Form.Group>
-            <Button type="submit">Submit Form</Button>
-            <br />
+            <Form.Group className="mb-3">
+              <Button type="submit">Submit Form</Button>
+            </Form.Group>
             <Form.Text className="text-danger">{fprops.status.failureResult}</Form.Text>
           </div>
           <Form.Text className="text-success">{fprops.status.successResult}</Form.Text>

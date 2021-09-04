@@ -1,10 +1,11 @@
 import React from 'react';
-import { Form, Button, Table } from 'react-bootstrap'; import { Loader } from '@innexgo/common-react-components';
+import { Form, Button, Table } from 'react-bootstrap';
+import { Loader, Action } from '@innexgo/common-react-components';
 import { Async, AsyncProps } from 'react-async';
 import DisplayModal from '../components/DisplayModal';
 import { CourseData, CourseMembership, courseMembershipView, courseDataView, courseMembershipNewCancel } from '../utils/utils';
 import { ViewUser } from '../components/ViewData';
-import { X as CancelIcon } from 'react-bootstrap-icons';
+import { X as DeleteIcon } from 'react-bootstrap-icons';
 import { Formik, FormikHelpers } from 'formik'
 import format from 'date-fns/format';
 
@@ -188,10 +189,13 @@ const StudentManageCourseData = (props: {
             </tr>
           </tbody>
         </Table>
-        {cdm.courseMembership != null && cdm.courseMembership.courseMembershipKind == "STUDENT"
-          ? <Button variant="danger" onClick={_ => setShowLeaveCourse(true)}>Leave <CancelIcon /></Button>
-          : <> </>
-        }
+        <Action
+          title="Leave"
+          icon={DeleteIcon}
+          variant="danger"
+          onClick={() => setShowLeaveCourse(true)}
+          hidden={cdm.courseMembership == null || cdm.courseMembership.courseMembershipKind !== "STUDENT"}
+        />
         <DisplayModal
           title="Leave Course"
           show={showLeaveCourse}

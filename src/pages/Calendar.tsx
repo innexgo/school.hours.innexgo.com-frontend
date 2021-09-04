@@ -162,6 +162,9 @@ function EventCalendar(props: EventCalendarProps) {
         })),
 
       ...acceptedSessionRequestResponses
+        // TODO use this data when displaying committments or committmentresponses
+        // hide when theres a corresponding committmentResponse
+        .filter(asrr => committmentResponses.findIndex(cr => cr.committment.committmentId === asrr.committment!.committmentId) === -1)
         // match with a course
         .map(srr => ({ srr, cd: props.studentCourseDatas.find(cd => cd.course.courseId === srr.sessionRequest.course.courseId)! }))
         // match with a session
