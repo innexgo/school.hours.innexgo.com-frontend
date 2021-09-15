@@ -17,6 +17,7 @@ function UserCreateCourse(props: UserCreateCourseProps) {
     schoolId: null | number,
     name: string,
     description: string,
+    homeroom: boolean,
   }
 
   const onSubmit = async (values: CreateCourseValue,
@@ -48,6 +49,7 @@ function UserCreateCourse(props: UserCreateCourseProps) {
       schoolId: values.schoolId!,
       description: values.description,
       name: values.name,
+      homeroom: values.homeroom,
       apiKey: props.apiKey.key,
     });
 
@@ -99,7 +101,8 @@ function UserCreateCourse(props: UserCreateCourseProps) {
       initialValues={{
         schoolId: null,
         name: "",
-        description: ""
+        description: "",
+        homeroom: false
       }}
       initialStatus={{
         failureResult: "",
@@ -165,6 +168,16 @@ function UserCreateCourse(props: UserCreateCourseProps) {
               />
               <Form.Control.Feedback type="invalid">{fprops.errors.description}</Form.Control.Feedback>
             </Form.Group>
+            <Form.Check className="mb-3 form-check">
+              <Form.Check.Input
+                name="homeroom"
+                checked={fprops.values.homeroom}
+                isInvalid={!!fprops.errors.homeroom}
+                onClick={fprops.handleChange}
+              />
+              <Form.Check.Label>Homeroom Class</Form.Check.Label>
+              <Form.Control.Feedback type="invalid">{fprops.errors.homeroom}</Form.Control.Feedback>
+            </Form.Check>
             <Form.Group className="mb-3">
               <Button type="submit">Submit Form</Button>
             </Form.Group>

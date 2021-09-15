@@ -102,11 +102,29 @@ export interface School {
 
 export interface SchoolData {
   schoolDataId: number,
-  creatorUserId: number,
   creationTime: number,
+  creatorUserId: number,
   school: School,
   name: string,
   description: string,
+  active: boolean,
+}
+
+export interface SchoolDuration {
+  schoolDurationId: number,
+  creationTime: number,
+  creatorUserId: number,
+  school: School,
+}
+
+export interface SchoolDurationData {
+  schoolDurationDataId: number,
+  creationTime: number,
+  creatorUserId: number,
+  schoolDuration: SchoolDuration,
+  day: number,
+  minuteStart: number,
+  minuteEnd: number,
   active: boolean,
 }
 
@@ -170,6 +188,7 @@ export interface CourseData {
   course: Course,
   name: string,
   description: string,
+  homeroom: boolean,
   active: boolean,
 }
 
@@ -277,6 +296,7 @@ interface CourseNewProps {
   schoolId: number,
   name: string,
   description: string,
+  homeroom: boolean,
   apiKey: string,
 }
 
@@ -288,6 +308,7 @@ interface CourseDataNewProps {
   courseId: number,
   name: string,
   description: string,
+  homeroom: boolean,
   active: boolean,
   apiKey: string,
 }
@@ -359,6 +380,31 @@ interface SchoolDataNewProps {
 
 export function schoolDataNew(props: SchoolDataNewProps): Promise<Result<SchoolData, InnexgoHoursErrorCode>> {
   return fetchApiOrNetworkError("innexgo_hours/school_data/new", props);
+}
+
+interface SchoolDurationNewProps {
+  schoolId: number,
+  day: number,
+  minuteStart: number,
+  minuteEnd: number,
+  apiKey: string,
+}
+
+export function schoolDurationNew(props: SchoolDurationNewProps): Promise<Result<SchoolDurationData, InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/school_duration/new", props);
+}
+
+interface SchoolDurationDataNewProps {
+  schoolDurationId: number,
+  day: number,
+  minuteStart: number,
+  minuteEnd: number,
+  active: boolean,
+  apiKey: string,
+}
+
+export function schoolDurationDataNew(props: SchoolDurationDataNewProps): Promise<Result<SchoolDurationData, InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError("innexgo_hours/school_duration_data/new", props);
 }
 
 interface SchoolKeyNewProps {
@@ -541,6 +587,7 @@ interface CourseDataViewProps {
   partialName?: string,
   description?: string[],
   partialDescription?: string,
+  homeroom?: boolean,
   active?: boolean,
   onlyRecent: boolean,
   schoolId?: number[],

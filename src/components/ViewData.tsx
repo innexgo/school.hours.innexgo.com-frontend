@@ -119,6 +119,10 @@ export const ViewCourse = (props: {
             <th>Description</th>
             <td>{props.courseData.description}</td>
           </tr>
+          <tr>
+            <th>Homeroom</th>
+            <td>{props.courseData.homeroom ? 'Yes' : 'No'}</td>
+          </tr>
         </tbody>
       </Table>
       <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />

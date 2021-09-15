@@ -23,6 +23,7 @@ function EditCourseData(props: EditCourseDataProps) {
   type EditCourseDataValue = {
     name: string,
     description: string,
+    homeroom: boolean,
   }
 
   const onSubmit = async (values: EditCourseDataValue,
@@ -33,6 +34,7 @@ function EditCourseData(props: EditCourseDataProps) {
       apiKey: props.apiKey.key,
       name: values.name,
       description: values.description,
+      homeroom: values.homeroom,
       active: props.courseData.active,
     });
 
@@ -84,7 +86,8 @@ function EditCourseData(props: EditCourseDataProps) {
       onSubmit={onSubmit}
       initialValues={{
         name: props.courseData.name,
-        description: props.courseData.description
+        description: props.courseData.description,
+        homeroom: props.courseData.homeroom,
       }}
       initialStatus={{
         failureResult: "",
@@ -110,7 +113,7 @@ function EditCourseData(props: EditCourseDataProps) {
               <Form.Control.Feedback type="invalid">{fprops.errors.name}</Form.Control.Feedback>
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label >Course Description</Form.Label>
+              <Form.Label>Course Description</Form.Label>
               <Form.Control
                 name="description"
                 type="text"
@@ -121,6 +124,16 @@ function EditCourseData(props: EditCourseDataProps) {
               />
               <Form.Control.Feedback type="invalid">{fprops.errors.description}</Form.Control.Feedback>
             </Form.Group>
+            <Form.Check className="mb-3 form-check">
+              <Form.Check.Input
+                name="homeroom"
+                checked={fprops.values.homeroom}
+                isInvalid={!!fprops.errors.homeroom}
+                onClick={fprops.handleChange}
+              />
+              <Form.Check.Label>Homeroom Class</Form.Check.Label>
+              <Form.Control.Feedback type="invalid">{fprops.errors.homeroom}</Form.Control.Feedback>
+            </Form.Check>
             <Form.Group className="mb-3">
               <Button type="submit">Submit</Button>
             </Form.Group>
@@ -152,6 +165,7 @@ function ArchiveCourse(props: ArchiveCourseProps) {
       apiKey: props.apiKey.key,
       name: props.courseData.name,
       description: props.courseData.description,
+      homeroom: props.courseData.homeroom,
       active: !props.courseData.active,
     });
 
@@ -272,6 +286,10 @@ const InstructorManageCourseData = (props: {
             <tr>
               <th>Description</th>
               <td>{courseData.description}</td>
+            </tr>
+            <tr>
+              <th>Homeroom</th>
+              <td>{courseData.homeroom ? 'Yes' : 'No'}</td>
             </tr>
             <tr>
               <th>Creator</th>
