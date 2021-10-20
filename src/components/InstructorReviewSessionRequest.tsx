@@ -13,7 +13,7 @@ import { ViewSessionRequest } from '../components/ViewData';
 import { CourseData, SessionRequest, sessionRequestResponseNew, sessionNew, sessionDataView, courseDataView, courseMembershipView } from '../utils/utils';
 
 import { ApiKey, } from '@innexgo/frontend-auth-api';
-import { isErr, unwrap } from '@innexgo/frontend-common';
+import { isErr, unwrap,getFirstOr } from '@innexgo/frontend-common';
 
 type CalendarWidgetProps = {
   sessionRequest: SessionRequest;
@@ -32,7 +32,7 @@ class CalendarWidget extends React.PureComponent<CalendarWidgetProps> {
     return <FullCalendar
       plugins={[timeGridPlugin, interactionPlugin]}
       initialView="timeGridDay"
-      unselectCancel=".UserReviewSessionRequest"
+      unselectCancel=".InstructorReviewSessionRequest"
       headerToolbar={false}
       dayHeaders={false}
       allDaySlot={false}
@@ -115,14 +115,14 @@ function ColorExplainer(props: { color: string; text: string }) {
 }
 
 
-type IUserReviewSessionRequestProps = {
+type IInstructorReviewSessionRequestProps = {
   postSubmit: () => void;
   sessionRequest: SessionRequest;
   courseData: CourseData,
   apiKey: ApiKey;
 }
 
-function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
+function IInstructorReviewSessionRequest(props: IInstructorReviewSessionRequestProps) {
 
   type ReviewSessionRequestValues = {
     sessionId: number | null,
@@ -265,7 +265,7 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
       }}
       initialStatus="">
       {(fprops) => <Form
-        className="UserReviewSessionRequest"
+        className="InstructorReviewSessionRequest"
         noValidate
         onSubmit={fprops.handleSubmit} >
         <Row>
@@ -358,7 +358,7 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
                   <FullCalendar
                     plugins={[timeGridPlugin, interactionPlugin]}
                     initialView="timeGridDay"
-                    unselectCancel=".UserReviewSessionRequest"
+                    unselectCancel=".InstructorReviewSessionRequest"
                     headerToolbar={false}
                     dayHeaders={false}
                     allDaySlot={false}
@@ -404,25 +404,27 @@ function IUserReviewSessionRequest(props: IUserReviewSessionRequestProps) {
 }
 
 
-type UserReviewSessionRequestProps = {
+type InstructorReviewSessionRequestProps = {
   postSubmit: () => void;
   sessionRequest: SessionRequest;
   apiKey: ApiKey;
 }
 
 const loadCourseData = async (props: AsyncProps<CourseData>) => {
-  const maybeCourseData = await courseDataView({
+  const courseData = await courseDataView({
     courseId: [props.courseId],
     onlyRecent: true,
     apiKey: props.apiKey.key,
-  }).then(unwrap);
+  })
+  .then(unwrap)
+  .then(x => getFirstOr(x, "NOT_FOUND")) // there's an invariant that there must always be one course data per valid course id
+  .then(unwrap);
 
-  // there's an invariant that there must always be one course data per valid course id
-  return maybeCourseData[0];
+  return courseData;
 }
 
 
-function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
+function InstructorReviewSessionRequest(props: InstructorReviewSessionRequestProps) {
   return <Async promiseFn={loadCourseData}
     apiKey={props.apiKey}
     courseId={props.sessionRequest.course.courseId}>
@@ -432,7 +434,7 @@ function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
         <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
       </Async.Rejected>
       <Async.Fulfilled<CourseData>>{data =>
-        <IUserReviewSessionRequest
+        <IInstructorReviewSessionRequest
           courseData={data}
           postSubmit={props.postSubmit}
           sessionRequest={props.sessionRequest}
@@ -445,4 +447,4 @@ function UserReviewSessionRequest(props: UserReviewSessionRequestProps) {
 
 }
 
-export default UserReviewSessionRequest;
+export default InstructorReviewSessionRequest;

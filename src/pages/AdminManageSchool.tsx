@@ -5,6 +5,8 @@ import AdminManageAdminships from '../components/AdminManageAdminships';
 import AdminManageSchoolKeys from '../components/AdminManageSchoolKeys'
 import { ViewSchool, ViewUser } from '../components/ViewData';
 import AdminManageSchoolData from '../components/AdminManageSchoolData';
+import ErrorMessage from '../components/ErrorMessage';
+
 
 import { unwrap } from '@innexgo/frontend-common';
 
@@ -19,7 +21,7 @@ import { AuthenticatedComponentProps } from '@innexgo/auth-react-components';
 
 const loadSchool = async (props: AsyncProps<School>) => {
   const maybeSchools = await schoolView({
-    schoolId: [parseInt(new URLSearchParams(window.location.search).get("schoolId") ?? "")],
+    schoolId: [props.schoolId],
     apiKey: props.apiKey.key
   })
     .then(unwrap);
@@ -42,14 +44,16 @@ const loadCourseData = async (props: AsyncProps<CourseData[]>) => {
 
 // TODO can someone clean this up later
 function AdminManageSchool(props: AuthenticatedComponentProps) {
+  const schoolId = parseInt(new URLSearchParams(window.location.search).get("schoolId") ?? "");
+
+
+
   return (
     <DashboardLayout {...props}>
       <Container fluid className="py-4 px-4">
-        <Async promiseFn={loadSchool} apiKey={props.apiKey}>
+        <Async promiseFn={loadSchool} schoolId={schoolId} apiKey={props.apiKey}>
           <Async.Pending><Loader /></Async.Pending>
-          <Async.Rejected>
-            <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
-          </Async.Rejected>
+          <Async.Rejected>{e => <ErrorMessage error={e} />}</Async.Rejected>
           <Async.Fulfilled<School>>{school => <>
             <div className="mx-3 my-3">
               <WidgetWrapper title="School Data">

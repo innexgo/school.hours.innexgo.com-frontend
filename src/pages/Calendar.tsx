@@ -20,10 +20,10 @@ import { sessionRequestResponseView, committmentView, courseDataView, committmen
 import { ViewSession, ViewSessionRequestResponse, ViewCommittment, ViewCommittmentResponse } from '../components/ViewData';
 
 
-import UserCreateSession from '../components/UserCreateSession';
+import InstructorCreateSession from '../components/InstructorCreateSession';
 import StudentCreateSessionRequest from '../components/StudentCreateSessionRequest';
-import UserReviewSessionRequest from '../components/UserReviewSessionRequest';
-import UserManageSession from '../components/UserManageSession';
+import InstructorReviewSessionRequest from '../components/InstructorReviewSessionRequest';
+import InstructorManageSession from '../components/InstructorManageSession';
 import StudentManageSessionRequest from '../components/StudentManageSessionRequest';
 import DisplayModal from '../components/DisplayModal';
 import { sessionToEvent, sessionRequestToEvent, rejectedSessionRequestResponseToEvent, acceptedSessionRequestResponseToEvent, committmentToEvent, committmentResponseToEvent } from '../components/ToCalendar';
@@ -37,9 +37,6 @@ type EventCalendarProps = {
   studentCourseDatas: CourseData[],
   courseMemberships: CourseMembership[],
 }
-
-// TODO make it so that selected data and selected modals are equivalent
-// Look at AdminManageAdminships for examples
 
 function EventCalendar(props: EventCalendarProps) {
 
@@ -402,7 +399,7 @@ function EventCalendar(props: EventCalendarProps) {
         <Tabs className="py-3">
           {props.courseMemberships.filter(x => x.courseMembershipKind === "INSTRUCTOR").length === 0 ? <> </> :
             <Tab eventKey="session" title="Create Session">
-              <UserCreateSession
+              <InstructorCreateSession
                 apiKey={props.apiKey}
                 start={selectedSpan.start}
                 end={selectedSpan.end}
@@ -438,7 +435,7 @@ function EventCalendar(props: EventCalendarProps) {
         show={selectedManageSession !== null}
         onClose={() => setSelectedManageSession(null)}
       >
-        <UserManageSession session={selectedManageSession} apiKey={props.apiKey} />
+        <InstructorManageSession session={selectedManageSession} apiKey={props.apiKey} />
       </DisplayModal>
     }
     {selectedViewSessionData === null ? <> </> :
@@ -456,7 +453,7 @@ function EventCalendar(props: EventCalendarProps) {
         show={selectedReviewSessionRequest !== null}
         onClose={() => setSelectedReviewSessionRequest(null)}
       >
-        <UserReviewSessionRequest
+        <InstructorReviewSessionRequest
           sessionRequest={selectedReviewSessionRequest}
           apiKey={props.apiKey}
           postSubmit={() => setSelectedReviewSessionRequest(null)}
@@ -615,7 +612,7 @@ function CalendarWidget(props: AuthenticatedComponentProps) {
                         hiddenCourses.includes(cd.course.courseId)
                           // if its included, remove it
                           ? hiddenCourses.filter(ci => ci !== cd.course.courseId)
-                          // if its not included, disinclude it
+                          // if its not included, include it
                           : [...hiddenCourses, cd.course.courseId]
                       )}
                       label={`Hide ${cd.name}`}

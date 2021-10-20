@@ -14,8 +14,8 @@ import { ApiKey } from '@innexgo/frontend-auth-api';
 
 type EditCourseDataProps = {
   courseData: CourseData,
+  setCourseData: (courseData: CourseData) => void,
   apiKey: ApiKey,
-  postSubmit: () => void
 };
 
 function EditCourseData(props: EditCourseDataProps) {
@@ -78,7 +78,7 @@ function EditCourseData(props: EditCourseDataProps) {
     });
 
     // execute callback
-    props.postSubmit();
+    props.setCourseData(maybeCourseData.Ok);
   }
 
   return <>
@@ -150,7 +150,7 @@ function EditCourseData(props: EditCourseDataProps) {
 type ArchiveCourseProps = {
   courseData: CourseData,
   apiKey: ApiKey,
-  postSubmit: () => void
+  setCourseData: (courseData: CourseData) => void
 };
 
 function ArchiveCourse(props: ArchiveCourseProps) {
@@ -209,7 +209,7 @@ function ArchiveCourse(props: ArchiveCourseProps) {
     });
 
     // execute callback
-    props.postSubmit();
+    props.setCourseData(maybeCourseData.Ok);
   }
 
   return <>
@@ -241,121 +241,94 @@ function ArchiveCourse(props: ArchiveCourseProps) {
 }
 
 
-
-const loadCourseData = async (props: AsyncProps<CourseData>) => {
-  const courseData = await courseDataView({
-    courseId: [props.courseId],
-    onlyRecent: true,
-    apiKey: props.apiKey.key
-  })
-    .then(unwrap);
-
-  return courseData[0];
-}
-
-
 const InstructorManageCourseData = (props: {
-  courseId: number,
+  courseData: CourseData,
+  setCourseData: (courseData: CourseData) => void,
   apiKey: ApiKey,
 }) => {
 
   const [showEditCourseData, setShowEditCourseData] = React.useState(false);
   const [showArchiveCourse, setShowArchiveCourse] = React.useState(false);
+  return <>
+    <Table hover bordered>
+      <tbody>
+        <tr>
+          <th>Status</th>
+          <td>{props.courseData.active ? "Active" : "Archived"}</td>
+        </tr>
+        <tr>
+          <th>Name</th>
+          <td>{props.courseData.name}</td>
+        </tr>
+        <tr>
+          <th>Description</th>
+          <td>{props.courseData.description}</td>
+        </tr>
+        <tr>
+          <th>Homeroom</th>
+          <td>{props.courseData.homeroom ? 'Yes' : 'No'}</td>
+        </tr>
+        <tr>
+          <th>Creator</th>
+          <td><ViewUser userId={props.courseData.course.creatorUserId} apiKey={props.apiKey} expanded={false} /></td>
+        </tr>
+        <tr>
+          <th>Creation Time</th>
+          <td>{format(props.courseData.course.creationTime, "MMM do")} </td>
+        </tr>
+      </tbody>
+    </Table>
+    <Action
+      title="Edit"
+      icon={EditIcon}
+      onClick={() => setShowEditCourseData(true)}
+    />
 
+    {props.courseData.active
+      ? <Action
+        title="Delete"
+        icon={DeleteIcon}
+        variant="danger"
+        onClick={() => setShowArchiveCourse(true)}
+      />
+      : <Action
+        title="Restore"
+        icon={RestoreIcon}
+        variant="danger"
+        onClick={() => setShowArchiveCourse(true)}
+      />
+    }
 
-  return <Async
-    promiseFn={loadCourseData}
-    apiKey={props.apiKey}
-    courseId={props.courseId}>
-    {({ reload }) => <>
-      <Async.Pending><Loader /></Async.Pending>
-      <Async.Rejected>
-        <span className="text-danger">An unknown error has occured.</span>
-      </Async.Rejected>
-      <Async.Fulfilled<CourseData>>{courseData => <>
-        <Table hover bordered>
-          <tbody>
-            <tr>
-              <th>Status</th>
-              <td>{courseData.active ? "Active" : "Archived"}</td>
-            </tr>
-            <tr>
-              <th>Name</th>
-              <td>{courseData.name}</td>
-            </tr>
-            <tr>
-              <th>Description</th>
-              <td>{courseData.description}</td>
-            </tr>
-            <tr>
-              <th>Homeroom</th>
-              <td>{courseData.homeroom ? 'Yes' : 'No'}</td>
-            </tr>
-            <tr>
-              <th>Creator</th>
-              <td><ViewUser userId={courseData.course.creatorUserId} apiKey={props.apiKey} expanded={false} /></td>
-            </tr>
-            <tr>
-              <th>Creation Time</th>
-              <td>{format(courseData.course.creationTime, "MMM do")} </td>
-            </tr>
-          </tbody>
-        </Table>
-        <Action
-          title="Edit"
-          icon={EditIcon}
-          onClick={() => setShowEditCourseData(true)}
-        />
+    <DisplayModal
+      title="Edit Course"
+      show={showEditCourseData}
+      onClose={() => setShowEditCourseData(false)}
+    >
+      <EditCourseData
+        courseData={props.courseData}
+        apiKey={props.apiKey}
+        setCourseData={courseData => {
+          setShowEditCourseData(false);
+          props.setCourseData(courseData);
+        }}
+      />
+    </DisplayModal>
 
-        {courseData.active
-          ? <Action
-            title="Delete"
-            icon={DeleteIcon}
-            variant="danger"
-            onClick={() => setShowArchiveCourse(true)}
-          />
-          : <Action
-            title="Restore"
-            icon={RestoreIcon}
-            variant="danger"
-            onClick={() => setShowArchiveCourse(true)}
-          />
-        }
-
-        <DisplayModal
-          title="Edit Course"
-          show={showEditCourseData}
-          onClose={() => setShowEditCourseData(false)}
-        >
-          <EditCourseData
-            courseData={courseData}
-            apiKey={props.apiKey}
-            postSubmit={() => {
-              setShowEditCourseData(false);
-              reload();
-            }}
-          />
-        </DisplayModal>
-
-        <DisplayModal
-          title="Archive Course"
-          show={showArchiveCourse}
-          onClose={() => setShowArchiveCourse(false)}
-        >
-          <ArchiveCourse
-            courseData={courseData}
-            apiKey={props.apiKey}
-            postSubmit={() => {
-              setShowArchiveCourse(false);
-              reload();
-            }}
-          />
-        </DisplayModal>
-      </>
-      }
-      </Async.Fulfilled>
-    </>}
-  </Async>
+    <DisplayModal
+      title="Archive Course"
+      show={showArchiveCourse}
+      onClose={() => setShowArchiveCourse(false)}
+    >
+      <ArchiveCourse
+        courseData={props.courseData}
+        apiKey={props.apiKey}
+        setCourseData={courseData => {
+          setShowArchiveCourse(false);
+          props.setCourseData(courseData);
+        }}
+      />
+    </DisplayModal>
+  </>
 }
 
 export default InstructorManageCourseData;

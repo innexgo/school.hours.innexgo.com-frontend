@@ -327,7 +327,7 @@ interface CourseKeyNewProps {
   apiKey: string,
 }
 
-export function courseKeyNew(props: CourseKeyNewProps, server?:string): Promise<Result<CourseKey, InnexgoHoursErrorCode>> {
+export function courseKeyNew(props: CourseKeyNewProps, server?:string): Promise<Result<CourseKeyData, InnexgoHoursErrorCode>> {
   return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/course_key/new", props);
 }
 

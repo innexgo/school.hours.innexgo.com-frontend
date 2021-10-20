@@ -6,7 +6,7 @@ import { WidgetWrapper } from '@innexgo/common-react-components';
 import DashboardLayout from '../components/DashboardLayout';
 
 import { ManagePassword, ManageUserData, AuthenticatedComponentProps } from '@innexgo/auth-react-components';
-import CreateSubscription from '../components/CreateSubscription';
+import UserCreateSubscription from '../components/UserCreateSubscription';
 
 function Account(props: AuthenticatedComponentProps) {
 
@@ -44,7 +44,7 @@ function Account(props: AuthenticatedComponentProps) {
           <>
             {subscribeSuccess
               ? <Form.Text className="text-success">Subscription Created Successfully</Form.Text>
-              : <CreateSubscription apiKey={props.apiKey} onSuccess={() => setSubscribeSuccess(true)} />
+              : <UserCreateSubscription apiKey={props.apiKey} onSuccess={() => setSubscribeSuccess(true)} />
             }
           </>
         </WidgetWrapper>

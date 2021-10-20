@@ -2,7 +2,7 @@ import { Async, AsyncProps } from 'react-async';
 import { Row, Col, Card, Tabs, Tab, Table, Form, Button, } from 'react-bootstrap';
 import { Formik, FormikHelpers, } from 'formik';
 import { Loader, Action } from '@innexgo/common-react-components';
-import UserManageSessionData from '../components/UserManageSessionData';
+import InstructorManageSessionData from '../components/InstructorManageSessionData';
 import { ViewSession, ViewUser, ViewSessionRequestResponse } from '../components/ViewData';
 import SearchMultiUser from '../components/SearchMultiUser';
 import { Committment, Session, CommittmentResponseKind, SessionRequestResponse, CommittmentResponse, committmentNew, committmentResponseView, committmentView, committmentResponseNew, courseMembershipView, sessionRequestResponseView } from '../utils/utils';
@@ -11,18 +11,18 @@ import { X, Check, Clock } from 'react-bootstrap-icons';
 import { isErr, unwrap } from '@innexgo/frontend-common';
 import { userDataView, ApiKey } from '@innexgo/frontend-auth-api';
 
-type ManageSessionModalProps = {
+type InstructorManageSessionProps = {
   session: Session;
   apiKey: ApiKey;
 }
 
-type UserManageSessionData = {
+type InstructorManageSessionData = {
   sessionRequestResponses: SessionRequestResponse[],
   committments: Committment[],
   committmentResponses: CommittmentResponse[]
 }
 
-const loadData = async (props: AsyncProps<UserManageSessionData>) => {
+const loadData = async (props: AsyncProps<InstructorManageSessionData>) => {
 
   const sessionRequestResponses = await sessionRequestResponseView({
     sessionId: [props.session.sessionId],
@@ -52,7 +52,7 @@ const loadData = async (props: AsyncProps<UserManageSessionData>) => {
   };
 }
 
-function ManageSessionModal(props: ManageSessionModalProps) {
+function InstructorManageSession(props: InstructorManageSessionProps) {
 
   type CreateCommittmentResponseValues = {
     committment: Committment;
@@ -70,11 +70,11 @@ function ManageSessionModal(props: ManageSessionModalProps) {
         <Async.Rejected>
           <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
         </Async.Rejected>
-        <Async.Fulfilled<UserManageSessionData>>{data => <>
+        <Async.Fulfilled<InstructorManageSessionData>>{data => <>
           <Card>
             <Card.Body>
               <Card.Title>Session</Card.Title>
-              <UserManageSessionData apiKey={props.apiKey} sessionId={props.session.sessionId} />
+              <InstructorManageSessionData apiKey={props.apiKey} sessionId={props.session.sessionId} />
             </Card.Body>
           </Card>
           <br />
@@ -321,4 +321,4 @@ function ManageSessionModal(props: ManageSessionModalProps) {
   </>
 }
 
-export default ManageSessionModal;
+export default InstructorManageSession;

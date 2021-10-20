@@ -130,7 +130,7 @@ const loadSessionData = async (props: AsyncProps<SessionData>) =>
 
 
 
-const UserManageSessionData = (props: {
+const InstructorManageSessionData = (props: {
   sessionId: number,
   apiKey: ApiKey,
 }) => {
@@ -190,4 +190,4 @@ const UserManageSessionData = (props: {
   </Async>
 }
 
-export default UserManageSessionData;
+export default InstructorManageSessionData;

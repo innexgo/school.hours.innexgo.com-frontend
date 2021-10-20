@@ -1,14 +1,12 @@
 import React from 'react'
 import { Container, Card, Form, Tabs, Tab } from 'react-bootstrap';
-import { Plus as Add } from 'react-bootstrap-icons'
 import { Async, AsyncProps } from 'react-async';
 
 import DashboardLayout from '../components/DashboardLayout';
-import { Section } from '@innexgo/common-react-components';
-import { Loader } from '@innexgo/common-react-components';
+import { Loader, Section, AddButton } from '@innexgo/common-react-components';
 import DisplayModal from '../components/DisplayModal';
 import UserCreateSchool from '../components/UserCreateSchool';
-import UserCreateCourse from '../components/UserCreateCourse';
+import AdminCreateCourse from '../components/AdminCreateCourse';
 import CreateAdminship from '../components/CreateAdminship';
 import UserCreateCourseMembership from '../components/UserCreateCourseMembership';
 import { subscriptionView, schoolDataView, courseDataView, adminshipView, courseMembershipView, SchoolData, CourseData, } from '../utils/utils';
@@ -41,18 +39,10 @@ type AddNewCardProps = {
   setShow: (a: boolean) => void,
 };
 
-function AddNewCard(props: AddNewCardProps) {
-  return (
-    <button
-      className="h-100"
-      style={{ width: '15rem', borderStyle: 'dashed', borderWidth: "medium" }}
-      onClick={() => props.setShow(true)}>
-      <div className="h-100 w-100 d-flex">
-        <Add className="mx-auto my-auto text-muted" style={{height: "2rem", width: "2rem" }} />
-      </div>
-    </button>
-  )
-}
+const AddNewCard = (props: AddNewCardProps) =>
+  <div style={{ width: "15rem", height: "100%" }}>
+    <AddButton onClick={() => props.setShow(true)} />
+  </div>
 
 type DashboardData = {
   subscribed: boolean,
@@ -237,7 +227,7 @@ function Dashboard(props: AuthenticatedComponentProps) {
                         {ddata.schoolData.length === 0
                           ? <> </>
                           : <Tab title="Create Course" eventKey="course_create" className="py-4">
-                            <UserCreateCourse apiKey={props.apiKey}
+                            <AdminCreateCourse apiKey={props.apiKey}
                               postSubmit={() => {
                                 setShowNewCourseModal(false);
                                 reloadDashboardData();

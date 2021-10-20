@@ -6,12 +6,12 @@ import { ApiKey } from '@innexgo/frontend-auth-api';
 
 import SearchSingleSchool from "../components/SearchSingleSchool";
 
-type UserCreateCourseProps = {
+type AdminCreateCourseProps = {
   apiKey: ApiKey;
   postSubmit: (cd: CourseData) => void;
 }
 
-function UserCreateCourse(props: UserCreateCourseProps) {
+function AdminCreateCourse(props: AdminCreateCourseProps) {
 
   type CreateCourseValue = {
     schoolId: null | number,
@@ -190,4 +190,4 @@ function UserCreateCourse(props: UserCreateCourseProps) {
   </>
 }
 
-export default UserCreateCourse;
+export default AdminCreateCourse;
