@@ -565,6 +565,42 @@ export function schoolDataView(props: SchoolDataViewProps, server?:string): Prom
   return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/school_data/view", props);
 }
 
+
+interface SchoolDurationViewProps {
+  schoolDurationId?: number[],
+  minCreationTime?: number,
+  maxCreationTime?: number,
+  creatorUserId?: number[],
+  schoolId?: number[],
+  apiKey: string,
+}
+
+export function schoolDurationView(props: SchoolDurationViewProps, server?:string): Promise<Result<SchoolDuration[], InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/school_duration/view", props);
+}
+
+
+interface SchoolDurationDataViewProps {
+  schoolDurationDataId?: number[],
+  minCreationTime?: number,
+  maxCreationTime?: number,
+  creatorUserId?: number[],
+  schoolDurationId?: number[],
+  day?: number[],
+  minMinuteStart?: number,
+  maxMinuteStart?: number,
+  minMinuteEnd?: number,
+  maxMinuteEnd?: number,
+  active?: boolean,
+  onlyRecent: boolean,
+  schoolId?: number[],
+  apiKey: string,
+}
+
+export function schoolDurationDataView(props: SchoolDurationDataViewProps, server?:string): Promise<Result<SchoolDurationData[], InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/school_duration_data/view", props);
+}
+
 interface CourseViewProps {
   courseId?: number[],
   minCreationTime?: number,
@@ -573,6 +609,8 @@ interface CourseViewProps {
   schoolId?: number[],
   apiKey: string,
 }
+
+
 
 export function courseView(props: CourseViewProps, server?:string): Promise<Result<Course[], InnexgoHoursErrorCode>> {
   return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/course/view", props);

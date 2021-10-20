@@ -15,7 +15,7 @@ import { unwrap, getFirstOr } from '@innexgo/frontend-common';
 import format from "date-fns/format";
 
 import { Async, AsyncProps } from 'react-async';
-import { CourseData, SchoolData, SchoolKeyData, schoolKeyDataView, schoolDataView, courseDataView, adminshipView, Adminship } from '../utils/utils';
+import { CourseData, SchoolData, SchoolKeyData, SchoolDurationData, schoolDurationDataView, schoolKeyDataView, schoolDataView, courseDataView, adminshipView, Adminship } from '../utils/utils';
 import { ApiKey } from '@innexgo/frontend-auth-api';
 import { AuthenticatedComponentProps } from '@innexgo/auth-react-components';
 
@@ -24,6 +24,7 @@ type ManageSchoolData = {
   courseData: CourseData[],
   schoolKeyData: SchoolKeyData[],
   adminships: Adminship[],
+  schoolDurationData: SchoolDurationData[],
 }
 
 const loadManageSchoolData = async (props: AsyncProps<ManageSchoolData>) => {
@@ -59,12 +60,20 @@ const loadManageSchoolData = async (props: AsyncProps<ManageSchoolData>) => {
   })
     .then(unwrap);
 
+  const schoolDurationData = await schoolDurationDataView({
+    schoolId: [props.schoolId],
+    active: true,
+    onlyRecent: true,
+    apiKey: props.apiKey.key
+  })
+    .then(unwrap);
 
   return {
     schoolData,
     courseData,
     schoolKeyData,
-    adminships
+    adminships,
+    schoolDurationData
   };
 }
 
