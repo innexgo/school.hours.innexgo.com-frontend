@@ -52,7 +52,7 @@ function AdminManageCourseDataTable(props: AdminManageCourseDataTableProps) {
         {
           activeCourseDatas.length === 0
             ? <tr><td colSpan={4} className="text-center">No current courses.</td></tr>
-            : <div />
+            : <> </>
         }
         {activeCourseDatas
           .map(({ cd, i }) =>
@@ -60,28 +60,26 @@ function AdminManageCourseDataTable(props: AdminManageCourseDataTableProps) {
               <td>{cd.name}</td>
               <td><ViewUser userId={cd.course.creatorUserId} apiKey={props.apiKey} expanded={false} /></td>
               <td>{format(cd.course.creationTime, "MMM do")}</td>
-              <th>
-                <td>
-                  <Action
-                    title="Archive"
-                    icon={DeleteIcon}
-                    variant="danger"
-                    onClick={() => setConfirmArchiveCourseDataIndex(i)}
-                  />
-                  <Action
-                    title="Edit"
-                    icon={Pencil }
-                    variant="dark"
-                    onClick={() => setConfirmEditCourseDataIndex(i)}
-                  />
-                  <Link
-                    title="View"
-                    icon={Eye}
-                    href={`/instructor_manage_course?courseId=${cd.course.courseId}`}
-                    variant="dark"
-                  />
-                </td>
-              </th>
+              <td>
+                <Action
+                  title="Archive"
+                  icon={DeleteIcon}
+                  variant="danger"
+                  onClick={() => setConfirmArchiveCourseDataIndex(i)}
+                />
+                <Action
+                  title="Edit"
+                  icon={Pencil}
+                  variant="dark"
+                  onClick={() => setConfirmEditCourseDataIndex(i)}
+                />
+                <Link
+                  title="View"
+                  icon={Eye}
+                  href={`/instructor_manage_course?courseId=${cd.course.courseId}`}
+                  variant="dark"
+                />
+              </td>
             </tr>
           )}
       </tbody>

@@ -15,8 +15,8 @@ import { User, ApiKey } from '@innexgo/frontend-auth-api';
 
 type EditSchoolDataProps = {
   schoolData: SchoolData,
+  setSchoolData: (schoolData: SchoolData) => void,
   apiKey: ApiKey,
-  postSubmit: () => void
 };
 
 function EditSchoolData(props: EditSchoolDataProps) {
@@ -77,7 +77,7 @@ function EditSchoolData(props: EditSchoolDataProps) {
     });
 
     // execute callback
-    props.postSubmit();
+    props.setSchoolData(maybeSchoolData.Ok);
   }
 
   return <>
@@ -137,8 +137,8 @@ function EditSchoolData(props: EditSchoolDataProps) {
 
 type ArchiveSchoolProps = {
   schoolData: SchoolData,
+  setSchoolData: (schoolData: SchoolData) => void,
   apiKey: ApiKey,
-  postSubmit: () => void
 };
 
 function ArchiveSchool(props: ArchiveSchoolProps) {
@@ -196,7 +196,7 @@ function ArchiveSchool(props: ArchiveSchoolProps) {
     });
 
     // execute callback
-    props.postSubmit();
+    props.setSchoolData(maybeSchoolData.Ok);
   }
 
   return <>
@@ -229,115 +229,91 @@ function ArchiveSchool(props: ArchiveSchoolProps) {
 
 
 
-const loadSchoolData = async (props: AsyncProps<SchoolData>) => {
-  const schoolData = await schoolDataView({
-    schoolId: [props.schoolId],
-    onlyRecent: true,
-    apiKey: props.apiKey.key
-  })
-    .then(unwrap);
-
-  return schoolData[0];
-}
-
-
 const AdminManageSchoolData = (props: {
-  schoolId: number,
+  schoolData: SchoolData,
+  setSchoolData: (schoolData: SchoolData) => void,
   apiKey: ApiKey,
 }) => {
 
   const [showEditSchoolData, setShowEditSchoolData] = React.useState(false);
-  const [showArchiveSchool, setShowArchiveSchool] = React.useState(false);
+  const [showArchiveSchoolData, setShowArchiveSchoolData] = React.useState(false);
 
 
-  return <Async
-    promiseFn={loadSchoolData}
-    apiKey={props.apiKey}
-    schoolId={props.schoolId}>
-    {({ reload }) => <>
-      <Async.Pending><Loader /></Async.Pending>
-      <Async.Rejected>
-        <span className="text-danger">An unknown error has occured.</span>
-      </Async.Rejected>
-      <Async.Fulfilled<SchoolData>>{schoolData => <>
-        <Table hover bordered>
-          <tbody>
-            <tr>
-              <th>Status</th>
-              <td>{schoolData.active ? "Active" : "Archived"}</td>
-            </tr>
-            <tr>
-              <th>Name</th>
-              <td>{schoolData.name}</td>
-            </tr>
-            <tr>
-              <th>Description</th>
-              <td>{schoolData.description}</td>
-            </tr>
-            <tr>
-              <th>Creator</th>
-              <td><ViewUser userId={schoolData.school.creatorUserId} apiKey={props.apiKey} expanded={false} /></td>
-            </tr>
-            <tr>
-              <th>Creation Time</th>
-              <td>{format(schoolData.school.creationTime, "MMM do")} </td>
-            </tr>
-          </tbody>
-        </Table>
-        <Action
-          title="Edit"
-          icon={EditIcon}
-          onClick={() => setShowEditSchoolData(true)}
-        />
-        {schoolData.active
-          ? <Action
-            title="Delete"
-            icon={DeleteIcon}
-            variant="danger"
-            onClick={() => setShowArchiveSchool(true)}
-          />
-          : <Action
-            title="Restore"
-            icon={RestoreIcon}
-            variant="danger"
-            onClick={() => setShowArchiveSchool(true)}
-          />
-        }
+  return <>
+    <Table hover bordered>
+      <tbody>
+        <tr>
+          <th>Status</th>
+          <td>{props.schoolData.active ? "Active" : "Archived"}</td>
+        </tr>
+        <tr>
+          <th>Name</th>
+          <td>{props.schoolData.name}</td>
+        </tr>
+        <tr>
+          <th>Description</th>
+          <td>{props.schoolData.description}</td>
+        </tr>
+        <tr>
+          <th>Creator</th>
+          <td><ViewUser userId={props.schoolData.school.creatorUserId} apiKey={props.apiKey} expanded={false} /></td>
+        </tr>
+        <tr>
+          <th>Creation Time</th>
+          <td>{format(props.schoolData.school.creationTime, "MMM do")} </td>
+        </tr>
+      </tbody>
+    </Table>
+    <Action
+      title="Edit"
+      icon={EditIcon}
+      onClick={() => setShowEditSchoolData(true)}
+    />
+    {props.schoolData.active
+      ? <Action
+        title="Delete"
+        icon={DeleteIcon}
+        variant="danger"
+        onClick={() => setShowArchiveSchoolData(true)}
+      />
+      : <Action
+        title="Restore"
+        icon={RestoreIcon}
+        variant="danger"
+        onClick={() => setShowArchiveSchoolData(true)}
+      />
+    }
 
-        <DisplayModal
-          title="Edit School"
-          show={showEditSchoolData}
-          onClose={() => setShowEditSchoolData(false)}
-        >
-          <EditSchoolData
-            schoolData={schoolData}
-            apiKey={props.apiKey}
-            postSubmit={() => {
-              setShowEditSchoolData(false);
-              reload();
-            }}
-          />
-        </DisplayModal>
+    <DisplayModal
+      title="Edit School"
+      show={showEditSchoolData}
+      onClose={() => setShowEditSchoolData(false)}
+    >
+      <EditSchoolData
+        apiKey={props.apiKey}
+        schoolData={props.schoolData}
+        setSchoolData={(schoolData) => {
+          setShowEditSchoolData(false);
+          props.setSchoolData(schoolData);
+        }}
+      />
+    </DisplayModal>
 
-        <DisplayModal
-          title="Archive School"
-          show={showArchiveSchool}
-          onClose={() => setShowArchiveSchool(false)}
-        >
-          <ArchiveSchool
-            schoolData={schoolData}
-            apiKey={props.apiKey}
-            postSubmit={() => {
-              setShowArchiveSchool(false);
-              reload();
-            }}
-          />
-        </DisplayModal>
-      </>
-      }
-      </Async.Fulfilled>
-    </>}
-  </Async>
+    <DisplayModal
+      title="Archive School"
+      show={showArchiveSchoolData}
+      onClose={() => setShowArchiveSchoolData(false)}
+    >
+      <ArchiveSchool
+        apiKey={props.apiKey}
+        schoolData={props.schoolData}
+        setSchoolData={(schoolData) => {
+          setShowArchiveSchoolData(false);
+          props.setSchoolData(schoolData);
+        }}
+      />
+    </DisplayModal>
+  </>
 }
 
 export default AdminManageSchoolData;

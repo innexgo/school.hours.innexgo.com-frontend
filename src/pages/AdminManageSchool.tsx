@@ -1,8 +1,8 @@
 import { Button, Card, Container, Form, Table } from 'react-bootstrap';
 import DashboardLayout from '../components/DashboardLayout';
 import { Loader, WidgetWrapper, Link } from '@innexgo/common-react-components';
-import AdminManageAdminships from '../components/AdminManageAdminships';
-import AdminManageSchoolKeys from '../components/AdminManageSchoolKeys'
+import AdminManageAdminshipTable from '../components/AdminManageAdminshipTable';
+import AdminManageSchoolKeyTable from '../components/AdminManageSchoolKeyTable'
 import AdminManageCourseTable from '../components/AdminManageCourseTable'
 import { ViewSchool, ViewUser } from '../components/ViewData';
 import AdminManageSchoolData from '../components/AdminManageSchoolData';
@@ -82,21 +82,35 @@ function AdminManageSchool(props: AuthenticatedComponentProps) {
               <div className="mx-3 my-3">
                 <WidgetWrapper title="School Data">
                   <span>Shows basic information about this school.</span>
-                  <AdminManageSchoolData schoolId={data.schoolData.school.schoolId} apiKey={props.apiKey} />
+                  <AdminManageSchoolData
+                    schoolData={data.schoolData}
+                    setSchoolData={schoolData => setData(update(data, { schoolData: { $set: schoolData } }))}
+                    apiKey={props.apiKey}
+                  />
                 </WidgetWrapper>
               </div>
 
               <div className="mx-3 my-3">
                 <WidgetWrapper title="Administrators">
                   <span>Shows the current administrators of this school.</span>
-                  <AdminManageAdminships school={data.schoolData.school} apiKey={props.apiKey} />
+                  <AdminManageAdminshipTable
+                    adminships={data.adminships}
+                    setAdminships={adminships => setData(update(data, { adminships: { $set: adminships } }))}
+                    apiKey={props.apiKey}
+                  />
                 </WidgetWrapper>
               </div>
 
               <div className="mx-3 my-3">
                 <WidgetWrapper title="Administrator Requests">
                   <span>Shows the current requests for admin permissions.</span>
-                  <AdminManageSchoolKeys schoolId={data.schoolData.school.schoolId} apiKey={props.apiKey} />
+                  <AdminManageSchoolKeyTable
+                    schoolKeyData={data.schoolKeyData}
+                    setSchoolKeyData={schoolKeyData => setData(update(data, { schoolKeyData: { $set: schoolKeyData } }))}
+                    schoolId={schoolId}
+                    apiKey={props.apiKey}
+                    addable
+                  />
                 </WidgetWrapper>
               </div>
 
