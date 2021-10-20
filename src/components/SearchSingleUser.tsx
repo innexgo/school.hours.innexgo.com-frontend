@@ -1,10 +1,10 @@
 import AsyncSelect from 'react-select/async';
-import { ValueType } from 'react-select';
-import { UserData} from '@innexgo/frontend-auth-api';
+import { SingleValue } from 'react-select';
+import { UserData } from '@innexgo/frontend-auth-api';
 
 interface SearchSingleUserProps {
   name: string,
-  disabled?:boolean,
+  disabled?: boolean,
   search: (input: string) => Promise<UserData[]>,
   isInvalid: boolean,
   setFn: (user: UserData | null) => void
@@ -26,7 +26,7 @@ export default function SearchSingleUser(props: SearchSingleUserProps) {
   };
 
 
-  const onChange = (opt:  ValueType<UserDataOption, false>) => {
+  const onChange = (opt: SingleValue<UserDataOption>) => {
     if (opt == null) {
       props.setFn(null);
     } else {

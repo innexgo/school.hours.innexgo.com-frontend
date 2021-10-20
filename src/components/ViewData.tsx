@@ -1,7 +1,8 @@
 import React from 'react'
 import { Async, AsyncProps } from 'react-async';
 import { Table } from 'react-bootstrap';
-import { Loader } from '@innexgo/common-react-components';
+import { Eye } from 'react-bootstrap-icons';
+import { Loader, Link } from '@innexgo/common-react-components';
 import format from 'date-fns/format';
 import { Committment, SessionRequest, SessionRequestResponse, CommittmentResponse, CourseData, SchoolData, SessionData, schoolDataView, courseDataView, sessionDataView } from "../utils/utils";
 import { ApiKey, UserData, userDataView } from '@innexgo/frontend-auth-api';
@@ -19,7 +20,7 @@ const ToggleExpandButton = (props: { expanded: boolean, setExpanded: (b: boolean
 
 
 const loadCourseData = async (props: AsyncProps<CourseData>) => {
-  const courseData= await courseDataView({
+  const courseData = await courseDataView({
     courseId: [props.courseId],
     onlyRecent: true,
     apiKey: props.apiKey.key,
@@ -139,7 +140,7 @@ export const ViewUser = (props: {
   return <Async promiseFn={loadUserData} apiKey={props.apiKey} userId={props.userId}>
     <Async.Pending><Loader /></Async.Pending>
     <Async.Rejected>
-      <span className="text-danger">Unable to load session.</span>
+      <span className="text-danger">Unable to load user data.</span>
     </Async.Rejected>
     <Async.Fulfilled<UserData>>{user =>
       !expanded
@@ -153,6 +154,17 @@ export const ViewUser = (props: {
               <tr>
                 <th>Name</th>
                 <td>{user.name}</td>
+              </tr>
+              <tr>
+                <th>Actions</th>
+                <td>
+                  <Link
+                    title="View"
+                    icon={Eye}
+                    href={`/instructor_manage_course?courseId=${user.creatorUserId}`}
+                    variant="dark"
+                  />
+                </td>
               </tr>
             </tbody>
           </Table>

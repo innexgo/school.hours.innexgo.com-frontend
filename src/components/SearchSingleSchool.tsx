@@ -1,5 +1,5 @@
 import AsyncSelect from 'react-select/async';
-import { ValueType } from 'react-select';
+import { SingleValue } from 'react-select';
 import {SchoolData} from '../utils/utils';
 
 interface SearchSingleSchoolProps {
@@ -26,7 +26,7 @@ export default function SearchSingleSchool(props: SearchSingleSchoolProps) {
   };
 
 
-  const onChange = (opt: ValueType<SchoolDataOption, false>) => {
+  const onChange = (opt: SingleValue<SchoolDataOption>) => {
     if (opt == null) {
       props.setFn(null);
     } else {

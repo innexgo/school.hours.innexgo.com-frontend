@@ -21,4 +21,14 @@ module.exports = function(app) {
       },
     })
   );
+  app.use(
+    '/api/cnc',
+    createProxyMiddleware({
+      target: 'http://localhost:8078',
+      changeOrigin: true,
+      pathRewrite: {
+        '^/api/auth': '/public', // rewrite path
+      },
+    })
+  );
 };

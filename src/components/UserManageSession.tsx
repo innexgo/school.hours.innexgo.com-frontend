@@ -1,11 +1,12 @@
 import { Async, AsyncProps } from 'react-async';
 import { Row, Col, Card, Tabs, Tab, Table, Form, Button, } from 'react-bootstrap';
 import { Formik, FormikHelpers, } from 'formik';
-import { Loader } from '@innexgo/common-react-components';
+import { Loader, Action } from '@innexgo/common-react-components';
 import UserManageSessionData from '../components/UserManageSessionData';
 import { ViewSession, ViewUser, ViewSessionRequestResponse } from '../components/ViewData';
 import SearchMultiUser from '../components/SearchMultiUser';
 import { Committment, Session, CommittmentResponseKind, SessionRequestResponse, CommittmentResponse, committmentNew, committmentResponseView, committmentView, committmentResponseNew, courseMembershipView, sessionRequestResponseView } from '../utils/utils';
+import { X, Check, Clock } from 'react-bootstrap-icons';
 
 import { isErr, unwrap } from '@innexgo/frontend-common';
 import { userDataView, ApiKey } from '@innexgo/frontend-auth-api';
@@ -147,10 +148,10 @@ function ManageSessionModal(props: ManageSessionModalProps) {
                 initialStatus={data.committments.map(_ => "")}
               >
                 {fprops =>
-                  <Form noValidate onSubmit={fprops.handleSubmit} >
-                    <Table hover bordered>
+                  <Form noValidate onSubmit={fprops.handleSubmit}>
+                    <Table hover bordered className="mx-2">
                       <thead>
-                        <tr><th>Student</th><th>Attendance Status</th></tr>
+                        <tr><th>Student</th><th>Status</th></tr>
                       </thead>
                       <tbody>
                         {fprops.values.map((c: CreateCommittmentResponseValues, i: number) =>
@@ -178,13 +179,35 @@ function ManageSessionModal(props: ManageSessionModalProps) {
                           </tr>
                         )}
                         {
-                          data.committmentResponses.map((cr: CommittmentResponse) => <tr>
-                            <td><ViewUser expanded={false} apiKey={props.apiKey} userId={cr.committment.attendeeUserId} /></td>
-                            <td>{cr.kind}</td>
-                          </tr>)
+                          data.committmentResponses.map((cr: CommittmentResponse) => {
+                            let content;
+                            switch (cr.kind) {
+                              case "ABSENT": {
+                                content = <Action title="Absent" icon={X} variant="danger" onClick={() => 1} />;
+                                break;
+                              }
+                              case "TARDY": {
+                                content = <Action title="Tardy" icon={Clock} variant="warning" onClick={() => 1} />;
+                                break;
+                              }
+                              case "PRESENT": {
+                                content = <Action title="Present" icon={Check} variant="success" onClick={() => 1} />;
+                                break;
+                              }
+                              case "CANCELLED": {
+                                content = <Action title="CANCELLED" icon={X} variant="secondary" onClick={() => 1} />;
+                                break;
+                              }
+                            }
+                            return <tr>
+                              <td><ViewUser expanded={false} apiKey={props.apiKey} userId={cr.committment.attendeeUserId} /></td>
+                              <td>{content}</td>
+                            </tr>
+                          })
                         }
                       </tbody>
                     </Table>
+
                     <Button type="submit">Submit</Button>
                   </Form>}
               </Formik>

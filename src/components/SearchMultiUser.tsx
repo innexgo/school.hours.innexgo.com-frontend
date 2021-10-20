@@ -1,4 +1,4 @@
-import { ValueType } from 'react-select';
+import { MultiValue } from 'react-select';
 import AsyncSelect from 'react-select/async';
 import { UserData} from '@innexgo/frontend-auth-api';
 
@@ -26,7 +26,7 @@ export default function SearchMultiUser(props: SearchMultiUserProps) {
   };
 
 
-  const onChange = (opt: ValueType<UserDataOption, true>) => {
+  const onChange = (opt: MultiValue<UserDataOption>) => {
     if (opt == null) {
       props.setFn([]);
     } else {
