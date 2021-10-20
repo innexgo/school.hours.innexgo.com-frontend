@@ -7,8 +7,6 @@ import DisplayModal from '../components/DisplayModal';
 import { X as DeleteIcon, } from 'react-bootstrap-icons';
 import { Formik, FormikHelpers, FormikErrors } from 'formik';
 
-//import SearchMultiUser from "../components/SearchMultiUser";
-
 import format from "date-fns/format";
 import addDays from "date-fns/addDays";
 

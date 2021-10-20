@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Form, Table } from 'react-bootstrap';
-import { Action } from '@innexgo/common-react-components';
+import { Action, AddButton} from '@innexgo/common-react-components';
 import DisplayModal from '../components/DisplayModal';
 import update from 'immutability-helper';
 
@@ -114,7 +114,7 @@ const isActive = (k: CourseKeyData) => k.active && k.courseKey.endTime > Date.no
 
 function InstructorManageCourseKeyTable(props: InstructorManageCourseKeyTableProps) {
 
-  const showInactive = true;
+  const showInactive = false;
 
   // this list has an object consisting of both the index in the real array and the object constructs a new objec
   const activeKeys = props.courseKeyData
@@ -124,7 +124,7 @@ function InstructorManageCourseKeyTable(props: InstructorManageCourseKeyTablePro
     .filter(({ k }) => showInactive || isActive(k));
 
 
-  const [confirmRevokeCourseKeyDataId, setConfirmRevokeCourseKeyDataId] = React.useState<number | null>(null);
+  const [confirmRevokeCourseKeyDataIndex, setConfirmRevokeCourseKeyDataIndex] = React.useState<number | null>(null);
 
   const [showCreateKey, setShowCreateKey] = React.useState(false);
 
@@ -140,6 +140,10 @@ function InstructorManageCourseKeyTable(props: InstructorManageCourseKeyTablePro
         </tr>
       </thead>
       <tbody>
+        {props.addable
+          ? <tr><td colSpan={5} className="p-0"><AddButton onClick={() => setShowCreateKey(true)} /></td></tr>
+          : <> </>
+        }
         {activeKeys.length === 0
           ? <tr><td colSpan={5} className="text-center">No currently active keys.</td></tr>
           : <> </>
@@ -158,7 +162,7 @@ function InstructorManageCourseKeyTable(props: InstructorManageCourseKeyTablePro
                   title="Delete"
                   icon={DeleteIcon}
                   variant="danger"
-                  onClick={() => setConfirmRevokeCourseKeyDataId(i)}
+                  onClick={() => setConfirmRevokeCourseKeyDataIndex(i)}
                   hidden={!isActive(k)}
                 />
               </td>
@@ -166,18 +170,18 @@ function InstructorManageCourseKeyTable(props: InstructorManageCourseKeyTablePro
           )}
       </tbody>
     </Table>
-    {confirmRevokeCourseKeyDataId === null ? <> </> :
+    {confirmRevokeCourseKeyDataIndex === null ? <> </> :
       <DisplayModal
         title="Confirm Remove"
-        show={confirmRevokeCourseKeyDataId != null}
-        onClose={() => setConfirmRevokeCourseKeyDataId(null)}
+        show={confirmRevokeCourseKeyDataIndex != null}
+        onClose={() => setConfirmRevokeCourseKeyDataIndex(null)}
       >
         <RevokeCourseKey
           apiKey={props.apiKey}
-          courseKeyData={props.courseKeyData[confirmRevokeCourseKeyDataId]}
+          courseKeyData={props.courseKeyData[confirmRevokeCourseKeyDataIndex]}
           setCourseKeyData={(k) => {
-            setConfirmRevokeCourseKeyDataId(null);
-            props.setCourseKeyData(update(props.courseKeyData, { [confirmRevokeCourseKeyDataId]: { $set: k } }))
+            setConfirmRevokeCourseKeyDataIndex(null);
+            props.setCourseKeyData(update(props.courseKeyData, { [confirmRevokeCourseKeyDataIndex]: { $set: k } }))
           }}
         />
       </DisplayModal>

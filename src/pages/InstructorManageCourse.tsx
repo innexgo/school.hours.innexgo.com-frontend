@@ -17,7 +17,8 @@ import { Async, AsyncProps } from 'react-async';
 type ManageCourseData = {
   courseData: CourseData,
   courseKeyData: CourseKeyData[],
-  courseMemberships: CourseMembership[]
+  instructorCourseMemberships: CourseMembership[],
+  studentCourseMemberships: CourseMembership[]
 }
 
 async function loadManageCourseData(props: AsyncProps<ManageCourseData>) {
@@ -38,9 +39,18 @@ async function loadManageCourseData(props: AsyncProps<ManageCourseData>) {
   })
     .then(unwrap);
 
-  const courseMemberships = await courseMembershipView({
+  const studentCourseMemberships = await courseMembershipView({
     courseId: [props.courseId],
     apiKey: props.apiKey.key,
+    courseMembershipKind: ["STUDENT"],
+    onlyRecent: true,
+  })
+    .then(unwrap);
+
+  const instructorCourseMemberships = await courseMembershipView({
+    courseId: [props.courseId],
+    apiKey: props.apiKey.key,
+    courseMembershipKind: ["INSTRUCTOR"],
     onlyRecent: true,
   })
     .then(unwrap);
@@ -48,7 +58,8 @@ async function loadManageCourseData(props: AsyncProps<ManageCourseData>) {
   return {
     courseData,
     courseKeyData,
-    courseMemberships,
+    instructorCourseMemberships,
+    studentCourseMemberships,
   };
 }
 
@@ -76,20 +87,28 @@ function InstructorManageCourse(props: AuthenticatedComponentProps) {
               <div className="mx-3 my-3">
                 <WidgetWrapper title="Current Instructors">
                   <span>Shows the current instructors of this course.</span>
-                  <InstructorManageCourseMembershipTable courseId={courseId} apiKey={props.apiKey} courseMembershipKind="INSTRUCTOR" />
+                  <InstructorManageCourseMembershipTable
+                    courseMemberships={data.instructorCourseMemberships}
+                    setCourseMemberships={courseMemberships => setData(update(data, { instructorCourseMemberships: { $set: courseMemberships } }))}
+                    apiKey={props.apiKey}
+                  />
                 </WidgetWrapper>
               </div>
 
               <div className="mx-3 my-3">
                 <WidgetWrapper title="Current Students">
                   <span>Shows the current students in this course.</span>
-                  <InstructorManageCourseMembershipTable courseId={courseId} apiKey={props.apiKey} courseMembershipKind="STUDENT" />
+                  <InstructorManageCourseMembershipTable
+                    courseMemberships={data.studentCourseMemberships}
+                    setCourseMemberships={courseMemberships => setData(update(data, { studentCourseMemberships: { $set: courseMemberships } }))}
+                    apiKey={props.apiKey}
+                  />
                 </WidgetWrapper>
               </div>
 
               <div className="mx-3 my-3">
-                <WidgetWrapper title="Active Course Keys">
-                  <span>Shows the currently active course keys.</span>
+                <WidgetWrapper title="Course Keys">
+                  <span>Shows course keys that have been created.</span>
                   <InstructorManageCourseKeyTable
                     courseKeyData={data.courseKeyData}
                     setCourseKeyData={courseKeyData => setData(update(data, { courseKeyData: { $set: courseKeyData } }))}

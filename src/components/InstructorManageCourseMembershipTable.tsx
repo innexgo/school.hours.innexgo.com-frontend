@@ -3,6 +3,7 @@ import { Button, Form, Table } from 'react-bootstrap';
 import { Loader, Action } from '@innexgo/common-react-components';
 import DisplayModal from '../components/DisplayModal';
 import { ViewUser, } from '../components/ViewData';
+import update from 'immutability-helper';
 
 import { X as DeleteIcon, } from 'react-bootstrap-icons'
 import { Formik, FormikHelpers, } from 'formik'
@@ -16,10 +17,9 @@ import { ApiKey, User } from '@innexgo/frontend-auth-api';
 
 
 type CancelCourseMembershipProps = {
-  userId: number,
-  courseId: number,
+  courseMembership: CourseMembership,
+  setCourseMembership: (courseMembership:CourseMembership) => void
   apiKey: ApiKey,
-  postSubmit: () => void
 };
 
 function CancelCourseMembership(props: CancelCourseMembershipProps) {
@@ -31,8 +31,8 @@ function CancelCourseMembership(props: CancelCourseMembershipProps) {
     fprops: FormikHelpers<CancelCourseMembershipValue>) => {
 
     const maybeCourseMembership = await courseMembershipNewCancel({
-      courseId: props.courseId,
-      userId: props.userId,
+      courseId: props.courseMembership.course.courseId,
+      userId: props.courseMembership.userId,
       apiKey: props.apiKey.key,
     });
 
@@ -83,15 +83,13 @@ function CancelCourseMembership(props: CancelCourseMembershipProps) {
     });
 
     // execute callback
-    props.postSubmit();
+    props.setCourseMembership (maybeCourseMembership.Ok);
   }
 
   return <>
     <Formik<CancelCourseMembershipValue>
       onSubmit={onSubmit}
-      initialValues={{
-        userIds: [],
-      }}
+      initialValues={{ }}
       initialStatus={{
         failureResult: "",
         successResult: ""
@@ -103,8 +101,8 @@ function CancelCourseMembership(props: CancelCourseMembershipProps) {
           onSubmit={fprops.handleSubmit} >
           <div hidden={fprops.status.successResult !== ""}>
             <p>Are you sure you want to remove the following user?</p>
-            <ViewUser apiKey={props.apiKey} userId={props.userId} expanded={false} />
-            {props.apiKey.creatorUserId === props.userId
+            <ViewUser apiKey={props.apiKey} userId={props.courseMembership.userId} expanded={false} />
+            {props.apiKey.creatorUserId === props.courseMembership.userId
               ? <p className="text-danger">You are removing yourself. You won't be able to add yourself back.</p>
               : <> </>
             }
@@ -119,100 +117,79 @@ function CancelCourseMembership(props: CancelCourseMembershipProps) {
   </>
 }
 
-type InternalInstructorManageCourseMembershipsProps = {
-  // its critical that we pass the function as a prop, because if we define it inside this function, react-async will break
-  loadMemberships: (props: AsyncProps<CourseMembership[]>) => Promise<CourseMembership[]>,
-  courseId: number,
+const isActive = (cm: CourseMembership) => cm.courseMembershipKind !== "CANCEL";
+
+type InstructorManageCourseMembershipTableProps = {
+  courseMemberships: CourseMembership[],
+  setCourseMemberships: (courseMemberships: CourseMembership[]) => void,
   apiKey: ApiKey,
 }
 
-function InternalInstructorManageCourseMemberships(props: InternalInstructorManageCourseMembershipsProps) {
-  const [confirmRemoveUserId, setConfirmRemoveUserId] = React.useState<number | null>(null);
+function InstructorManageCourseMembershipTable(props: InstructorManageCourseMembershipTableProps) {
+  const showInactive = false;
+
+  // this list has an object consisting of both the index in the real array and the object constructs a new objec
+  const activeMemberships = props.courseMemberships
+    // enumerate data + index
+    .map((cm, i) => ({ cm, i }))
+    // filter inactive
+    .filter(({ cm }) => showInactive || isActive(cm));
+
+
+  const [confirmCancelCourseMembershipIndex, setConfirmCancelCourseMembershipIndex] = React.useState<number | null>(null);
 
   return <>
-    <Async promiseFn={props.loadMemberships}>
-      {({ reload }) => <>
-        <Async.Pending><Loader /></Async.Pending>
-        <Async.Rejected>
-          <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
-        </Async.Rejected>
-        <Async.Fulfilled<CourseMembership[]>>{data => <>
-          <Table hover bordered>
-            <thead>
-              <tr>
-                <th>User</th>
-                <th>Date Joined</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {
-                data.length === 0
-                  ? <tr><td colSpan={3} className="text-center">No current members.</td></tr>
-                  : data.map((a: CourseMembership) =>
-                    <tr>
-                      <td><ViewUser userId={a.userId} apiKey={props.apiKey} expanded={false} /></td>
-                      <td>{format(a.creationTime, "MMM do")}</td>
-                      <th>
-                        <td>
-                          <Action
-                            title="Delete"
-                            icon={DeleteIcon}
-                            variant="danger"
-                            onClick={() => setConfirmRemoveUserId(a.userId)}
-                          />
-                        </td>
-                      </th>
-                    </tr>
-                  )}
-            </tbody>
-          </Table>
-          {confirmRemoveUserId === null ? <> </> :
-            <DisplayModal
-              title="Confirm Remove"
-              show={confirmRemoveUserId != null}
-              onClose={() => setConfirmRemoveUserId(null)}
-            >
-              <CancelCourseMembership {...props}
-                userId={confirmRemoveUserId}
-                postSubmit={() => {
-                  setConfirmRemoveUserId(null);
-                  reload();
-                }}
-              />
-            </DisplayModal>
-          }
-        </>}
-        </Async.Fulfilled>
-      </>}
-    </Async>
+    <Table hover bordered>
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Date Joined</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          activeMemberships.length === 0
+            ? <tr><td colSpan={3} className="text-center">No current members.</td></tr>
+            : <div />
+        }
+        {activeMemberships
+          .map(({ cm, i }) =>
+            <tr key={i}>
+              <td><ViewUser userId={cm.userId} apiKey={props.apiKey} expanded={false} /></td>
+              <td>{format(cm.creationTime, "MMM do")}</td>
+              <th>
+                <td>
+                  <Action
+                    title="Remove"
+                    icon={DeleteIcon}
+                    variant="danger"
+                    onClick={() => setConfirmCancelCourseMembershipIndex(i)}
+                  />
+                </td>
+              </th>
+            </tr>
+          )}
+      </tbody>
+    </Table>
+    {confirmCancelCourseMembershipIndex === null ? <> </> :
+      <DisplayModal
+        title="Confirm Remove"
+        show={confirmCancelCourseMembershipIndex != null}
+        onClose={() => setConfirmCancelCourseMembershipIndex(null)}
+      >
+        <CancelCourseMembership
+          apiKey={props.apiKey}
+          courseMembership={props.courseMemberships[confirmCancelCourseMembershipIndex]}
+          setCourseMembership={(k) => {
+            setConfirmCancelCourseMembershipIndex(null);
+            props.setCourseMemberships(update(props.courseMemberships, { [confirmCancelCourseMembershipIndex]: { $set: k } }))
+          }}
+        />
+      </DisplayModal>
+    }
   </>
 }
 
 
-// This is a wrapper to stop the infinte loop
-
-type InstructorManageCourseMembershipsProps = {
-  courseMembershipKind: CourseMembershipKind,
-  courseId: number,
-  apiKey: ApiKey,
-}
-
-function InstructorManageCourseMemberships(props: InstructorManageCourseMembershipsProps) {
-  return <InternalInstructorManageCourseMemberships
-    courseId={props.courseId}
-    apiKey={props.apiKey}
-    loadMemberships={async (_: AsyncProps<CourseMembership[]>) => {
-      return await courseMembershipView({
-        courseId: [props.courseId],
-        courseMembershipKind: [props.courseMembershipKind],
-        onlyRecent: true,
-        apiKey: props.apiKey.key
-      })
-        .then(unwrap)
-
-    }}
-  />
-}
-
-export default InstructorManageCourseMemberships;
+export default InstructorManageCourseMembershipTable;
