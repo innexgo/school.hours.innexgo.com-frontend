@@ -1,9 +1,9 @@
 import React from 'react';
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 // our auth system
 import { ApiKey } from '@innexgo/frontend-auth-api';
-import { AuthenticatedRoute } from '@innexgo/auth-react-components';
+import { AuthenticatedComponentRenderer } from '@innexgo/auth-react-components';
 
 // public pages
 import Instructions from './pages/Instructions';
@@ -84,7 +84,6 @@ function App() {
     }
   };
 
-
   const branding = {
     name: "Innexgo Hours",
     tagline: "Attendance Simplified",
@@ -95,75 +94,31 @@ function App() {
   }
   return (
     <BrowserRouter>
-      <Switch>
-        <Route path="/instructions">
-          <Instructions branding={branding} />
-        </Route>
-        <Route path="/terms_of_service">
-          <TermsOfService branding={branding} />
-        </Route>
-        <Route path="/school_search">
-          <SchoolSearch branding={branding} />
-        </Route>
-        <Route path="/forgot_password">
-          <ForgotPassword branding={branding} />
-        </Route>
-        <Route path="/reset_password">
-          <ResetPassword branding={branding} />
-        </Route>
-        <Route path="/register">
-          <Register branding={branding} />
-        </Route>
-        <Route path="/email_confirm">
-          <EmailConfirm branding={branding} />
-        </Route>
-        <Route path="/parent_permission_confirm">
-          <ParentPermissionConfirm branding={branding} />
-        </Route>
-        <Route path="/dashboard" >
-          <AuthenticatedRoute branding={branding} {...apiKeyGetSetter} component={Dashboard} />
-        </Route>
-        <Route path="/settings" >
-          <AuthenticatedRoute branding={branding} {...apiKeyGetSetter} component={Settings} />
-        </Route>
-        <Route path="/account" >
-          <AuthenticatedRoute branding={branding} {...apiKeyGetSetter} component={Account} />
-        </Route>
-        <Route path="/admin_manage_school" >
-          <AuthenticatedRoute branding={branding} {...apiKeyGetSetter} component={AdminManageSchool} />
-        </Route>
-        <Route path="/instructor_manage_course" >
-          <AuthenticatedRoute branding={branding} {...apiKeyGetSetter} component={InstructorManageCourse} />
-        </Route>
-        <Route path="/student_manage_course" >
-          <AuthenticatedRoute branding={branding} {...apiKeyGetSetter} component={StudentManageCourse} />
-        </Route>
-        <Route exact path="/" >
-          <AuthenticatedRoute branding={branding} {...apiKeyGetSetter} component={Dashboard} />
-        </Route>
-        <Route path="/calendar" >
-          <AuthenticatedRoute branding={branding} {...apiKeyGetSetter} component={Calendar} />
-        </Route>
-        <Route path="/school" >
-          <AuthenticatedRoute branding={branding} {...apiKeyGetSetter} component={SchoolStatsReport} />
-        </Route>
-        <Route path="/course" >
-          <AuthenticatedRoute branding={branding} {...apiKeyGetSetter} component={CourseStatsReport} />
-        </Route>
-        <Route path="/user" >
-          <AuthenticatedRoute branding={branding} {...apiKeyGetSetter} component={UserStatsReport} />
-        </Route>
-        <Route path="/course_membership" >
-          <AuthenticatedRoute branding={branding} {...apiKeyGetSetter} component={CourseMembershipStatsReport} />
-        </Route>
-        <Route path="/adminship" >
-          <AuthenticatedRoute branding={branding} {...apiKeyGetSetter} component={AdminshipStatsReport} />
-        </Route>
-        <Route path="/session" >
-          <AuthenticatedRoute branding={branding} {...apiKeyGetSetter} component={SessionStatsReport} />
-        </Route>
-        <Route path="/" component={Error404} />
-      </Switch>
+      <Routes>
+        <Route path="/instructions" element={<Instructions branding={branding} />} />
+        <Route path="/terms_of_service" element={<TermsOfService branding={branding} />} />
+        <Route path="/school_search" element={<SchoolSearch branding={branding} />} />
+        <Route path="/forgot_password" element={<ForgotPassword branding={branding} />} />
+        <Route path="/reset_password" element={<ResetPassword branding={branding} />} />
+        <Route path="/register" element={<Register branding={branding} />} />
+        <Route path="/email_confirm" element={<EmailConfirm branding={branding} />} />
+        <Route path="/parent_confirm" element={<ParentPermissionConfirm branding={branding} />} />
+        <Route path="/dashboard" element={<AuthenticatedComponentRenderer branding={branding} {...apiKeyGetSetter} component={Dashboard} />} />
+        <Route path="/settings" element={<AuthenticatedComponentRenderer branding={branding} {...apiKeyGetSetter} component={Settings} />} />
+        <Route path="/account" element={<AuthenticatedComponentRenderer branding={branding} {...apiKeyGetSetter} component={Account} />} />
+        <Route path="/admin_manage_school" element={<AuthenticatedComponentRenderer branding={branding} {...apiKeyGetSetter} component={AdminManageSchool} />} />
+        <Route path="/instructor_manage_course" element={<AuthenticatedComponentRenderer branding={branding} {...apiKeyGetSetter} component={InstructorManageCourse} />} />
+        <Route path="/student_manage_course" element={<AuthenticatedComponentRenderer branding={branding} {...apiKeyGetSetter} component={StudentManageCourse} />} />
+        <Route path="/" element={<AuthenticatedComponentRenderer branding={branding} {...apiKeyGetSetter} component={Dashboard} />} />
+        <Route path="/calendar" element={<AuthenticatedComponentRenderer branding={branding} {...apiKeyGetSetter} component={Calendar} />} />
+        <Route path="/school" element={<AuthenticatedComponentRenderer branding={branding} {...apiKeyGetSetter} component={SchoolStatsReport} />} />
+        <Route path="/course" element={<AuthenticatedComponentRenderer branding={branding} {...apiKeyGetSetter} component={CourseStatsReport} />} />
+        <Route path="/user" element={<AuthenticatedComponentRenderer branding={branding} {...apiKeyGetSetter} component={UserStatsReport} />} />
+        <Route path="/course_membership" element={<AuthenticatedComponentRenderer branding={branding} {...apiKeyGetSetter} component={CourseMembershipStatsReport} />} />
+        <Route path="/adminship" element={<AuthenticatedComponentRenderer branding={branding} {...apiKeyGetSetter} component={AdminshipStatsReport} />} />
+        <Route path="/session" element={<AuthenticatedComponentRenderer branding={branding} {...apiKeyGetSetter} component={SessionStatsReport} />} />
+        <Route path="*" element={<Error404 />} />
+      </Routes>
     </BrowserRouter>
   );
 }

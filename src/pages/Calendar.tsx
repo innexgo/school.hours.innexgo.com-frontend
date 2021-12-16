@@ -17,7 +17,7 @@ import { Session, SessionData, SessionRequest, SessionRequestResponse, CourseMem
 import { sessionDataView, sessionRequestView, courseMembershipView } from '../utils/utils';
 import { sessionRequestResponseView, commitmentView, courseDataView, } from '../utils/utils';
 
-import { ViewSession, ViewSessionRequestResponse, ViewCommitment, ViewCommitmentResponse } from '../components/ViewData';
+import { ViewSession, ViewSessionRequestResponse, ViewCommitment, } from '../components/ViewData';
 
 
 import InstructorCreateSession from '../components/InstructorCreateSession';
@@ -26,7 +26,7 @@ import InstructorReviewSessionRequest from '../components/InstructorReviewSessio
 import InstructorManageSession from '../components/InstructorManageSession';
 import StudentManageSessionRequest from '../components/StudentManageSessionRequest';
 import DisplayModal from '../components/DisplayModal';
-import { sessionToEvent, sessionRequestToEvent, rejectedSessionRequestResponseToEvent, acceptedSessionRequestResponseToEvent, commitmentToEvent, commitmentResponseToEvent } from '../components/ToCalendar';
+import { sessionToEvent, sessionRequestToEvent, rejectedSessionRequestResponseToEvent, acceptedSessionRequestResponseToEvent, commitmentToEvent, } from '../components/ToCalendar';
 
 type EventCalendarProps = {
   apiKey: ApiKey,

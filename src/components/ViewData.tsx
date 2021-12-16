@@ -4,7 +4,7 @@ import { Table } from 'react-bootstrap';
 import { Eye } from 'react-bootstrap-icons';
 import { Loader, Link } from '@innexgo/common-react-components';
 import format from 'date-fns/format';
-import { Commitment, SessionRequest, SessionRequestResponse, CommitmentResponse, CourseData, SchoolData, SessionData, schoolDataView, courseDataView, sessionDataView } from "../utils/utils";
+import { Commitment, SessionRequest, SessionRequestResponse, CourseData, SchoolData, SessionData, schoolDataView, courseDataView, sessionDataView } from "../utils/utils";
 import { ApiKey, UserData, userDataView } from '@innexgo/frontend-auth-api';
 import { isErr, unwrap } from '@innexgo/frontend-common';
 
@@ -404,38 +404,4 @@ export const ViewCommitment = (props: {
       </Async.Fulfilled>
     </>}
   </Async>
-}
-
-export const ViewCommitmentResponse = (props: {
-  commitmentResponse: CommitmentResponse,
-  apiKey: ApiKey,
-  expanded: boolean
-}) => {
-  const [expanded, setExpanded] = React.useState(props.expanded);
-  if (!expanded) {
-    return <span className="clearfix">
-      {props.commitmentResponse.kind}
-      <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
-    </span>
-  } else {
-    return <div>
-      <Table hover bordered>
-        <tbody>
-          <tr>
-            <th>Commitment</th>
-            <td><ViewCommitment commitment={props.commitmentResponse.commitment} apiKey={props.apiKey} expanded /></td>
-          </tr>
-          <tr>
-            <th>Date Taken</th>
-            <td>{format(props.commitmentResponse.creationTime, "MMM do h:mm a")}</td>
-          </tr>
-          <tr>
-            <th>Status</th>
-            <td>{props.commitmentResponse.kind}</td>
-          </tr>
-        </tbody>
-      </Table>
-      <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
-    </div>
-  }
 }

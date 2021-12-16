@@ -1,6 +1,6 @@
 import { Button, Form, Table } from 'react-bootstrap';
 import { Loader } from '@innexgo/common-react-components';
-import { ViewCommitmentResponse, ViewCourse, ViewUser, } from '../components/ViewData';
+import { ViewCourse, ViewUser, } from '../components/ViewData';
 
 import { X as DeleteIcon, } from 'react-bootstrap-icons'
 import { Formik, FormikHelpers, } from 'formik'
@@ -14,12 +14,11 @@ import { unwrap } from '@innexgo/frontend-common';
 import { ApiKey} from '@innexgo/frontend-auth-api';
 
 import {AuthenticatedComponentProps} from '@innexgo/auth-react-components';
-/*
 
+/*
 type CourseStatsReportData = {
   courseMemberships: CourseMembership[],
   unrespondedCommitments: Commitment[],
-  commitmentResponses: CommitmentResponse[],
   courseData: CourseData,
 }
 
@@ -141,7 +140,12 @@ function CourseViewStatsReport(props: CourseViewStatsReportProps) {
 
 */
 
-function CourseViewStatsReport() {
+type CourseViewStatsReportProps = {
+  courseId: number,
+  apiKey: ApiKey,
+}
+
+function CourseViewStatsReport(props: CourseViewStatsReportProps ) {
     return <p>TODO</p>
 }
 export default CourseViewStatsReport;

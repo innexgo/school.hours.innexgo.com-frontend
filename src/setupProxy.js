@@ -4,7 +4,8 @@ module.exports = function(app) {
   app.use(
     '/api/auth',
     createProxyMiddleware({
-      target: 'http://localhost:8079',
+      target: 'http://127.0.0.1:8079',
+      secure: false,
       changeOrigin: true,
       pathRewrite: {
         '^/api/auth': '/public', // rewrite path
@@ -14,7 +15,8 @@ module.exports = function(app) {
   app.use(
     '/api/innexgo_hours',
     createProxyMiddleware({
-      target: 'http://localhost:8080',
+      target: 'http://127.0.0.1:8080',
+      secure: false,
       changeOrigin: true,
       pathRewrite: {
         '^/api/innexgo_hours': '/public', // rewrite path
@@ -24,7 +26,8 @@ module.exports = function(app) {
   app.use(
     '/api/cnc',
     createProxyMiddleware({
-      target: 'http://localhost:8078',
+      target: 'http://127.0.0.1:8078',
+      secure: false,
       changeOrigin: true,
       pathRewrite: {
         '^/api/auth': '/public', // rewrite path

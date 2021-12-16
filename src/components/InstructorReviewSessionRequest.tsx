@@ -190,6 +190,7 @@ function IInstructorReviewSessionRequest(props: IInstructorReviewSessionRequestP
         courseId: props.sessionRequest.course.courseId,
         startTime: values.startTime,
         endTime: values.endTime,
+        attendeeUserIds: [],
         apiKey: props.apiKey.key,
       });
 

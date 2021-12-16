@@ -43,7 +43,7 @@ const loadData = async (props: AsyncProps<InstructorManageSessionData>) => {
     commitments,
   };
 }
-
+/*
 function InstructorManageSession(props: InstructorManageSessionProps) {
 
   type CreateCommitmentResponseValues = {
@@ -311,6 +311,11 @@ function InstructorManageSession(props: InstructorManageSessionProps) {
       </>}
     </Async>
   </>
+}
+*/
+
+function InstructorManageSession(props:InstructorManageSessionProps ) {
+    return <p> TODO </p>
 }
 
 export default InstructorManageSession;

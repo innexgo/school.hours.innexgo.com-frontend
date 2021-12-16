@@ -1,5 +1,5 @@
 import { EventInput } from '@fullcalendar/react';
-import { SessionData, CourseData, Commitment, CommitmentResponse, SessionRequest, SessionRequestResponse, CourseMembership, CourseMembershipKind } from '../utils/utils';
+import { SessionData, CourseData, Commitment, SessionRequest, SessionRequestResponse, CourseMembership, CourseMembershipKind } from '../utils/utils';
 import { ApiKey, UserData} from '@innexgo/frontend-auth-api';
 
 export const sessionToEvent = (props: {
@@ -65,20 +65,6 @@ export const commitmentToEvent = (props: {
   relation: CourseMembershipKind
 }): EventInput => ({
   id: `Commitment:${props.commitment.commitmentId}`,
-  start: new Date(props.sessionData.startTime),
-  end: new Date(props.sessionData.endTime),
-  color: "#00000000",
-  borderColor: "#00000000",
-  extendedProps: props
-})
-
-export const commitmentResponseToEvent = (props: {
-  commitmentResponse: CommitmentResponse,
-  sessionData: SessionData,
-  attendeeUserData: UserData,
-  relation: CourseMembershipKind,
-}): EventInput => ({
-  id: `CommitmentResponse:${props.commitmentResponse.commitment.commitmentId}`,
   start: new Date(props.sessionData.startTime),
   end: new Date(props.sessionData.endTime),
   color: "#00000000",
