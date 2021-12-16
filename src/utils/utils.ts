@@ -170,7 +170,7 @@ export interface Adminship {
   userId: number,
   school: School,
   adminshipKind: AdminshipKind,
-  schoolKey?: Committment,
+  schoolKey?: Commitment,
 }
 
 export interface Location {
@@ -236,7 +236,7 @@ export interface CourseMembership {
   userId: number,
   course: Course,
   courseMembershipKind: CourseMembershipKind,
-  courseKey?: Committment,
+  courseKey?: Commitment,
 }
 
 export interface Session {
@@ -272,11 +272,11 @@ export interface SessionRequestResponse {
   creationTime: number,
   creatorUserId: number,
   message: string,
-  committment?: Committment,
+  commitment?: Commitment,
 }
 
-export interface Committment {
-  committmentId: number,
+export interface Commitment {
+  commitmentId: number,
   creationTime: number,
   creatorUserId: number,
   attendeeUserId: number,
@@ -521,6 +521,7 @@ interface SessionNewProps {
   courseId: number,
   startTime: number,
   endTime: number,
+  attendeeUserIds: number[],
   apiKey: string,
 }
 
@@ -564,15 +565,15 @@ export function sessionRequestResponseNew(props: SessionRequestResponseNewProps,
   return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/session_request_response/new", props);
 }
 
-interface CommittmentNewProps {
+interface CommitmentNewProps {
   attendeeUserId: number,
   sessionId: number,
   active: boolean,
   apiKey: string,
 }
 
-export function committmentNew(props: CommittmentNewProps, server?: string): Promise<Result<Committment, InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/committment/new", props);
+export function commitmentNew(props: CommitmentNewProps, server?: string): Promise<Result<Commitment, InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/commitment/new", props);
 }
 
 interface EncounterNewProps {
@@ -665,7 +666,6 @@ export function schoolDataView(props: SchoolDataViewProps, server?: string): Pro
   return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/school_data/view", props);
 }
 
-
 interface SchoolDurationViewProps {
   schoolDurationId?: number[],
   minCreationTime?: number,
@@ -678,7 +678,6 @@ interface SchoolDurationViewProps {
 export function schoolDurationView(props: SchoolDurationViewProps, server?: string): Promise<Result<SchoolDuration[], InnexgoHoursErrorCode>> {
   return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/school_duration/view", props);
 }
-
 
 interface SchoolDurationDataViewProps {
   schoolDurationDataId?: number[],
@@ -701,6 +700,97 @@ export function schoolDurationDataView(props: SchoolDurationDataViewProps, serve
   return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/school_duration_data/view", props);
 }
 
+interface SchoolKeyViewProps {
+  schoolKeyKey?: string[],
+  minCreationTime?: number,
+  maxCreationTime?: number,
+  creatorUserId?: number[],
+  schoolId?: number[],
+  maxUses?: number[],
+  minStartTime?: number,
+  maxStartTime?: number,
+  minEndTime?: number,
+  maxEndTime?: number,
+  apiKey: string,
+}
+
+export function schoolKeyView(props: SchoolKeyViewProps, server?: string): Promise<Result<SchoolKey[], InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/school_key/view", props);
+}
+
+interface SchoolKeyDataViewProps {
+  schoolKeyDataId?: number[],
+  minCreationTime?: number,
+  maxCreationTime?: number,
+  creatorUserId?: number[],
+  schoolKeyKey?: string[],
+  active?: boolean,
+  schoolId?: number[],
+  maxUses?: number[],
+  minStartTime?: number,
+  maxStartTime?: number,
+  minEndTime?: number,
+  maxEndTime?: number,
+  onlyRecent: boolean,
+  apiKey: string,
+}
+
+export function schoolKeyDataView(props: SchoolKeyDataViewProps, server?: string): Promise<Result<SchoolKeyData[], InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/school_key_data/view", props);
+}
+
+interface AdminshipViewProps {
+  adminshipId?: number[],
+  minCreationTime?: number,
+  maxCreationTime?: number,
+  creatorUserId?: number[],
+  userId?: number[],
+  schoolId?: number[],
+  adminshipKind?: AdminshipKind[],
+  adminshipHasSource?: boolean,
+  schoolKeyKey?: string[],
+  onlyRecent: boolean,
+  apiKey: string,
+}
+
+export function adminshipView(props: AdminshipViewProps, server?: string): Promise<Result<Adminship[], InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/adminship/view", props);
+}
+
+interface LocationViewProps {
+  locationId?: number[],
+  minCreationTime?: number,
+  maxCreationTime?: number,
+  creatorUserId?: number[],
+  schoolId?: number[],
+  apiKey: string,
+}
+
+export function locationView(props: LocationViewProps, server?: string): Promise<Result<Location[], InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/location/view", props);
+}
+
+interface LocationDataViewProps {
+  locationDataId?: number[],
+  minCreationTime?: number,
+  maxCreationTime?: number,
+  creatorUserId?: number[],
+  locationId?: number[],
+  name?: string[],
+  partialName?: string,
+  address?: string[],
+  partialAddress?: string,
+  phone?: string,
+  active?: boolean,
+  onlyRecent: boolean,
+  schoolId?: number[],
+  apiKey: string,
+}
+
+export function locationDataView(props: LocationDataViewProps, server?: string): Promise<Result<LocationData[], InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/location_data/view", props);
+}
+
 interface CourseViewProps {
   courseId?: number[],
   minCreationTime?: number,
@@ -709,8 +799,6 @@ interface CourseViewProps {
   schoolId?: number[],
   apiKey: string,
 }
-
-
 
 export function courseView(props: CourseViewProps, server?: string): Promise<Result<Course[], InnexgoHoursErrorCode>> {
   return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/course/view", props);
@@ -722,6 +810,7 @@ interface CourseDataViewProps {
   maxCreationTime?: number,
   creatorUserId?: number[],
   courseId?: number[],
+  locationId?: number[],
   name?: string[],
   partialName?: string,
   description?: string[],
@@ -795,64 +884,6 @@ interface CourseMembershipViewProps {
 export function courseMembershipView(props: CourseMembershipViewProps, server?: string): Promise<Result<CourseMembership[], InnexgoHoursErrorCode>> {
   return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/course_membership/view", props);
 }
-
-interface SchoolKeyViewProps {
-  schoolKeyKey?: string[],
-  minCreationTime?: number,
-  maxCreationTime?: number,
-  creatorUserId?: number[],
-  schoolId?: number[],
-  maxUses?: number[],
-  minStartTime?: number,
-  maxStartTime?: number,
-  minEndTime?: number,
-  maxEndTime?: number,
-  apiKey: string,
-}
-
-export function schoolKeyView(props: SchoolKeyViewProps, server?: string): Promise<Result<SchoolKey[], InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/school_key/view", props);
-}
-
-interface SchoolKeyDataViewProps {
-  schoolKeyDataId?: number[],
-  minCreationTime?: number,
-  maxCreationTime?: number,
-  creatorUserId?: number[],
-  schoolKeyKey?: string[],
-  active?: boolean,
-  schoolId?: number[],
-  maxUses?: number[],
-  minStartTime?: number,
-  maxStartTime?: number,
-  minEndTime?: number,
-  maxEndTime?: number,
-  onlyRecent: boolean,
-  apiKey: string,
-}
-
-export function schoolKeyDataView(props: SchoolKeyDataViewProps, server?: string): Promise<Result<SchoolKeyData[], InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/school_key_data/view", props);
-}
-
-interface AdminshipViewProps {
-  adminshipId?: number[],
-  minCreationTime?: number,
-  maxCreationTime?: number,
-  creatorUserId?: number[],
-  userId?: number[],
-  schoolId?: number[],
-  adminshipKind?: AdminshipKind[],
-  adminshipHasSource?: boolean,
-  schoolKeyKey?: string[],
-  onlyRecent: boolean,
-  apiKey: string,
-}
-
-export function adminshipView(props: AdminshipViewProps, server?: string): Promise<Result<Adminship[], InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/adminship/view", props);
-}
-
 interface SessionViewProps {
   sessionId?: number[],
   minCreationTime?: number,
@@ -916,7 +947,7 @@ interface SessionRequestResponseViewProps {
   message?: string[],
   partialMessage?: string,
   accepted?: boolean,
-  committmentId?: number[],
+  commitmentId?: number[],
   attendeeUserId?: number[],
   courseId?: number[],
   sessionId?: number[],
@@ -931,8 +962,8 @@ export function sessionRequestResponseView(props: SessionRequestResponseViewProp
   return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/session_request_response/view", props);
 }
 
-interface CommittmentViewProps {
-  committmentId?: number[],
+interface CommitmentViewProps {
+  commitmentId?: number[],
   minCreationTime?: number,
   maxCreationTime?: number,
   creatorUserId?: number[],
@@ -943,33 +974,66 @@ interface CommittmentViewProps {
   maxStartTime?: number,
   minEndTime?: number,
   maxEndTime?: number,
-  responded?: boolean,
+  active?: boolean,
   fromRequestResponse?: boolean,
+  onlyRecent: boolean,
   apiKey: string,
 }
 
-export function committmentView(props: CommittmentViewProps, server?: string): Promise<Result<Committment[], InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/committment/view", props);
+export function commitmentView(props: CommitmentViewProps, server?: string): Promise<Result<Commitment[], InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/commitment/view", props);
 }
 
-interface CommittmentResponseViewProps {
-  committmentId?: number[],
+interface EncounterViewProps {
+  encounterId?: number[],
   minCreationTime?: number,
   maxCreationTime?: number,
   creatorUserId?: number[],
-  committmentResponseKind?: CommittmentResponseKind[],
   attendeeUserId?: number[],
-  courseId?: number[],
-  sessionId?: number[],
-  minStartTime?: number,
-  maxStartTime?: number,
-  minEndTime?: number,
-  maxEndTime?: number,
+  locationId?: number[],
   apiKey: string,
 }
 
-export function committmentResponseView(props: CommittmentResponseViewProps, server?: string): Promise<Result<CommittmentResponse[], InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/committment_response/view", props);
+export function encounterView(props: EncounterViewProps, server?: string): Promise<Result<Encounter[], InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/encounter/view", props);
+}
+
+interface StayViewProps {
+  encounterId?: number[],
+  minCreationTime?: number,
+  maxCreationTime?: number,
+  creatorUserId?: number[],
+  attendeeUserId?: number[],
+  locationId?: number[],
+  apiKey: string,
+}
+
+export function stayView(props: StayViewProps, server?: string): Promise<Result<Stay[], InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/stay/view", props);
+}
+
+
+interface StayDataViewProps {
+  stayDataId?: number[],
+  minCreationTime?: number,
+  maxCreationTime?: number,
+  creatorUserId?: number[],
+  stayId?: number[],
+  fst_encounter_id?: number[],
+  snd_encounter_id?: number[],
+  min_start_time?: number
+  max_start_time?: number
+  min_end_time?: number
+  max_end_time?: number
+  active?: boolean,
+  onlyRecent: boolean,
+  attendeeUserId?: number[],
+  locationId?: number[],
+  apiKey: string,
+}
+
+export function stayDataView(props: StayDataViewProps, server?: string): Promise<Result<StayData[], InnexgoHoursErrorCode>> {
+  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/stay_data/view", props);
 }
 
 export const INT_MAX: number = 999999999999999;
@@ -979,4 +1043,3 @@ export const isPasswordValid = (pass: string) => pass.length >= 8 && /\d/.test(p
 export const normalizeCourseName = (e: string) => e.toUpperCase().replace(/[^(A-Z0-9: _\-)]+/g, "").replace(/ +(?= )/g, "");
 
 export const normalizeSchoolName = (e: string) => e.toUpperCase().replace(/[^A-Z ]+/g, "").replace(/ +(?= )/g, "");
-#[serde(rename_all = "camelCase")]
