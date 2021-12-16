@@ -4,6 +4,7 @@ import { Loader, WidgetWrapper, Link } from '@innexgo/common-react-components';
 import AdminManageAdminshipTable from '../components/AdminManageAdminshipTable';
 import AdminManageSchoolKeyTable from '../components/AdminManageSchoolKeyTable'
 import AdminManageCourseTable from '../components/AdminManageCourseTable'
+import AdminManageLocationTable from '../components/AdminManageLocationTable'
 import { ViewSchool, ViewUser } from '../components/ViewData';
 import AdminManageSchoolData from '../components/AdminManageSchoolData';
 import ErrorMessage from '../components/ErrorMessage';
@@ -15,12 +16,13 @@ import { unwrap, getFirstOr } from '@innexgo/frontend-common';
 import format from "date-fns/format";
 
 import { Async, AsyncProps } from 'react-async';
-import { CourseData, SchoolData, SchoolKeyData, SchoolDurationData, schoolDurationDataView, schoolKeyDataView, schoolDataView, courseDataView, adminshipView, Adminship } from '../utils/utils';
+import { CourseData, LocationData, SchoolData, SchoolKeyData, SchoolDurationData, schoolDurationDataView, schoolKeyDataView, schoolDataView, courseDataView, adminshipView, locationDataView,  Adminship } from '../utils/utils';
 import { ApiKey } from '@innexgo/frontend-auth-api';
 import { AuthenticatedComponentProps } from '@innexgo/auth-react-components';
 
 type ManageSchoolData = {
   schoolData: SchoolData,
+  locationData: LocationData[],
   courseData: CourseData[],
   schoolKeyData: SchoolKeyData[],
   adminships: Adminship[],
@@ -35,6 +37,13 @@ const loadManageSchoolData = async (props: AsyncProps<ManageSchoolData>) => {
   })
     .then(unwrap)
     .then(x => getFirstOr(x, "NOT_FOUND"))
+    .then(unwrap);
+
+  const locationData = await locationDataView({
+    schoolId: [props.schoolId],
+    onlyRecent: true,
+    apiKey: props.apiKey.key
+  })
     .then(unwrap);
 
   const courseData = await courseDataView({
@@ -71,6 +80,7 @@ const loadManageSchoolData = async (props: AsyncProps<ManageSchoolData>) => {
   return {
     schoolData,
     courseData,
+    locationData,
     schoolKeyData,
     adminships,
     schoolDurationData
@@ -123,6 +133,18 @@ function AdminManageSchool(props: AuthenticatedComponentProps) {
                 </WidgetWrapper>
               </div>
 
+              <div className="mx-3 my-3">
+                <WidgetWrapper title="Locations">
+                  <span>Shows the current locations hosted by this school.</span>
+                  <AdminManageLocationTable
+                    addable={true}
+                    schoolId={schoolId}
+                    locationData={data.locationData}
+                    setLocationData={locationData => setData(update(data, { locationData: { $set: locationData } }))}
+                    apiKey={props.apiKey}
+                  />
+                </WidgetWrapper>
+              </div>
               <div className="mx-3 my-3">
                 <WidgetWrapper title="Courses">
                   <span>Shows the current courses hosted by this school.</span>

@@ -6,6 +6,7 @@ interface SearchSingleLocationProps {
   name: string,
   disabled?: boolean,
   search: (input: string) => Promise<LocationData[]>,
+  inputState?: any,
   isInvalid: boolean,
   setFn: (location: LocationData | null) => void
 }
@@ -30,18 +31,19 @@ export default function SearchSingleLocation(props: SearchSingleLocationProps) {
     if (opt == null) {
       props.setFn(null);
     } else {
-      props.setFn(opt.value)
+      props.setFn(opt?.value)
     }
   }
 
   /*components={{ DropdownIndicator: () => null, IndicatorSeparator: () => null }} */ 
   return <AsyncSelect
+    key={props.inputState}
     placeholder="Start typing to search"
-    defaultOptions
     isClearable={true}
+    defaultOptions={true}
     onChange={onChange}
-    cacheOptions={true}
     name={props.name}
     isDisabled={props.disabled}
-    loadOptions={promiseOptions} />
+    loadOptions={promiseOptions}
+    />
 }

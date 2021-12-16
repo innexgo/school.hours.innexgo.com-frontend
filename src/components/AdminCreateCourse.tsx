@@ -156,9 +156,14 @@ function AdminCreateCourse(props: AdminCreateCourseProps) {
               <SearchSingleLocation
                 name="locationId"
                 disabled={fprops.values.schoolId == null}
+                inputState={fprops.values.schoolId}
                 search={async (input: string) => {
+                  if (fprops.values.schoolId === null) {
+                      return [];
+                  }
+
                   const locationData = await locationDataView({
-                    schoolId: [fprops.values.schoolId!],
+                    schoolId: [fprops.values.schoolId],
                     partialName: input,
                     onlyRecent: true,
                     apiKey: props.apiKey.key,

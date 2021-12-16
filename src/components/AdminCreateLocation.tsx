@@ -1,6 +1,6 @@
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
 import { Button, Form } from "react-bootstrap";
-import { SchoolData, LocationData, schoolDataView, locationNew, normalizeSchoolName, adminshipView } from "../utils/utils";
+import { SchoolData, LocationData, schoolDataView, locationNew, normalizeCourseName, adminshipView } from "../utils/utils";
 import { isErr, unwrap } from '@innexgo/frontend-common';
 import { ApiKey } from '@innexgo/frontend-auth-api';
 
@@ -8,6 +8,7 @@ import SearchSingleSchool from "../components/SearchSingleSchool";
 
 type AdminCreateLocationProps = {
   apiKey: ApiKey;
+  schoolId?:number;
   postSubmit: (cd: LocationData) => void;
 }
 
@@ -151,7 +152,7 @@ function AdminCreateLocation(props: AdminCreateLocationProps) {
                 placeholder="Location Name"
                 as="input"
                 value={fprops.values.name}
-                onChange={e => fprops.setFieldValue("name", normalizeSchoolName(e.target.value))}
+                onChange={e => fprops.setFieldValue("name", normalizeCourseName(e.target.value))}
                 isInvalid={!!fprops.errors.name}
               />
               <Form.Control.Feedback type="invalid">{fprops.errors.name}</Form.Control.Feedback>
