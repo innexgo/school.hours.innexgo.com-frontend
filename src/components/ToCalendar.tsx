@@ -58,13 +58,13 @@ export const rejectedSessionRequestResponseToEvent = (props: {
   extendedProps: props
 })
 
-export const committmentToEvent = (props: {
-  committment: Committment,
+export const commitmentToEvent = (props: {
+  commitment: Committment,
   courseData: CourseData,
   sessionData: SessionData,
   relation: CourseMembershipKind
 }): EventInput => ({
-  id: `Committment:${props.committment.committmentId}`,
+  id: `Committment:${props.commitment.commitmentId}`,
   start: new Date(props.sessionData.startTime),
   end: new Date(props.sessionData.endTime),
   color: "#00000000",
@@ -72,13 +72,13 @@ export const committmentToEvent = (props: {
   extendedProps: props
 })
 
-export const committmentResponseToEvent = (props: {
-  committmentResponse: CommittmentResponse,
+export const commitmentResponseToEvent = (props: {
+  commitmentResponse: CommittmentResponse,
   sessionData: SessionData,
   attendeeUserData: UserData,
   relation: CourseMembershipKind,
 }): EventInput => ({
-  id: `CommittmentResponse:${props.committmentResponse.committment.committmentId}`,
+  id: `CommittmentResponse:${props.commitmentResponse.commitment.commitmentId}`,
   start: new Date(props.sessionData.startTime),
   end: new Date(props.sessionData.endTime),
   color: "#00000000",

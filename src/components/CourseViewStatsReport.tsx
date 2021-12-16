@@ -8,7 +8,7 @@ import { Formik, FormikHelpers, } from 'formik'
 import format from "date-fns/format";
 
 import { Async, AsyncProps } from 'react-async';
-import { courseMembershipView, CourseMembership, Committment, CommittmentResponse, CourseData, committmentView, committmentResponseView, courseDataView, } from '../utils/utils';
+import { courseMembershipView, CourseMembership, Committment, CommittmentResponse, CourseData, commitmentView, commitmentResponseView, courseDataView, } from '../utils/utils';
 
 import { unwrap } from '@innexgo/frontend-common';
 import { ApiKey} from '@innexgo/frontend-auth-api';
@@ -19,7 +19,7 @@ import {AuthenticatedComponentProps} from '@innexgo/auth-react-components';
 type CourseStatsReportData = {
   courseMemberships: CourseMembership[],
   unrespondedCommittments: Committment[],
-  committmentResponses: CommittmentResponse[],
+  commitmentResponses: CommittmentResponse[],
   courseData: CourseData,
 }
 
@@ -63,7 +63,7 @@ function InternalCourseViewStatsReport(props: InternalCourseViewStatsReportProps
                 data.courseMemberships.length === 0
                   ? <tr><td colSpan={3} className="text-center">No current members.</td></tr>
                   : data.courseMemberships.map((a: CourseMembership) => {
-                    let scr = data.committmentResponses.filter(cr => a.userId === cr.committment.attendeeUserId);
+                    let scr = data.commitmentResponses.filter(cr => a.userId === cr.commitment.attendeeUserId);
                     let sc = data.unrespondedCommittments.filter(c => a.userId === c.attendeeUserId);
                     let presentCommittmentResponses = scr.filter(cr => cr.kind === "PRESENT");
                     return <tr>
@@ -107,7 +107,7 @@ function CourseViewStatsReport(props: CourseViewStatsReportProps) {
         apiKey: props.apiKey.key
       })
       .then(unwrap);
-      const unrespondedCommittments  = await committmentView({
+      const unrespondedCommittments  = await commitmentView({
         courseId: [props.courseId],
         responded: false,
         minStartTime: fprops.minStartTime,
@@ -115,7 +115,7 @@ function CourseViewStatsReport(props: CourseViewStatsReportProps) {
       })
       .then(unwrap);
 
-      const committmentResponses  = await committmentResponseView({
+      const commitmentResponses  = await commitmentResponseView({
         courseId: [props.courseId],
         minStartTime: fprops.minStartTime,
         apiKey: props.apiKey.key
@@ -132,7 +132,7 @@ function CourseViewStatsReport(props: CourseViewStatsReportProps) {
         return {
           courseMemberships,
           unrespondedCommittments,
-          committmentResponses,
+          commitmentResponses,
           courseData: courseData[0],
         }
     }}

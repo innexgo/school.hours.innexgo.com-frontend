@@ -2,7 +2,7 @@ import { Async, AsyncProps } from 'react-async';
 import { Card, Form } from "react-bootstrap";
 import { Loader } from '@innexgo/common-react-components';
 import { EventContentArg } from "@fullcalendar/react"
-import { SessionData, SessionRequestResponse, SessionRequest, CourseData, CommittmentResponse, committmentView } from '../utils/utils';
+import { SessionData, SessionRequestResponse, SessionRequest, CourseData, CommittmentResponse, commitmentView } from '../utils/utils';
 import { ApiKey, UserData, userDataView} from '@innexgo/frontend-auth-api';
 import { unwrap } from '@innexgo/frontend-common';
 
@@ -52,14 +52,14 @@ function RejectedSessionRequestResponseCard(props: {
 }
 
 async function loadSessionAttendees(props: AsyncProps<UserData[]>) {
-  const committments = await committmentView({
+  const commitments = await commitmentView({
     sessionId: [props.session.sessionId],
     responded: false,
     apiKey: props.apiKey.key
   }).then(unwrap);
 
   const attendees = await userDataView({
-    creatorUserId: committments.map(c => c.attendeeUserId),
+    creatorUserId: commitments.map(c => c.attendeeUserId),
     onlyRecent: true,
     apiKey: props.apiKey.key
   }).then(unwrap);
@@ -121,7 +121,7 @@ function CommittmentCard(props: {
 
 function CommittmentResponseCard(props: {
   sessionData: SessionData,
-  committmentResponse: CommittmentResponse
+  commitmentResponse: CommittmentResponse
   attendeeUserData: UserData
 }) {
   return (
@@ -130,7 +130,7 @@ function CommittmentResponseCard(props: {
       <br />
       Attendee: {props.attendeeUserData.name}
       <br />
-      Status: {props.committmentResponse.kind}
+      Status: {props.commitmentResponse.kind}
     </Card>
   )
 }
@@ -145,7 +145,7 @@ function CalendarCard(eventInfo: EventContentArg) {
         creatorUserData={props.creatorUserData}
       />
     case "SessionRequestResponse":
-      if (props.sessionRequestResponse.committment) {
+      if (props.sessionRequestResponse.commitment) {
         return <AcceptedSessionRequestResponseCard
           sessionRequestResponse={props.sessionRequestResponse}
           courseData={props.courseData}
@@ -165,7 +165,7 @@ function CalendarCard(eventInfo: EventContentArg) {
       />
     case "CommittmentResponse":
       return <CommittmentResponseCard
-        committmentResponse={props.committmentResponse}
+        commitmentResponse={props.commitmentResponse}
         sessionData={props.sessionData}
         attendeeUserData={props.attendeeUserData}
       />

@@ -5,7 +5,7 @@ import { Loader, Action } from '@innexgo/common-react-components';
 import InstructorManageSessionData from '../components/InstructorManageSessionData';
 import { ViewSession, ViewUser, ViewSessionRequestResponse } from '../components/ViewData';
 import SearchMultiUser from '../components/SearchMultiUser';
-import { Committment, Session, CommittmentResponseKind, SessionRequestResponse, CommittmentResponse, committmentNew, committmentResponseView, committmentView, committmentResponseNew, courseMembershipView, sessionRequestResponseView } from '../utils/utils';
+import { Committment, Session, CommittmentResponseKind, SessionRequestResponse, CommittmentResponse, commitmentNew, commitmentResponseView, commitmentView, commitmentResponseNew, courseMembershipView, sessionRequestResponseView } from '../utils/utils';
 import { X, Check, Clock } from 'react-bootstrap-icons';
 
 import { isErr, unwrap } from '@innexgo/frontend-common';
@@ -18,8 +18,8 @@ type InstructorManageSessionProps = {
 
 type InstructorManageSessionData = {
   sessionRequestResponses: SessionRequestResponse[],
-  committments: Committment[],
-  committmentResponses: CommittmentResponse[]
+  commitments: Committment[],
+  commitmentResponses: CommittmentResponse[]
 }
 
 const loadData = async (props: AsyncProps<InstructorManageSessionData>) => {
@@ -31,7 +31,7 @@ const loadData = async (props: AsyncProps<InstructorManageSessionData>) => {
     .then(unwrap);
 
 
-  const committments = await committmentView({
+  const commitments = await commitmentView({
     sessionId: [props.session.sessionId],
     responded: false,
     apiKey: props.apiKey.key
@@ -39,7 +39,7 @@ const loadData = async (props: AsyncProps<InstructorManageSessionData>) => {
     .then(unwrap);
 
 
-  const committmentResponses = await committmentResponseView({
+  const commitmentResponses = await commitmentResponseView({
     sessionId: [props.session.sessionId],
     apiKey: props.apiKey.key
   })
@@ -47,16 +47,16 @@ const loadData = async (props: AsyncProps<InstructorManageSessionData>) => {
 
   return {
     sessionRequestResponses,
-    committments,
-    committmentResponses
+    commitments,
+    commitmentResponses
   };
 }
 
 function InstructorManageSession(props: InstructorManageSessionProps) {
 
   type CreateCommittmentResponseValues = {
-    committment: Committment;
-    committmentResponseKind: CommittmentResponseKind | "default";
+    commitment: Committment;
+    commitmentResponseKind: CommittmentResponseKind | "default";
   }
 
   type CreateCommittmentValues = {
@@ -103,24 +103,24 @@ function InstructorManageSession(props: InstructorManageSessionProps) {
                 onSubmit={async (values, { setStatus }: FormikHelpers<CreateCommittmentResponseValues[]>) => {
                   let newStatus = values.map(_ => "");
                   values.forEach(async (individual, i) => {
-                    if (individual.committmentResponseKind === "default") {
+                    if (individual.commitmentResponseKind === "default") {
                       return;
                     }
 
-                    const maybeCommittmentResponse = await committmentResponseNew({
-                      committmentId: individual.committment.committmentId,
-                      committmentResponseKind: individual.committmentResponseKind,
+                    const maybeCommittmentResponse = await commitmentResponseNew({
+                      commitmentId: individual.commitment.commitmentId,
+                      commitmentResponseKind: individual.commitmentResponseKind,
                       apiKey: props.apiKey.key,
                     });
 
                     if (isErr(maybeCommittmentResponse)) {
                       switch (maybeCommittmentResponse.Err) {
                         case "COMMITTMENT_RESPONSE_EXISTENT": {
-                          newStatus[i] = "Attendance has already been taken for this committment.";
+                          newStatus[i] = "Attendance has already been taken for this commitment.";
                           break;
                         }
                         case "COMMITTMENT_RESPONSE_UNCANCELLABLE": {
-                          newStatus[i] = "This committment cannot be cancelled.";
+                          newStatus[i] = "This commitment cannot be cancelled.";
                           break;
                         }
                         case "API_KEY_NONEXISTENT": {
@@ -141,11 +141,11 @@ function InstructorManageSession(props: InstructorManageSessionProps) {
                   setStatus(newStatus);
                   reload();
                 }}
-                initialValues={data.committments.map(c => ({
-                  committment: c,
-                  committmentResponseKind: "default"
+                initialValues={data.commitments.map(c => ({
+                  commitment: c,
+                  commitmentResponseKind: "default"
                 }))}
-                initialStatus={data.committments.map(_ => "")}
+                initialStatus={data.commitments.map(_ => "")}
               >
                 {fprops =>
                   <Form noValidate onSubmit={fprops.handleSubmit}>
@@ -155,13 +155,13 @@ function InstructorManageSession(props: InstructorManageSessionProps) {
                       </thead>
                       <tbody>
                         {fprops.values.map((c: CreateCommittmentResponseValues, i: number) =>
-                          <tr key={c.committment.committmentId}>
-                            <td><ViewUser expanded={false} apiKey={props.apiKey} userId={c.committment.attendeeUserId} /></td>
+                          <tr key={c.commitment.commitmentId}>
+                            <td><ViewUser expanded={false} apiKey={props.apiKey} userId={c.commitment.attendeeUserId} /></td>
                             <td>
                               <Form.Select
                                 size="sm"
                                 onChange={(e) => {
-                                  fprops.values[i].committmentResponseKind = (e.target as HTMLSelectElement).value as (CommittmentResponseKind | "default");
+                                  fprops.values[i].commitmentResponseKind = (e.target as HTMLSelectElement).value as (CommittmentResponseKind | "default");
                                   fprops.setValues(fprops.values)
                                 }}
                                 placeholder="Message"
@@ -179,7 +179,7 @@ function InstructorManageSession(props: InstructorManageSessionProps) {
                           </tr>
                         )}
                         {
-                          data.committmentResponses.map((cr: CommittmentResponse) => {
+                          data.commitmentResponses.map((cr: CommittmentResponse) => {
                             let content;
                             switch (cr.kind) {
                               case "ABSENT": {
@@ -200,7 +200,7 @@ function InstructorManageSession(props: InstructorManageSessionProps) {
                               }
                             }
                             return <tr>
-                              <td><ViewUser expanded={false} apiKey={props.apiKey} userId={cr.committment.attendeeUserId} /></td>
+                              <td><ViewUser expanded={false} apiKey={props.apiKey} userId={cr.commitment.attendeeUserId} /></td>
                               <td>{content}</td>
                             </tr>
                           })
@@ -217,7 +217,7 @@ function InstructorManageSession(props: InstructorManageSessionProps) {
               <Formik<CreateCommittmentValues>
                 onSubmit={async (values: CreateCommittmentValues, { setStatus }: FormikHelpers<CreateCommittmentValues>) => {
                   for (const studentId of values.studentList) {
-                    const maybeCommittment = await committmentNew({
+                    const maybeCommittment = await commitmentNew({
                       sessionId: props.session.sessionId,
                       attendeeUserId: studentId,
                       apiKey: props.apiKey.key

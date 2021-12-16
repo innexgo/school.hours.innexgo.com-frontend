@@ -3,7 +3,7 @@ import SearchSingleCourse from '../components/SearchSingleCourse';
 import { Formik, FormikHelpers, FormikErrors } from 'formik';
 
 import { Row, Col, Button, Form } from 'react-bootstrap';
-import { CourseData, sessionNew, committmentNew, courseMembershipView, courseDataView } from '../utils/utils';
+import { CourseData, sessionNew, commitmentNew, courseMembershipView, courseDataView } from '../utils/utils';
 import parse from 'date-fns/parse';
 import format from 'date-fns/format';
 import { isErr, unwrap, isEmpty } from '@innexgo/frontend-common';
@@ -93,7 +93,7 @@ function CreateSession(props: CreateSessionProps) {
     let sessionData = maybeSessionData.Ok;
 
     for (const studentId of values.studentList) {
-      const maybeCommittment = await committmentNew({
+      const maybeCommittment = await commitmentNew({
         sessionId: sessionData.session.sessionId,
         attendeeUserId: studentId,
         apiKey: props.apiKey.key

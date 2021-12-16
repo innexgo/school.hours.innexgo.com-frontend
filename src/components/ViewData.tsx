@@ -310,7 +310,7 @@ export const ViewSessionRequestResponse = (props: {
       </Async.Rejected>
       <Async.Fulfilled<UserData>>{user =>
         <span className="clearfix">
-          {user.name} - {props.sessionRequestResponse.committment ? "ACCEPTED" : "REJECTED"}
+          {user.name} - {props.sessionRequestResponse.commitment ? "ACCEPTED" : "REJECTED"}
           <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
         </span>
       }
@@ -335,13 +335,13 @@ export const ViewSessionRequestResponse = (props: {
           </tr>
           <tr>
             <th>Accepted</th>
-            <td>{props.sessionRequestResponse.committment ? "Yes" : "No"}</td>
+            <td>{props.sessionRequestResponse.commitment ? "Yes" : "No"}</td>
           </tr>
-          {props.sessionRequestResponse.committment == null
+          {props.sessionRequestResponse.commitment == null
             ? <> </>
             : <tr>
               <th>Committment </th>
-              <td><ViewCommittment committment={props.sessionRequestResponse.committment} apiKey={props.apiKey} expanded={false} /></td>
+              <td><ViewCommittment commitment={props.sessionRequestResponse.commitment} apiKey={props.apiKey} expanded={false} /></td>
             </tr>
           }
         </tbody>
@@ -353,14 +353,14 @@ export const ViewSessionRequestResponse = (props: {
 
 
 export const ViewCommittment = (props: {
-  committment: Committment,
+  commitment: Committment,
   apiKey: ApiKey,
   expanded: boolean
 }) => {
   const [expanded, setExpanded] = React.useState(props.expanded);
   return <Async promiseFn={loadSessionData}
     apiKey={props.apiKey}
-    sessionId={props.committment.session.sessionId}>
+    sessionId={props.commitment.session.sessionId}>
     {_ => <>
       <Async.Pending><Loader /></Async.Pending>
       <Async.Rejected>
@@ -381,7 +381,7 @@ export const ViewCommittment = (props: {
                   <td>
                     <Async promiseFn={loadSessionData}
                       apiKey={props.apiKey}
-                      sessionId={props.committment.session.sessionId}>
+                      sessionId={props.commitment.session.sessionId}>
                       <Async.Pending><Loader /></Async.Pending>
                       <Async.Rejected>
                         <span className="text-danger">Unable to load session.</span>
@@ -394,7 +394,7 @@ export const ViewCommittment = (props: {
                 </tr>
                 <tr>
                   <th>Attendee</th>
-                  <td><ViewUser userId={props.committment.attendeeUserId} apiKey={props.apiKey} expanded={false} /></td>
+                  <td><ViewUser userId={props.commitment.attendeeUserId} apiKey={props.apiKey} expanded={false} /></td>
                 </tr>
               </tbody>
             </Table>
@@ -407,14 +407,14 @@ export const ViewCommittment = (props: {
 }
 
 export const ViewCommittmentResponse = (props: {
-  committmentResponse: CommittmentResponse,
+  commitmentResponse: CommittmentResponse,
   apiKey: ApiKey,
   expanded: boolean
 }) => {
   const [expanded, setExpanded] = React.useState(props.expanded);
   if (!expanded) {
     return <span className="clearfix">
-      {props.committmentResponse.kind}
+      {props.commitmentResponse.kind}
       <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
     </span>
   } else {
@@ -423,15 +423,15 @@ export const ViewCommittmentResponse = (props: {
         <tbody>
           <tr>
             <th>Committment</th>
-            <td><ViewCommittment committment={props.committmentResponse.committment} apiKey={props.apiKey} expanded /></td>
+            <td><ViewCommittment commitment={props.commitmentResponse.commitment} apiKey={props.apiKey} expanded /></td>
           </tr>
           <tr>
             <th>Date Taken</th>
-            <td>{format(props.committmentResponse.creationTime, "MMM do h:mm a")}</td>
+            <td>{format(props.commitmentResponse.creationTime, "MMM do h:mm a")}</td>
           </tr>
           <tr>
             <th>Status</th>
-            <td>{props.committmentResponse.kind}</td>
+            <td>{props.commitmentResponse.kind}</td>
           </tr>
         </tbody>
       </Table>
