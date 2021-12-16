@@ -1,5 +1,5 @@
 import { EventInput } from '@fullcalendar/react';
-import { SessionData, CourseData, Committment, CommittmentResponse, SessionRequest, SessionRequestResponse, CourseMembership, CourseMembershipKind } from '../utils/utils';
+import { SessionData, CourseData, Commitment, CommitmentResponse, SessionRequest, SessionRequestResponse, CourseMembership, CourseMembershipKind } from '../utils/utils';
 import { ApiKey, UserData} from '@innexgo/frontend-auth-api';
 
 export const sessionToEvent = (props: {
@@ -59,12 +59,12 @@ export const rejectedSessionRequestResponseToEvent = (props: {
 })
 
 export const commitmentToEvent = (props: {
-  commitment: Committment,
+  commitment: Commitment,
   courseData: CourseData,
   sessionData: SessionData,
   relation: CourseMembershipKind
 }): EventInput => ({
-  id: `Committment:${props.commitment.commitmentId}`,
+  id: `Commitment:${props.commitment.commitmentId}`,
   start: new Date(props.sessionData.startTime),
   end: new Date(props.sessionData.endTime),
   color: "#00000000",
@@ -73,12 +73,12 @@ export const commitmentToEvent = (props: {
 })
 
 export const commitmentResponseToEvent = (props: {
-  commitmentResponse: CommittmentResponse,
+  commitmentResponse: CommitmentResponse,
   sessionData: SessionData,
   attendeeUserData: UserData,
   relation: CourseMembershipKind,
 }): EventInput => ({
-  id: `CommittmentResponse:${props.commitmentResponse.commitment.commitmentId}`,
+  id: `CommitmentResponse:${props.commitmentResponse.commitment.commitmentId}`,
   start: new Date(props.sessionData.startTime),
   end: new Date(props.sessionData.endTime),
   color: "#00000000",

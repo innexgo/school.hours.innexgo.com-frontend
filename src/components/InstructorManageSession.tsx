@@ -5,7 +5,7 @@ import { Loader, Action } from '@innexgo/common-react-components';
 import InstructorManageSessionData from '../components/InstructorManageSessionData';
 import { ViewSession, ViewUser, ViewSessionRequestResponse } from '../components/ViewData';
 import SearchMultiUser from '../components/SearchMultiUser';
-import { Committment, Session, CommittmentResponseKind, SessionRequestResponse, CommittmentResponse, commitmentNew, commitmentResponseView, commitmentView, commitmentResponseNew, courseMembershipView, sessionRequestResponseView } from '../utils/utils';
+import { Commitment, Session, SessionRequestResponse,  commitmentNew, commitmentView, courseMembershipView, sessionRequestResponseView } from '../utils/utils';
 import { X, Check, Clock } from 'react-bootstrap-icons';
 
 import { isErr, unwrap } from '@innexgo/frontend-common';
@@ -18,8 +18,7 @@ type InstructorManageSessionProps = {
 
 type InstructorManageSessionData = {
   sessionRequestResponses: SessionRequestResponse[],
-  commitments: Committment[],
-  commitmentResponses: CommittmentResponse[]
+  commitments: Commitment[],
 }
 
 const loadData = async (props: AsyncProps<InstructorManageSessionData>) => {
@@ -33,33 +32,26 @@ const loadData = async (props: AsyncProps<InstructorManageSessionData>) => {
 
   const commitments = await commitmentView({
     sessionId: [props.session.sessionId],
-    responded: false,
+    onlyRecent: true,
     apiKey: props.apiKey.key
   })
     .then(unwrap);
 
-
-  const commitmentResponses = await commitmentResponseView({
-    sessionId: [props.session.sessionId],
-    apiKey: props.apiKey.key
-  })
-    .then(unwrap);
 
   return {
     sessionRequestResponses,
     commitments,
-    commitmentResponses
   };
 }
 
 function InstructorManageSession(props: InstructorManageSessionProps) {
 
-  type CreateCommittmentResponseValues = {
-    commitment: Committment;
-    commitmentResponseKind: CommittmentResponseKind | "default";
+  type CreateCommitmentResponseValues = {
+    commitment: Commitment;
+    commitmentResponseKind: CommitmentResponseKind | "default";
   }
 
-  type CreateCommittmentValues = {
+  type CreateCommitmentValues = {
     studentList: number[]
   }
 
@@ -99,22 +91,22 @@ function InstructorManageSession(props: InstructorManageSessionProps) {
           <Tabs defaultActiveKey="manage">
             <Tab eventKey="manage" title="Current Students">
               <br />
-              <Formik<CreateCommittmentResponseValues[]>
-                onSubmit={async (values, { setStatus }: FormikHelpers<CreateCommittmentResponseValues[]>) => {
+              <Formik<CreateCommitmentResponseValues[]>
+                onSubmit={async (values, { setStatus }: FormikHelpers<CreateCommitmentResponseValues[]>) => {
                   let newStatus = values.map(_ => "");
                   values.forEach(async (individual, i) => {
                     if (individual.commitmentResponseKind === "default") {
                       return;
                     }
 
-                    const maybeCommittmentResponse = await commitmentResponseNew({
+                    const maybeCommitmentResponse = await commitmentResponseNew({
                       commitmentId: individual.commitment.commitmentId,
                       commitmentResponseKind: individual.commitmentResponseKind,
                       apiKey: props.apiKey.key,
                     });
 
-                    if (isErr(maybeCommittmentResponse)) {
-                      switch (maybeCommittmentResponse.Err) {
+                    if (isErr(maybeCommitmentResponse)) {
+                      switch (maybeCommitmentResponse.Err) {
                         case "COMMITTMENT_RESPONSE_EXISTENT": {
                           newStatus[i] = "Attendance has already been taken for this commitment.";
                           break;
@@ -154,14 +146,14 @@ function InstructorManageSession(props: InstructorManageSessionProps) {
                         <tr><th>Student</th><th>Status</th></tr>
                       </thead>
                       <tbody>
-                        {fprops.values.map((c: CreateCommittmentResponseValues, i: number) =>
+                        {fprops.values.map((c: CreateCommitmentResponseValues, i: number) =>
                           <tr key={c.commitment.commitmentId}>
                             <td><ViewUser expanded={false} apiKey={props.apiKey} userId={c.commitment.attendeeUserId} /></td>
                             <td>
                               <Form.Select
                                 size="sm"
                                 onChange={(e) => {
-                                  fprops.values[i].commitmentResponseKind = (e.target as HTMLSelectElement).value as (CommittmentResponseKind | "default");
+                                  fprops.values[i].commitmentResponseKind = (e.target as HTMLSelectElement).value as (CommitmentResponseKind | "default");
                                   fprops.setValues(fprops.values)
                                 }}
                                 placeholder="Message"
@@ -179,7 +171,7 @@ function InstructorManageSession(props: InstructorManageSessionProps) {
                           </tr>
                         )}
                         {
-                          data.commitmentResponses.map((cr: CommittmentResponse) => {
+                          data.commitmentResponses.map((cr: CommitmentResponse) => {
                             let content;
                             switch (cr.kind) {
                               case "ABSENT": {
@@ -214,20 +206,20 @@ function InstructorManageSession(props: InstructorManageSessionProps) {
             </Tab>
             <Tab eventKey="create" title="Add Students">
               <br />
-              <Formik<CreateCommittmentValues>
-                onSubmit={async (values: CreateCommittmentValues, { setStatus }: FormikHelpers<CreateCommittmentValues>) => {
+              <Formik<CreateCommitmentValues>
+                onSubmit={async (values: CreateCommitmentValues, { setStatus }: FormikHelpers<CreateCommitmentValues>) => {
                   for (const studentId of values.studentList) {
-                    const maybeCommittment = await commitmentNew({
+                    const maybeCommitment = await commitmentNew({
                       sessionId: props.session.sessionId,
                       attendeeUserId: studentId,
                       apiKey: props.apiKey.key
                     });
 
                     // TODO handle all other error codes that are possible
-                    if (isErr(maybeCommittment)) {
-                      switch (maybeCommittment.Err) {
+                    if (isErr(maybeCommitment)) {
+                      switch (maybeCommitment.Err) {
                         case "COMMITTMENT_EXISTENT": {
-                          // Committment existent is actually OK, we don't have to make an error
+                          // Commitment existent is actually OK, we don't have to make an error
                           continue;
                         }
                         case "API_KEY_NONEXISTENT": {

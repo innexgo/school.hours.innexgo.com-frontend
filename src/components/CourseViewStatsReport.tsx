@@ -1,6 +1,6 @@
 import { Button, Form, Table } from 'react-bootstrap';
 import { Loader } from '@innexgo/common-react-components';
-import { ViewCommittmentResponse, ViewCourse, ViewUser, } from '../components/ViewData';
+import { ViewCommitmentResponse, ViewCourse, ViewUser, } from '../components/ViewData';
 
 import { X as DeleteIcon, } from 'react-bootstrap-icons'
 import { Formik, FormikHelpers, } from 'formik'
@@ -8,18 +8,18 @@ import { Formik, FormikHelpers, } from 'formik'
 import format from "date-fns/format";
 
 import { Async, AsyncProps } from 'react-async';
-import { courseMembershipView, CourseMembership, Committment, CommittmentResponse, CourseData, commitmentView, commitmentResponseView, courseDataView, } from '../utils/utils';
+import { courseMembershipView, CourseMembership, Commitment, CourseData, commitmentView, courseDataView, } from '../utils/utils';
 
 import { unwrap } from '@innexgo/frontend-common';
 import { ApiKey} from '@innexgo/frontend-auth-api';
 
 import {AuthenticatedComponentProps} from '@innexgo/auth-react-components';
-
+/*
 
 type CourseStatsReportData = {
   courseMemberships: CourseMembership[],
-  unrespondedCommittments: Committment[],
-  commitmentResponses: CommittmentResponse[],
+  unrespondedCommitments: Commitment[],
+  commitmentResponses: CommitmentResponse[],
   courseData: CourseData,
 }
 
@@ -64,18 +64,18 @@ function InternalCourseViewStatsReport(props: InternalCourseViewStatsReportProps
                   ? <tr><td colSpan={3} className="text-center">No current members.</td></tr>
                   : data.courseMemberships.map((a: CourseMembership) => {
                     let scr = data.commitmentResponses.filter(cr => a.userId === cr.commitment.attendeeUserId);
-                    let sc = data.unrespondedCommittments.filter(c => a.userId === c.attendeeUserId);
-                    let presentCommittmentResponses = scr.filter(cr => cr.kind === "PRESENT");
+                    let sc = data.unrespondedCommitments.filter(c => a.userId === c.attendeeUserId);
+                    let presentCommitmentResponses = scr.filter(cr => cr.kind === "PRESENT");
                     return <tr>
                       <td><ViewUser userId={a.userId} apiKey={props.apiKey} expanded={false} /></td>
                       <td>{format(a.creationTime, "MMM do")}</td>
                       <td>{scr.length}</td>
-                      <td>{presentCommittmentResponses.length}</td>
+                      <td>{presentCommitmentResponses.length}</td>
                       <td>{scr.filter(cr => cr.kind === "ABSENT").length}</td>
                       <td>{sc.length}</td>
-                      <td>{presentCommittmentResponses.length === 0
+                      <td>{presentCommitmentResponses.length === 0
                         ? "N/A"
-                        : format(presentCommittmentResponses[presentCommittmentResponses.length - 1].creationTime, "MMM do")}</td>
+                        : format(presentCommitmentResponses[presentCommitmentResponses.length - 1].creationTime, "MMM do")}</td>
                     </tr>
                   })}
             </tbody>
@@ -107,7 +107,7 @@ function CourseViewStatsReport(props: CourseViewStatsReportProps) {
         apiKey: props.apiKey.key
       })
       .then(unwrap);
-      const unrespondedCommittments  = await commitmentView({
+      const unrespondedCommitments  = await commitmentView({
         courseId: [props.courseId],
         responded: false,
         minStartTime: fprops.minStartTime,
@@ -131,7 +131,7 @@ function CourseViewStatsReport(props: CourseViewStatsReportProps) {
 
         return {
           courseMemberships,
-          unrespondedCommittments,
+          unrespondedCommitments,
           commitmentResponses,
           courseData: courseData[0],
         }
@@ -139,4 +139,9 @@ function CourseViewStatsReport(props: CourseViewStatsReportProps) {
   />
 }
 
+*/
+
+function CourseViewStatsReport() {
+    return <p>TODO</p>
+}
 export default CourseViewStatsReport;

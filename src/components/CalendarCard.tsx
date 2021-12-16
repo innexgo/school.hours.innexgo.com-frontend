@@ -2,7 +2,7 @@ import { Async, AsyncProps } from 'react-async';
 import { Card, Form } from "react-bootstrap";
 import { Loader } from '@innexgo/common-react-components';
 import { EventContentArg } from "@fullcalendar/react"
-import { SessionData, SessionRequestResponse, SessionRequest, CourseData, CommittmentResponse, commitmentView } from '../utils/utils';
+import { SessionData, SessionRequestResponse, SessionRequest, CourseData, commitmentView } from '../utils/utils';
 import { ApiKey, UserData, userDataView} from '@innexgo/frontend-auth-api';
 import { unwrap } from '@innexgo/frontend-common';
 
@@ -54,7 +54,8 @@ function RejectedSessionRequestResponseCard(props: {
 async function loadSessionAttendees(props: AsyncProps<UserData[]>) {
   const commitments = await commitmentView({
     sessionId: [props.session.sessionId],
-    responded: false,
+    active: true,
+    onlyRecent: true,
     apiKey: props.apiKey.key
   }).then(unwrap);
 
@@ -105,8 +106,8 @@ function SessionCard(props: {
   </Card>
 }
 
-// Committment
-function CommittmentCard(props: {
+// Commitment
+function CommitmentCard(props: {
   courseData: CourseData;
   sessionData: SessionData
 }) {
@@ -115,22 +116,6 @@ function CommittmentCard(props: {
       Appt: {props.sessionData.name}
       <br />
       Course: {props.courseData.name}
-    </Card>
-  )
-}
-
-function CommittmentResponseCard(props: {
-  sessionData: SessionData,
-  commitmentResponse: CommittmentResponse
-  attendeeUserData: UserData
-}) {
-  return (
-    <Card className="px-1 py-1 h-100 w-100 bg-success text-light overflow-hidden" >
-      Appt: {props.sessionData.name}
-      <br />
-      Attendee: {props.attendeeUserData.name}
-      <br />
-      Status: {props.commitmentResponse.kind}
     </Card>
   )
 }
@@ -163,14 +148,8 @@ function CalendarCard(eventInfo: EventContentArg) {
         apiKey={props.apiKey}
         sessionData={props.sessionData}
       />
-    case "CommittmentResponse":
-      return <CommittmentResponseCard
-        commitmentResponse={props.commitmentResponse}
-        sessionData={props.sessionData}
-        attendeeUserData={props.attendeeUserData}
-      />
-    case "Committment":
-      return <CommittmentCard
+    case "Commitment":
+      return <CommitmentCard
         courseData={props.courseData}
         sessionData={props.sessionData}
       />

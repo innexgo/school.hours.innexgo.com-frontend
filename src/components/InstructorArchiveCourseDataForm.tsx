@@ -28,6 +28,7 @@ export default function InstructorArchiveCourseDataForm(props: ArchiveCourseProp
     const maybeCourseData = await courseDataNew({
       courseId: props.courseData.course.courseId,
       apiKey: props.apiKey.key,
+      locationId: props.courseData.location.locationId,
       name: props.courseData.name,
       description: props.courseData.description,
       homeroom: props.courseData.homeroom,

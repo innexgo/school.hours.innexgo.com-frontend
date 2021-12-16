@@ -3,7 +3,7 @@ import SearchSingleCourse from '../components/SearchSingleCourse';
 import { Formik, FormikHelpers, FormikErrors } from 'formik';
 
 import { Row, Col, Button, Form } from 'react-bootstrap';
-import { CourseData, sessionNew, commitmentNew, courseMembershipView, courseDataView } from '../utils/utils';
+import { CourseData, sessionNew, courseMembershipView, courseDataView } from '../utils/utils';
 import parse from 'date-fns/parse';
 import format from 'date-fns/format';
 import { isErr, unwrap, isEmpty } from '@innexgo/frontend-common';
@@ -53,6 +53,7 @@ function CreateSession(props: CreateSessionProps) {
       courseId: values.courseId!,
       startTime: parsedStart,
       endTime: parsedEnd,
+      attendeeUserIds: values.studentList,
       apiKey: props.apiKey.key,
     });
 
@@ -68,7 +69,7 @@ function CreateSession(props: CreateSessionProps) {
         case "USER_NONEXISTENT": {
           fprops.setStatus({
             successResult: "",
-            failureResult: "Host account does not exist.",
+            failureResult: "You may not have access to one or more of the selected students",
           });
           break;
         }
@@ -91,58 +92,6 @@ function CreateSession(props: CreateSessionProps) {
     }
 
     let sessionData = maybeSessionData.Ok;
-
-    for (const studentId of values.studentList) {
-      const maybeCommittment = await commitmentNew({
-        sessionId: sessionData.session.sessionId,
-        attendeeUserId: studentId,
-        apiKey: props.apiKey.key
-      });
-
-      // TODO handle all other error codes that are possible
-      if (isErr(maybeCommittment)) {
-        switch (maybeCommittment.Err) {
-          case "COMMITTMENT_EXISTENT": {
-            // not an error;
-            continue;
-          }
-          case "API_KEY_NONEXISTENT": {
-            fprops.setStatus({
-              successResult: "",
-              failureResult: "You have been automatically logged out. Please relogin.",
-            });
-            break;
-          }
-          case "API_KEY_UNAUTHORIZED": {
-            fprops.setStatus({
-              studentList: "",
-              resultFailure: "You are not currently authorized to perform this action.",
-            });
-            break;
-          }
-          case "USER_NONEXISTENT": {
-            fprops.setErrors({
-              studentList: "This user does not exist.",
-            });
-            break;
-          }
-          case "COURSE_NONEXISTENT": {
-            fprops.setErrors({
-              courseId: "This course does not exist.",
-            });
-            break;
-          }
-          default: {
-            fprops.setStatus({
-              successResult: "",
-              failureResult: "An unknown error has occurred",
-            });
-            break;
-          }
-        }
-        return;
-      }
-    }
 
     // if we didn't have an error close it
     props.postSubmit();

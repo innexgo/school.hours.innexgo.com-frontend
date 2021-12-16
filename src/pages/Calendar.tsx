@@ -13,11 +13,11 @@ import { userView, ApiKey, userDataView, UserData } from '@innexgo/frontend-auth
 import { AuthenticatedComponentProps } from '@innexgo/auth-react-components';
 
 import { Tab, Tabs, Form, Container, Row, Col, Card } from 'react-bootstrap';
-import { Session, SessionData, SessionRequest, SessionRequestResponse, CourseMembership, CourseData, Committment, CommittmentResponse } from '../utils/utils';
+import { Session, SessionData, SessionRequest, SessionRequestResponse, CourseMembership, CourseData, Commitment } from '../utils/utils';
 import { sessionDataView, sessionRequestView, courseMembershipView } from '../utils/utils';
-import { sessionRequestResponseView, commitmentView, courseDataView, commitmentResponseView } from '../utils/utils';
+import { sessionRequestResponseView, commitmentView, courseDataView, } from '../utils/utils';
 
-import { ViewSession, ViewSessionRequestResponse, ViewCommittment, ViewCommittmentResponse } from '../components/ViewData';
+import { ViewSession, ViewSessionRequestResponse, ViewCommitment, ViewCommitmentResponse } from '../components/ViewData';
 
 
 import InstructorCreateSession from '../components/InstructorCreateSession';
@@ -55,8 +55,7 @@ function EventCalendar(props: EventCalendarProps) {
   const [selectedManageSessionRequest, setSelectedManageSessionRequest] = React.useState<SessionRequest | null>(null);
   const [selectedReviewSessionRequest, setSelectedReviewSessionRequest] = React.useState<SessionRequest | null>(null);
   const [selectedViewSessionRequestResponse, setSelectedViewSessionRequestResponse] = React.useState<SessionRequestResponse | null>(null);
-  const [selectedViewCommittment, setSelectedViewCommittment] = React.useState<Committment | null>(null);
-  const [selectedViewCommittmentResponse, setSelectedViewCommittmentResponse] = React.useState<CommittmentResponse | null>(null);
+  const [selectedViewCommitment, setSelectedViewCommitment] = React.useState<Commitment | null>(null);
 
   const calendarRef = React.useRef<FullCalendar | null>(null);
 
@@ -105,17 +104,7 @@ function EventCalendar(props: EventCalendarProps) {
       minStartTime: args.start.valueOf(),
       maxStartTime: args.end.valueOf(),
       fromRequestResponse: false,
-      responded: false,
-      apiKey: props.apiKey.key
-    })
-      .then(unwrap);
-
-
-    const commitmentResponses = await commitmentResponseView({
-      attendeeUserId: [props.apiKey.creatorUserId],
-      courseId: props.studentCourseDatas.map(cd => cd.course.courseId),
-      minStartTime: args.start.valueOf(),
-      maxStartTime: args.end.valueOf(),
+      onlyRecent: true,
       apiKey: props.apiKey.key
     })
       .then(unwrap);
@@ -125,7 +114,6 @@ function EventCalendar(props: EventCalendarProps) {
       sessionId: [
         ...acceptedSessionRequestResponses.map(x => x.commitment!.session.sessionId),
         ...commitments.map(x => x.session.sessionId),
-        ...commitmentResponses.map(x => x.commitment.session.sessionId),
       ],
       onlyRecent: true,
       apiKey: props.apiKey.key
@@ -160,8 +148,6 @@ function EventCalendar(props: EventCalendarProps) {
 
       ...acceptedSessionRequestResponses
         // TODO use this data when displaying commitments or commitmentresponses
-        // hide when theres a corresponding commitmentResponse
-        .filter(asrr => commitmentResponses.findIndex(cr => cr.commitment.commitmentId === asrr.commitment!.commitmentId) === -1)
         // match with a course
         .map(srr => ({ srr, cd: props.studentCourseDatas.find(cd => cd.course.courseId === srr.sessionRequest.course.courseId)! }))
         // match with a session
@@ -184,17 +170,6 @@ function EventCalendar(props: EventCalendarProps) {
         .map(({ c, cd, sd }) => commitmentToEvent({
           commitment: c,
           courseData: cd,
-          sessionData: sd,
-          relation: "STUDENT"
-        })),
-
-      ...commitmentResponses
-        // match with a session
-        .map(cr => ({ cr, sd: sessionData.find(sd => sd.session.sessionId === cr.commitment.session.sessionId)! }))
-        // map to event
-        .map(({ cr, sd }) => commitmentResponseToEvent({
-          commitmentResponse: cr,
-          attendeeUserData: props.creatorUserData,
           sessionData: sd,
           relation: "STUDENT"
         })),
@@ -314,12 +289,8 @@ function EventCalendar(props: EventCalendarProps) {
         setSelectedViewSessionRequestResponse(props.sessionRequestResponse);
         break;
       }
-      case "Committment": {
-        setSelectedViewCommittment(props.commitment);
-        break;
-      }
-      case "CommittmentResponse": {
-        setSelectedViewCommittmentResponse(props.commitmentResponse);
+      case "Commitment": {
+        setSelectedViewCommitment(props.commitment);
         break;
       }
     }
@@ -486,27 +457,14 @@ function EventCalendar(props: EventCalendarProps) {
         />
       </DisplayModal>
     }
-    {selectedViewCommittment === null ? <> </> :
+    {selectedViewCommitment === null ? <> </> :
       <DisplayModal
-        title="View Committment"
-        show={selectedViewCommittment !== null}
-        onClose={() => setSelectedViewCommittment(null)}
+        title="View Commitment"
+        show={selectedViewCommitment !== null}
+        onClose={() => setSelectedViewCommitment(null)}
       >
-        <ViewCommittment
-          commitment={selectedViewCommittment}
-          apiKey={props.apiKey}
-          expanded
-        />
-      </DisplayModal>
-    }
-    {selectedViewCommittmentResponse === null ? <> </> :
-      <DisplayModal
-        title="View Attendance"
-        show={selectedViewCommittmentResponse !== null}
-        onClose={() => setSelectedViewCommittmentResponse(null)}
-      >
-        <ViewCommittmentResponse
-          commitmentResponse={selectedViewCommittmentResponse}
+        <ViewCommitment
+          commitment={selectedViewCommitment}
           apiKey={props.apiKey}
           expanded
         />

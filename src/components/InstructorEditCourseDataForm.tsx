@@ -33,6 +33,7 @@ export default function InstructorEditCourseDataForm(props: EditCourseDataProps)
     const maybeCourseData = await courseDataNew({
       courseId: props.courseData.course.courseId,
       apiKey: props.apiKey.key,
+      locationId: props.courseData.location.locationId,
       name: values.name,
       description: values.description,
       homeroom: values.homeroom,

@@ -1,31 +1,29 @@
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
 import { Button, Form } from "react-bootstrap";
-import { SchoolData, CourseData, LocationData, schoolDataView, locationDataView, courseNew, normalizeCourseName, adminshipView } from "../utils/utils";
+import { SchoolData, LocationData, schoolDataView, locationNew, normalizeSchoolName, adminshipView } from "../utils/utils";
 import { isErr, unwrap } from '@innexgo/frontend-common';
 import { ApiKey } from '@innexgo/frontend-auth-api';
 
 import SearchSingleSchool from "../components/SearchSingleSchool";
-import SearchSingleLocation from "../components/SearchSingleLocation";
 
-type AdminCreateCourseProps = {
+type AdminCreateLocationProps = {
   apiKey: ApiKey;
-  postSubmit: (cd: CourseData) => void;
+  postSubmit: (cd: LocationData) => void;
 }
 
-function AdminCreateCourse(props: AdminCreateCourseProps) {
+function AdminCreateLocation(props: AdminCreateLocationProps) {
 
-  type CreateCourseValue = {
+  type CreateLocationValue = {
     schoolId: null | number,
-    locationId: null | number,
     name: string,
-    description: string,
-    homeroom: boolean,
+    address: string,
+    phone: string,
   }
 
-  const onSubmit = async (values: CreateCourseValue,
-    fprops: FormikHelpers<CreateCourseValue>) => {
+  const onSubmit = async (values: CreateLocationValue,
+    fprops: FormikHelpers<CreateLocationValue>) => {
 
-    let errors: FormikErrors<CreateCourseValue> = {};
+    let errors: FormikErrors<CreateLocationValue> = {};
 
     // Validate input
     let hasError = false;
@@ -33,16 +31,12 @@ function AdminCreateCourse(props: AdminCreateCourseProps) {
       errors.name = "Please select a school where you are an administrator.";
       hasError = true;
     }
-    if (values.locationId === null) {
-      errors.name = "Please select a location.";
-      hasError = true;
-    }
     if (values.name === "") {
-      errors.name = "Please enter a course name.";
+      errors.name = "Please enter a location name.";
       hasError = true;
     }
-    if (values.description === "") {
-      errors.description = "Please enter a brief description of your course.";
+    if (values.address === "") {
+      errors.address = "Please enter a brief address of your location.";
       hasError = true;
     }
 
@@ -51,17 +45,16 @@ function AdminCreateCourse(props: AdminCreateCourseProps) {
       return;
     }
 
-    const maybeCourseData = await courseNew({
+    const maybeLocationData = await locationNew({
       schoolId: values.schoolId!,
-      locationId: values.locationId!,
-      description: values.description,
+      address: values.address,
       name: values.name,
-      homeroom: values.homeroom,
+      phone: values.phone,
       apiKey: props.apiKey.key,
     });
 
-    if (isErr(maybeCourseData)) {
-      switch (maybeCourseData.Err) {
+    if (isErr(maybeLocationData)) {
+      switch (maybeLocationData.Err) {
         case "API_KEY_NONEXISTENT": {
           fprops.setStatus({
             failureResult: "You have been automatically logged out. Please relogin.",
@@ -85,7 +78,7 @@ function AdminCreateCourse(props: AdminCreateCourseProps) {
         }
         default: {
           fprops.setStatus({
-            failureResult: "An unknown or network error has occured while trying to create  course.",
+            failureResult: "An unknown or network error has occured while trying to create location.",
             successResult: ""
           });
           break;
@@ -96,21 +89,20 @@ function AdminCreateCourse(props: AdminCreateCourseProps) {
 
     fprops.setStatus({
       failureResult: "",
-      successResult: "Course Created"
+      successResult: "Location Created"
     });
     // execute callback
-    props.postSubmit(maybeCourseData.Ok);
+    props.postSubmit(maybeLocationData.Ok);
   }
 
   return <>
-    <Formik<CreateCourseValue>
+    <Formik<CreateLocationValue>
       onSubmit={onSubmit}
       initialValues={{
         schoolId: null,
-        locationId: null,
         name: "",
-        description: "",
-        homeroom: false
+        address: "",
+        phone: ""
       }}
       initialStatus={{
         failureResult: "",
@@ -123,9 +115,9 @@ function AdminCreateCourse(props: AdminCreateCourseProps) {
           onSubmit={fprops.handleSubmit} >
           <div hidden={fprops.status.successResult !== ""}>
             <Form.Group className="mb-3">
-              <Form.Label>School</Form.Label>
+              <Form.Label>School Name</Form.Label>
               <SearchSingleSchool
-                name="schoolId"
+                name="locationId"
                 search={async (input: string) => {
 
                   const adminships = await adminshipView({
@@ -152,59 +144,42 @@ function AdminCreateCourse(props: AdminCreateCourseProps) {
               <Form.Control.Feedback type="invalid">{fprops.errors.schoolId}</Form.Control.Feedback>
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label>Location</Form.Label>
-              <SearchSingleLocation
-                name="locationId"
-                disabled={fprops.values.schoolId == null}
-                search={async (input: string) => {
-                  const locationData = await locationDataView({
-                    schoolId: [fprops.values.schoolId!],
-                    partialName: input,
-                    onlyRecent: true,
-                    apiKey: props.apiKey.key,
-                  })
-                    .then(unwrap);
-                  return locationData;
-                }}
-                isInvalid={!!fprops.errors.locationId}
-                setFn={(e: LocationData | null) => fprops.setFieldValue("locationId", e?.location.locationId)} />
-              <Form.Control.Feedback type="invalid">{fprops.errors.locationId}</Form.Control.Feedback>
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Course Name</Form.Label>
+              <Form.Label>Location Name</Form.Label>
               <Form.Control
                 name="name"
                 type="text"
-                placeholder="Course Name"
+                placeholder="Location Name"
                 as="input"
                 value={fprops.values.name}
-                onChange={e => fprops.setFieldValue("name", normalizeCourseName(e.target.value))}
+                onChange={e => fprops.setFieldValue("name", normalizeSchoolName(e.target.value))}
                 isInvalid={!!fprops.errors.name}
               />
               <Form.Control.Feedback type="invalid">{fprops.errors.name}</Form.Control.Feedback>
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label >Course Description</Form.Label>
+              <Form.Label >Location Address</Form.Label>
               <Form.Control
-                name="description"
+                name="address"
                 type="text"
-                placeholder="Course Description"
-                value={fprops.values.description}
-                onChange={e => fprops.setFieldValue("description", e.target.value)}
-                isInvalid={!!fprops.errors.description}
+                placeholder="Location Address"
+                value={fprops.values.address}
+                onChange={e => fprops.setFieldValue("address", e.target.value)}
+                isInvalid={!!fprops.errors.address}
               />
-              <Form.Control.Feedback type="invalid">{fprops.errors.description}</Form.Control.Feedback>
+              <Form.Control.Feedback type="invalid">{fprops.errors.address}</Form.Control.Feedback>
             </Form.Group>
-            <Form.Check className="mb-3 form-check">
-              <Form.Check.Input
-                name="homeroom"
-                checked={fprops.values.homeroom}
-                isInvalid={!!fprops.errors.homeroom}
-                onClick={fprops.handleChange}
+            <Form.Group className="mb-3">
+              <Form.Label >Phone Number</Form.Label>
+              <Form.Control
+                name="phone"
+                type="text"
+                placeholder="Location Phone Number"
+                value={fprops.values.phone}
+                onChange={e => fprops.setFieldValue("phone", e.target.value)}
+                isInvalid={!!fprops.errors.phone}
               />
-              <Form.Check.Label>Homeroom Class</Form.Check.Label>
-              <Form.Control.Feedback type="invalid">{fprops.errors.homeroom}</Form.Control.Feedback>
-            </Form.Check>
+              <Form.Control.Feedback type="invalid">{fprops.errors.phone}</Form.Control.Feedback>
+            </Form.Group>
             <Form.Group className="mb-3">
               <Button type="submit">Submit Form</Button>
             </Form.Group>
@@ -217,4 +192,4 @@ function AdminCreateCourse(props: AdminCreateCourseProps) {
   </>
 }
 
-export default AdminCreateCourse;
+export default AdminCreateLocation;

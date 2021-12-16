@@ -49,8 +49,6 @@ import UserStatsReport from './pages/UserStatsReport';
 import CourseMembershipStatsReport from './pages/CourseMembershipStatsReport';
 import AdminshipStatsReport from './pages/AdminshipStatsReport';
 import SessionStatsReport from './pages/SessionStatsReport';
-import CommittmentStatsReport from './pages/CommittmentStatsReport';
-
 
 import DarkAdaptedIcon from "./img/innexgo_transparent_icon.png";
 import LightAdaptedIcon from "./img/innexgo_onyx_transparent.png";
@@ -163,9 +161,6 @@ function App() {
         </Route>
         <Route path="/session" >
           <AuthenticatedRoute branding={branding} {...apiKeyGetSetter} component={SessionStatsReport} />
-        </Route>
-        <Route path="/committment" >
-          <AuthenticatedRoute branding={branding} {...apiKeyGetSetter} component={CommittmentStatsReport} />
         </Route>
         <Route path="/" component={Error404} />
       </Switch>

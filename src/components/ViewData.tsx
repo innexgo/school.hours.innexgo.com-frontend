@@ -4,7 +4,7 @@ import { Table } from 'react-bootstrap';
 import { Eye } from 'react-bootstrap-icons';
 import { Loader, Link } from '@innexgo/common-react-components';
 import format from 'date-fns/format';
-import { Committment, SessionRequest, SessionRequestResponse, CommittmentResponse, CourseData, SchoolData, SessionData, schoolDataView, courseDataView, sessionDataView } from "../utils/utils";
+import { Commitment, SessionRequest, SessionRequestResponse, CommitmentResponse, CourseData, SchoolData, SessionData, schoolDataView, courseDataView, sessionDataView } from "../utils/utils";
 import { ApiKey, UserData, userDataView } from '@innexgo/frontend-auth-api';
 import { isErr, unwrap } from '@innexgo/frontend-common';
 
@@ -340,8 +340,8 @@ export const ViewSessionRequestResponse = (props: {
           {props.sessionRequestResponse.commitment == null
             ? <> </>
             : <tr>
-              <th>Committment </th>
-              <td><ViewCommittment commitment={props.sessionRequestResponse.commitment} apiKey={props.apiKey} expanded={false} /></td>
+              <th>Commitment </th>
+              <td><ViewCommitment commitment={props.sessionRequestResponse.commitment} apiKey={props.apiKey} expanded={false} /></td>
             </tr>
           }
         </tbody>
@@ -352,8 +352,8 @@ export const ViewSessionRequestResponse = (props: {
 }
 
 
-export const ViewCommittment = (props: {
-  commitment: Committment,
+export const ViewCommitment = (props: {
+  commitment: Commitment,
   apiKey: ApiKey,
   expanded: boolean
 }) => {
@@ -406,8 +406,8 @@ export const ViewCommittment = (props: {
   </Async>
 }
 
-export const ViewCommittmentResponse = (props: {
-  commitmentResponse: CommittmentResponse,
+export const ViewCommitmentResponse = (props: {
+  commitmentResponse: CommitmentResponse,
   apiKey: ApiKey,
   expanded: boolean
 }) => {
@@ -422,8 +422,8 @@ export const ViewCommittmentResponse = (props: {
       <Table hover bordered>
         <tbody>
           <tr>
-            <th>Committment</th>
-            <td><ViewCommittment commitment={props.commitmentResponse.commitment} apiKey={props.apiKey} expanded /></td>
+            <th>Commitment</th>
+            <td><ViewCommitment commitment={props.commitmentResponse.commitment} apiKey={props.apiKey} expanded /></td>
           </tr>
           <tr>
             <th>Date Taken</th>

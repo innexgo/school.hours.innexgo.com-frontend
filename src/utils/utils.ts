@@ -566,13 +566,13 @@ export function sessionRequestResponseNew(props: SessionRequestResponseNewProps,
 }
 
 interface CommitmentNewProps {
-  attendeeUserId: number,
+  attendeeUserIds: number[],
   sessionId: number,
   active: boolean,
   apiKey: string,
 }
 
-export function commitmentNew(props: CommitmentNewProps, server?: string): Promise<Result<Commitment, InnexgoHoursErrorCode>> {
+export function commitmentNew(props: CommitmentNewProps, server?: string): Promise<Result<Commitment[], InnexgoHoursErrorCode>> {
   return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/commitment/new", props);
 }
 
