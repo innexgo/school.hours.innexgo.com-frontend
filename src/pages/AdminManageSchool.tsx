@@ -121,8 +121,8 @@ function AdminManageSchool(props: AuthenticatedComponentProps) {
               </div>
 
               <div className="mx-3 my-3">
-                <WidgetWrapper title="Administrator Requests">
-                  <span>Shows the current requests for admin permissions.</span>
+                <WidgetWrapper title="Administrator Keys">
+                  <span>Shows keys that can be used to add new administrators to the school.</span>
                   <AdminManageSchoolKeyTable
                     schoolKeyData={data.schoolKeyData}
                     setSchoolKeyData={schoolKeyData => setData(update(data, { schoolKeyData: { $set: schoolKeyData } }))}

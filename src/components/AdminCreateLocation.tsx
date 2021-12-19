@@ -8,14 +8,13 @@ import SearchSingleSchool from "../components/SearchSingleSchool";
 
 type AdminCreateLocationProps = {
   apiKey: ApiKey;
-  schoolId?:number;
+  schoolId:number;
   postSubmit: (cd: LocationData) => void;
 }
 
 function AdminCreateLocation(props: AdminCreateLocationProps) {
 
   type CreateLocationValue = {
-    schoolId: null | number,
     name: string,
     address: string,
     phone: string,
@@ -28,10 +27,7 @@ function AdminCreateLocation(props: AdminCreateLocationProps) {
 
     // Validate input
     let hasError = false;
-    if (values.schoolId === null) {
-      errors.name = "Please select a school where you are an administrator.";
-      hasError = true;
-    }
+
     if (values.name === "") {
       errors.name = "Please enter a location name.";
       hasError = true;
@@ -47,7 +43,7 @@ function AdminCreateLocation(props: AdminCreateLocationProps) {
     }
 
     const maybeLocationData = await locationNew({
-      schoolId: values.schoolId!,
+      schoolId: props.schoolId,
       address: values.address,
       name: values.name,
       phone: values.phone,
@@ -100,7 +96,6 @@ function AdminCreateLocation(props: AdminCreateLocationProps) {
     <Formik<CreateLocationValue>
       onSubmit={onSubmit}
       initialValues={{
-        schoolId: null,
         name: "",
         address: "",
         phone: ""
@@ -115,35 +110,6 @@ function AdminCreateLocation(props: AdminCreateLocationProps) {
           noValidate
           onSubmit={fprops.handleSubmit} >
           <div hidden={fprops.status.successResult !== ""}>
-            <Form.Group className="mb-3">
-              <Form.Label>School Name</Form.Label>
-              <SearchSingleSchool
-                name="locationId"
-                search={async (input: string) => {
-
-                  const adminships = await adminshipView({
-                    userId: [props.apiKey.creatorUserId],
-                    adminshipKind: ["ADMIN"],
-                    onlyRecent: true,
-                    apiKey: props.apiKey.key,
-                  })
-                    .then(unwrap);
-
-                  const schoolData = await schoolDataView({
-                    schoolId: adminships.map(a => a.school.schoolId),
-                    partialName: input,
-                    onlyRecent: true,
-                    apiKey: props.apiKey.key,
-                  })
-                    .then(unwrap);
-
-                  return schoolData;
-
-                }}
-                isInvalid={!!fprops.errors.schoolId}
-                setFn={(e: SchoolData | null) => fprops.setFieldValue("schoolId", e?.school.schoolId)} />
-              <Form.Control.Feedback type="invalid">{fprops.errors.schoolId}</Form.Control.Feedback>
-            </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Location Name</Form.Label>
               <Form.Control

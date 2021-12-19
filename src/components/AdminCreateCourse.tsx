@@ -165,6 +165,7 @@ function AdminCreateCourse(props: AdminCreateCourseProps) {
                   const locationData = await locationDataView({
                     schoolId: [fprops.values.schoolId],
                     partialName: input,
+                    active: true,
                     onlyRecent: true,
                     apiKey: props.apiKey.key,
                   })

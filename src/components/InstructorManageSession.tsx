@@ -5,7 +5,7 @@ import { Loader, Action } from '@innexgo/common-react-components';
 import InstructorManageSessionData from '../components/InstructorManageSessionData';
 import { ViewSession, ViewUser, ViewSessionRequestResponse } from '../components/ViewData';
 import SearchMultiUser from '../components/SearchMultiUser';
-import { Commitment, Session, SessionRequestResponse,  commitmentNew, commitmentView, courseMembershipView, sessionRequestResponseView } from '../utils/utils';
+import { Commitment, Session, SessionRequestResponse, commitmentNew, commitmentView, courseMembershipView, sessionRequestResponseView } from '../utils/utils';
 import { X, Check, Clock } from 'react-bootstrap-icons';
 
 import { isErr, unwrap } from '@innexgo/frontend-common';
@@ -43,7 +43,7 @@ const loadData = async (props: AsyncProps<InstructorManageSessionData>) => {
     commitments,
   };
 }
-/*
+
 function InstructorManageSession(props: InstructorManageSessionProps) {
 
   type CreateCommitmentResponseValues = {
@@ -89,174 +89,57 @@ function InstructorManageSession(props: InstructorManageSessionProps) {
           }
           <h5>Students Attending</h5>
           <Tabs defaultActiveKey="manage">
-            <Tab eventKey="manage" title="Current Students">
-              <br />
-              <Formik<CreateCommitmentResponseValues[]>
-                onSubmit={async (values, { setStatus }: FormikHelpers<CreateCommitmentResponseValues[]>) => {
-                  let newStatus = values.map(_ => "");
-                  values.forEach(async (individual, i) => {
-                    if (individual.commitmentResponseKind === "default") {
-                      return;
-                    }
-
-                    const maybeCommitmentResponse = await commitmentResponseNew({
-                      commitmentId: individual.commitment.commitmentId,
-                      commitmentResponseKind: individual.commitmentResponseKind,
-                      apiKey: props.apiKey.key,
-                    });
-
-                    if (isErr(maybeCommitmentResponse)) {
-                      switch (maybeCommitmentResponse.Err) {
-                        case "COMMITTMENT_RESPONSE_EXISTENT": {
-                          newStatus[i] = "Attendance has already been taken for this commitment.";
-                          break;
-                        }
-                        case "COMMITTMENT_RESPONSE_UNCANCELLABLE": {
-                          newStatus[i] = "This commitment cannot be cancelled.";
-                          break;
-                        }
-                        case "API_KEY_NONEXISTENT": {
-                          newStatus[i] = "You have been automatically logged out. Please relogin.";
-                          break;
-                        }
-                        case "API_KEY_UNAUTHORIZED": {
-                          newStatus[i] = "You are not currently authorized to perform this action.";
-                          break;
-                        }
-                        default: {
-                          newStatus[i] = "An unknown or network error has occurred.";
-                          break;
-                        }
-                      }
-                    }
-                  });
-                  setStatus(newStatus);
-                  reload();
-                }}
-                initialValues={data.commitments.map(c => ({
-                  commitment: c,
-                  commitmentResponseKind: "default"
-                }))}
-                initialStatus={data.commitments.map(_ => "")}
-              >
-                {fprops =>
-                  <Form noValidate onSubmit={fprops.handleSubmit}>
-                    <Table hover bordered className="mx-2">
-                      <thead>
-                        <tr><th>Student</th><th>Status</th></tr>
-                      </thead>
-                      <tbody>
-                        {fprops.values.map((c: CreateCommitmentResponseValues, i: number) =>
-                          <tr key={c.commitment.commitmentId}>
-                            <td><ViewUser expanded={false} apiKey={props.apiKey} userId={c.commitment.attendeeUserId} /></td>
-                            <td>
-                              <Form.Select
-                                size="sm"
-                                onChange={(e) => {
-                                  fprops.values[i].commitmentResponseKind = (e.target as HTMLSelectElement).value as (CommitmentResponseKind | "default");
-                                  fprops.setValues(fprops.values)
-                                }}
-                                placeholder="Message"
-                                isInvalid={fprops.status[i] !== ""}
-                              >
-                                <option value="default">Select</option>
-                                <option value="PRESENT">Present</option>
-                                <option value="TARDY">Tardy</option>
-                                <option value="ABSENT">Absent</option>
-                                <option value="CANCELLED">Cancel</option>
-                              </Form.Select>
-                              <br />
-                              <Form.Text className="text-danger">{fprops.status[i]}</Form.Text>
-                            </td>
-                          </tr>
-                        )}
-                        {
-                          data.commitmentResponses.map((cr: CommitmentResponse) => {
-                            let content;
-                            switch (cr.kind) {
-                              case "ABSENT": {
-                                content = <Action title="Absent" icon={X} variant="danger" onClick={() => 1} />;
-                                break;
-                              }
-                              case "TARDY": {
-                                content = <Action title="Tardy" icon={Clock} variant="warning" onClick={() => 1} />;
-                                break;
-                              }
-                              case "PRESENT": {
-                                content = <Action title="Present" icon={Check} variant="success" onClick={() => 1} />;
-                                break;
-                              }
-                              case "CANCELLED": {
-                                content = <Action title="CANCELLED" icon={X} variant="secondary" onClick={() => 1} />;
-                                break;
-                              }
-                            }
-                            return <tr>
-                              <td><ViewUser expanded={false} apiKey={props.apiKey} userId={cr.commitment.attendeeUserId} /></td>
-                              <td>{content}</td>
-                            </tr>
-                          })
-                        }
-                      </tbody>
-                    </Table>
-
-                    <Button type="submit">Submit</Button>
-                  </Form>}
-              </Formik>
+            <Tab eventKey="manage" title="Current Students" className="pt-3">
+            
             </Tab>
             <Tab eventKey="create" title="Add Students">
               <br />
               <Formik<CreateCommitmentValues>
                 onSubmit={async (values: CreateCommitmentValues, { setStatus }: FormikHelpers<CreateCommitmentValues>) => {
-                  for (const studentId of values.studentList) {
-                    const maybeCommitment = await commitmentNew({
-                      sessionId: props.session.sessionId,
-                      attendeeUserId: studentId,
-                      apiKey: props.apiKey.key
-                    });
+                  const maybeCommitment = await commitmentNew({
+                    sessionId: props.session.sessionId,
+                    attendeeUserIds: values.studentList,
+                    active: true,
+                    apiKey: props.apiKey.key
+                  });
 
-                    // TODO handle all other error codes that are possible
-                    if (isErr(maybeCommitment)) {
-                      switch (maybeCommitment.Err) {
-                        case "COMMITTMENT_EXISTENT": {
-                          // Commitment existent is actually OK, we don't have to make an error
-                          continue;
-                        }
-                        case "API_KEY_NONEXISTENT": {
-                          setStatus({
-                            studentList: "",
-                            name: "",
-                            resultFailure: "You have been automatically logged out. Please relogin.",
-                          });
-                          break;
-                        }
-                        case "API_KEY_UNAUTHORIZED": {
-                          setStatus({
-                            studentList: "",
-                            name: "",
-                            resultFailure: "You are not currently authorized to perform this action.",
-                          });
-                          break;
-                        }
-                        case "USER_NONEXISTENT": {
-                          setStatus({
-                            studentList: "This user does not exist.",
-                            name: "",
-                            resultFailure: "",
-                          });
-                          break;
-                        }
-                        default: {
-                          setStatus({
-                            studentList: "",
-                            name: "",
-                            resultFailure: "An unknown error has occurred",
-                          });
-                          break;
-                        }
+                  // TODO handle all other error codes that are possible
+                  if (isErr(maybeCommitment)) {
+                    switch (maybeCommitment.Err) {
+                      case "API_KEY_NONEXISTENT": {
+                        setStatus({
+                          studentList: "",
+                          name: "",
+                          resultFailure: "You have been automatically logged out. Please relogin.",
+                        });
+                        break;
                       }
-                      return;
+                      case "API_KEY_UNAUTHORIZED": {
+                        setStatus({
+                          studentList: "",
+                          name: "",
+                          resultFailure: "You are not currently authorized to perform this action.",
+                        });
+                        break;
+                      }
+                      case "USER_NONEXISTENT": {
+                        setStatus({
+                          studentList: "This user does not exist.",
+                          name: "",
+                          resultFailure: "",
+                        });
+                        break;
+                      }
+                      default: {
+                        setStatus({
+                          studentList: "",
+                          name: "",
+                          resultFailure: "An unknown error has occurred",
+                        });
+                        break;
+                      }
                     }
+                    return;
                   }
                   reload();
                 }}
@@ -311,11 +194,6 @@ function InstructorManageSession(props: InstructorManageSessionProps) {
       </>}
     </Async>
   </>
-}
-*/
-
-function InstructorManageSession(props:InstructorManageSessionProps ) {
-    return <p> TODO </p>
 }
 
 export default InstructorManageSession;
