@@ -1,8 +1,7 @@
 import React from 'react';
 import { Form, Button, Table } from 'react-bootstrap';
-import { Loader, Action } from '@innexgo/common-react-components';
+import { Loader, Action, DisplayModal  } from '@innexgo/common-react-components';
 import { Async, AsyncProps } from 'react-async';
-import DisplayModal from '../components/DisplayModal';
 import { CourseData, CourseMembership, courseMembershipView, courseDataView, courseMembershipNewCancel } from '../utils/utils';
 import { ViewUser } from '../components/ViewData';
 import { X as DeleteIcon } from 'react-bootstrap-icons';

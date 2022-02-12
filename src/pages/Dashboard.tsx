@@ -3,8 +3,7 @@ import { Container, Card, Form, Tabs, Tab } from 'react-bootstrap';
 import { Async, AsyncProps } from 'react-async';
 
 import DashboardLayout from '../components/DashboardLayout';
-import { Loader, Section, AddButton } from '@innexgo/common-react-components';
-import DisplayModal from '../components/DisplayModal';
+import { Loader, Section, AddButton , DisplayModal } from '@innexgo/common-react-components';
 import UserCreateSchool from '../components/UserCreateSchool';
 import AdminCreateCourse from '../components/AdminCreateCourse';
 import CreateAdminship from '../components/CreateAdminship';

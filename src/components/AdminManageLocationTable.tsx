@@ -1,7 +1,6 @@
 import React from 'react';
 import { Button, Form, Table } from 'react-bootstrap';
-import { Loader, Action, Link, AddButton } from '@innexgo/common-react-components';
-import DisplayModal from '../components/DisplayModal';
+import { Loader, Action, Link, AddButton, DisplayModal } from '@innexgo/common-react-components';
 import { ViewUser, } from '../components/ViewData';
 import update from 'immutability-helper';
 

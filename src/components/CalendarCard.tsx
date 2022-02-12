@@ -15,7 +15,7 @@ function SessionRequestCard(props: {
     <Card className="px-1 py-1 h-100 w-100 bg-danger text-light overflow-hidden" >
       Course: {props.courseData.name}
       <br />
-      From: {props.creatorUserData.name}
+      From: {props.creatorUserData.realname}
       <br />
       Msg: {props.sessionRequest.message}
     </Card>
@@ -99,7 +99,7 @@ function SessionCard(props: {
           <Form.Text>An unknown error has occured.</Form.Text>
         </Async.Rejected>
         <Async.Fulfilled<UserData[]>>
-          {u => "Session: " + u.map(u => u.name).join(', ')}
+          {u => "Session: " + u.map(u => u.realname).join(', ')}
         </Async.Fulfilled>
       </Async>
     }

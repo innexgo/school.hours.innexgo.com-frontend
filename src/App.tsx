@@ -88,6 +88,8 @@ function App() {
     name: "Innexgo Hours",
     tagline: "Attendance Simplified",
     homeUrl: "/",
+    dashboardUrl: "/dashboard",
+    forgotPasswordUrl: "/forgot_password",
     tosUrl: "/terms_of_service",
     darkAdaptedIcon: DarkAdaptedIcon,
     lightAdaptedIcon: LightAdaptedIcon,
@@ -95,6 +97,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<Instructions branding={branding} />} />
         <Route path="/instructions" element={<Instructions branding={branding} />} />
         <Route path="/terms_of_service" element={<TermsOfService branding={branding} />} />
         <Route path="/school_search" element={<SchoolSearch branding={branding} />} />
@@ -109,7 +112,6 @@ function App() {
         <Route path="/admin_manage_school" element={<AuthenticatedComponentRenderer branding={branding} {...apiKeyGetSetter} component={AdminManageSchool} />} />
         <Route path="/instructor_manage_course" element={<AuthenticatedComponentRenderer branding={branding} {...apiKeyGetSetter} component={InstructorManageCourse} />} />
         <Route path="/student_manage_course" element={<AuthenticatedComponentRenderer branding={branding} {...apiKeyGetSetter} component={StudentManageCourse} />} />
-        <Route path="/" element={<AuthenticatedComponentRenderer branding={branding} {...apiKeyGetSetter} component={Dashboard} />} />
         <Route path="/calendar" element={<AuthenticatedComponentRenderer branding={branding} {...apiKeyGetSetter} component={Calendar} />} />
         <Route path="/school" element={<AuthenticatedComponentRenderer branding={branding} {...apiKeyGetSetter} component={SchoolStatsReport} />} />
         <Route path="/course" element={<AuthenticatedComponentRenderer branding={branding} {...apiKeyGetSetter} component={CourseStatsReport} />} />

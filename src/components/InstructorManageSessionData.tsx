@@ -1,8 +1,7 @@
 import React from 'react';
-import { Form, Button, Table } from 'react-bootstrap';
-import { Loader } from '@innexgo/common-react-components';
+import { Form, Button, Table} from 'react-bootstrap';
+import { Loader, DisplayModal} from '@innexgo/common-react-components';
 import { Async, AsyncProps } from 'react-async';
-import DisplayModal from '../components/DisplayModal';
 import { sessionDataView, sessionDataNew, SessionData } from '../utils/utils';
 import { ViewUser } from '../components/ViewData';
 import { Pencil as EditIcon, Trash as DeleteIcon, BoxArrowUp as RestoreIcon } from 'react-bootstrap-icons';

@@ -20,7 +20,7 @@ export default function SearchMultiUser(props: SearchMultiUserProps) {
     const results = await props.search(input)
 
     return results.map((x: UserData): UserDataOption => ({
-      label: x.name,
+      label: x.realname,
       value: x
     }));
   };

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Async, AsyncProps } from 'react-async';
-import { Loader, WidgetWrapper } from '@innexgo/common-react-components';
+import { Loader, WidgetWrapper, DisplayModal} from '@innexgo/common-react-components';
 import FullCalendar, { DateSelectArg, EventClickArg } from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
@@ -25,7 +25,6 @@ import StudentCreateSessionRequest from '../components/StudentCreateSessionReque
 import InstructorReviewSessionRequest from '../components/InstructorReviewSessionRequest';
 import InstructorManageSession from '../components/InstructorManageSession';
 import StudentManageSessionRequest from '../components/StudentManageSessionRequest';
-import DisplayModal from '../components/DisplayModal';
 import { sessionToEvent, sessionRequestToEvent, rejectedSessionRequestResponseToEvent, acceptedSessionRequestResponseToEvent, commitmentToEvent, } from '../components/ToCalendar';
 
 type EventCalendarProps = {

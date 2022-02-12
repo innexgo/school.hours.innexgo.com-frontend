@@ -205,7 +205,7 @@ function CreateSession(props: CreateSessionProps) {
                   apiKey: props.apiKey.key,
                 }).then(unwrap);
 
-                return users.filter(x => x.name.includes(input));
+                return users.filter(x => x.realname.includes(input));
               }}
               setFn={e => {
                 fprops.setFieldValue("studentList", e.map(s => s.creatorUserId));

@@ -145,7 +145,7 @@ export const ViewUser = (props: {
     <Async.Fulfilled<UserData>>{user =>
       !expanded
         ? <span className="clearfix">
-          {user.name}
+          {user.realname}
           <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
         </span>
         : <div>
@@ -153,7 +153,11 @@ export const ViewUser = (props: {
             <tbody>
               <tr>
                 <th>Name</th>
-                <td>{user.name}</td>
+                <td>{user.realname}</td>
+              </tr>
+              <tr>
+                <th>Username</th>
+                <td>{user.username}</td>
               </tr>
               <tr>
                 <th>Actions</th>
@@ -240,7 +244,7 @@ export const ViewSessionRequest = (props: {
         <span className="text-danger">Unable to load session.</span>
       </Async.Rejected>
       <Async.Fulfilled<UserData>>{user =>
-        <span className="clearfix">{user.name} - {format(props.sessionRequest.startTime, "MMM do")}
+        <span className="clearfix">{user.realname} - {format(props.sessionRequest.startTime, "MMM do")}
           <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
         </span>
       }
@@ -310,7 +314,7 @@ export const ViewSessionRequestResponse = (props: {
       </Async.Rejected>
       <Async.Fulfilled<UserData>>{user =>
         <span className="clearfix">
-          {user.name} - {props.sessionRequestResponse.commitment ? "ACCEPTED" : "REJECTED"}
+          {user.realname} - {props.sessionRequestResponse.commitment ? "ACCEPTED" : "REJECTED"}
           <ToggleExpandButton expanded={expanded} setExpanded={setExpanded} />
         </span>
       }

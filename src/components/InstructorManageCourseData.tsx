@@ -1,7 +1,6 @@
 import React from 'react';
 import { Table } from 'react-bootstrap';
-import { Action } from '@innexgo/common-react-components';
-import DisplayModal from '../components/DisplayModal';
+import { Action, DisplayModal } from '@innexgo/common-react-components';
 import { CourseData} from '../utils/utils';
 import { ViewUser } from '../components/ViewData';
 import { Pencil as EditIcon, X as DeleteIcon, BoxArrowUp as RestoreIcon } from 'react-bootstrap-icons';

@@ -1,5 +1,5 @@
 
-
+/*
 function InstructorManageAttendance(props: InstructorManageAttendanceProps) {
 
               <Formik<CreateCommitmentResponseValues[]>
@@ -114,3 +114,6 @@ function InstructorManageAttendance(props: InstructorManageAttendanceProps) {
                     <Button type="submit">Submit</Button>
                   </Form>}
               </Formik>
+              */
+
+export {}

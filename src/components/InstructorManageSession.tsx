@@ -48,7 +48,8 @@ function InstructorManageSession(props: InstructorManageSessionProps) {
 
   type CreateCommitmentResponseValues = {
     commitment: Commitment;
-    commitmentResponseKind: CommitmentResponseKind | "default";
+    // TODO
+    commitmentResponseKind:"default";
   }
 
   type CreateCommitmentValues = {
@@ -175,7 +176,7 @@ function InstructorManageSession(props: InstructorManageSessionProps) {
                             apiKey: props.apiKey.key,
                           }).then(unwrap);
 
-                          return users.filter(x => x.name.includes(input));
+                          return users.filter(x => x.realname.includes(input));
                         }}
                         setFn={e => fprops.setFieldValue("studentList", e.map(s => s.creatorUserId))} />
                       <Form.Text className="text-danger">{fprops.status.studentList}</Form.Text>

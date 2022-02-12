@@ -1,7 +1,6 @@
 import React from 'react';
 import { Button, Tabs, Tab, Form, Table } from 'react-bootstrap';
-import { Loader, Action } from '@innexgo/common-react-components';
-import DisplayModal from '../components/DisplayModal';
+import { Loader, Action , DisplayModal } from '@innexgo/common-react-components';
 //import { ViewUser, } from '../components/ViewData';
 
 import { X as DeleteIcon, } from 'react-bootstrap-icons'

@@ -1,7 +1,6 @@
 import React from 'react';
 import { Button, Form, Table } from 'react-bootstrap';
-import { Action, AddButton} from '@innexgo/common-react-components';
-import DisplayModal from '../components/DisplayModal';
+import { Action, AddButton, DisplayModal } from '@innexgo/common-react-components';
 import update from 'immutability-helper';
 
 import { X as DeleteIcon, } from 'react-bootstrap-icons'
