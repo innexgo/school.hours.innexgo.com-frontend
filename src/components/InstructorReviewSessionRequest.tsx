@@ -1,6 +1,7 @@
 import React from "react";
 import { Async, AsyncProps } from 'react-async';
-import FullCalendar, { EventClickArg, DateSelectArg } from "@fullcalendar/react"
+import FullCalendar  from "@fullcalendar/react";
+import { EventClickArg, DateSelectArg } from "@fullcalendar/core";
 import interactionPlugin from '@fullcalendar/interaction'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import { Card, Row, Col, Button, Form, Spinner } from 'react-bootstrap';

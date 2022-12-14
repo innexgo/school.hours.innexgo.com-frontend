@@ -11,23 +11,15 @@ import ExternalHeader from './ExternalHeader';
 interface ExternalLayoutProps {
   fixed: boolean;
   transparentTop: boolean;
+  children: React.ReactChild | React.ReactChildren;
 }
 
-class ExternalLayout extends React.Component<ExternalLayoutProps> {
-  render() {
-
-    // TODO lets make this look better
-
-    return (
-      <>
-        <ExternalHeader fixed={this.props.fixed} transparentTop={this.props.transparentTop}>
-          Innexgo Hours
-        </ExternalHeader>
-        {this.props.children}
-        <Footer />
-      </>
-    )
-  }
+function ExternalLayout(props: ExternalLayoutProps) {
+  return <>
+    <ExternalHeader fixed={props.fixed} transparentTop={props.transparentTop} />
+    {props.children}
+    <Footer />
+  </>
 }
 
 export default ExternalLayout;

@@ -1,4 +1,4 @@
-import { EventInput } from '@fullcalendar/react';
+import { EventInput } from '@fullcalendar/core';
 import { SessionData, CourseData, Commitment, SessionRequest, SessionRequestResponse, CourseMembership, CourseMembershipKind } from '../utils/utils';
 import { ApiKey, UserData} from '@innexgo/frontend-auth-api';
 
