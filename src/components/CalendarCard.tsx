@@ -1,9 +1,8 @@
 import { Async, AsyncProps } from 'react-async';
-import { Card, Form } from "react-bootstrap";
-import { Loader } from '@innexgo/common-react-components';
-import { EventContentArg } from "@fullcalendar/react"
+import { Card, Form, Spinner } from "react-bootstrap";
+import { EventContentArg } from "@fullcalendar/core"
 import { SessionData, SessionRequestResponse, SessionRequest, CourseData, commitmentView } from '../utils/utils';
-import { ApiKey, UserData, userDataView} from '@innexgo/frontend-auth-api';
+import { ApiKey, UserData, userDataView } from '@innexgo/frontend-auth-api';
 import { unwrap } from '@innexgo/frontend-common';
 
 function SessionRequestCard(props: {
@@ -65,7 +64,7 @@ async function loadSessionAttendees(props: AsyncProps<UserData[]>) {
     apiKey: props.apiKey.key
   }).then(unwrap);
 
-  return attendees ;
+  return attendees;
 }
 
 
@@ -93,7 +92,9 @@ function SessionCard(props: {
         apiKey={props.apiKey}
         session={props.sessionData.session}>
         <Async.Pending>
-          <Loader />
+          <Spinner animation="border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </Spinner>
         </Async.Pending>
         <Async.Rejected>
           <Form.Text>An unknown error has occured.</Form.Text>

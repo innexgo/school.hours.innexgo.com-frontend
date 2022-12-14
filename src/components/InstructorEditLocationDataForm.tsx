@@ -1,8 +1,8 @@
 import React from 'react';
 import { Form, Button, Table } from 'react-bootstrap';
-import { Loader, Action, DisplayModal } from '@innexgo/common-react-components';
+import { Action, DisplayModal } from '@innexgo/common-react-components';
 import { Async, AsyncProps } from 'react-async';
-import { locationDataView, locationDataNew, LocationData, normalizeCourseName} from '../utils/utils';
+import { locationDataView, locationDataNew, LocationData, normalizeCourseName } from '../utils/utils';
 import { ViewUser } from '../components/ViewData';
 import { Pencil as EditIcon, X as DeleteIcon, BoxArrowUp as RestoreIcon } from 'react-bootstrap-icons';
 import { Formik, FormikHelpers } from 'formik'

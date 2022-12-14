@@ -1,7 +1,8 @@
 import React from 'react'
 import { Async, AsyncProps } from 'react-async';
-import { Loader, WidgetWrapper, DisplayModal} from '@innexgo/common-react-components';
-import FullCalendar, { DateSelectArg, EventClickArg } from '@fullcalendar/react'
+import { WidgetWrapper, DisplayModal } from '@innexgo/common-react-components';
+import FullCalendar from '@fullcalendar/react';
+import { DateSelectArg, EventClickArg } from '@fullcalendar/core';
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import DashboardLayout from '../components/DashboardLayout';
@@ -12,7 +13,7 @@ import assert from 'assert';
 import { userView, ApiKey, userDataView, UserData } from '@innexgo/frontend-auth-api';
 import { AuthenticatedComponentProps } from '@innexgo/auth-react-components';
 
-import { Tab, Tabs, Form, Container, Row, Col, Card } from 'react-bootstrap';
+import { Tab, Tabs, Form, Container, Row, Col, Card, Spinner } from 'react-bootstrap';
 import { Session, SessionData, SessionRequest, SessionRequestResponse, CourseMembership, CourseData, Commitment } from '../utils/utils';
 import { sessionDataView, sessionRequestView, courseMembershipView } from '../utils/utils';
 import { sessionRequestResponseView, commitmentView, courseDataView, } from '../utils/utils';
@@ -536,7 +537,9 @@ function CalendarWidget(props: AuthenticatedComponentProps) {
     </span>
     <Async promiseFn={loadCalendarCourseData} apiKey={props.apiKey}>
       <Async.Pending>
-        <Loader />
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </Spinner>
       </Async.Pending>
       <Async.Rejected>
         <Form.Text className="text-danger">An unknown error has occured.</Form.Text>

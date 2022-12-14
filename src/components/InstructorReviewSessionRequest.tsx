@@ -3,9 +3,8 @@ import { Async, AsyncProps } from 'react-async';
 import FullCalendar, { EventClickArg, DateSelectArg } from "@fullcalendar/react"
 import interactionPlugin from '@fullcalendar/interaction'
 import timeGridPlugin from '@fullcalendar/timegrid'
-import { Card, Row, Col, Button, Form } from 'react-bootstrap';
+import { Card, Row, Col, Button, Form, Spinner } from 'react-bootstrap';
 import { Formik, FormikHelpers } from 'formik';
-import { Loader } from '@innexgo/common-react-components';
 
 import CalendarCard from '../components/CalendarCard';
 import { sessionToEvent } from '../components/ToCalendar';
@@ -13,7 +12,7 @@ import { ViewSessionRequest } from '../components/ViewData';
 import { CourseData, SessionRequest, sessionRequestResponseNew, sessionNew, sessionDataView, courseDataView, courseMembershipView } from '../utils/utils';
 
 import { ApiKey, } from '@innexgo/frontend-auth-api';
-import { isErr, unwrap,getFirstOr } from '@innexgo/frontend-common';
+import { isErr, unwrap, getFirstOr } from '@innexgo/frontend-common';
 
 type CalendarWidgetProps = {
   sessionRequest: SessionRequest;
@@ -287,7 +286,7 @@ function IInstructorReviewSessionRequest(props: IInstructorReviewSessionRequestP
                 onChange={fprops.handleChange}
               />
             </Form.Group>
-            <Form.Group  className="mb-3" hidden={fprops.values.startTime === null || fprops.values.endTime === null} >
+            <Form.Group className="mb-3" hidden={fprops.values.startTime === null || fprops.values.endTime === null} >
               <Form.Label>New Session Name</Form.Label>
               <Form.Control
                 name="sessionNewName"
@@ -299,7 +298,7 @@ function IInstructorReviewSessionRequest(props: IInstructorReviewSessionRequestP
               />
               <Form.Text className="text-danger">{fprops.errors.sessionNewName}</Form.Text>
             </Form.Group>
-            <Form.Group  className="mb-3" hidden={fprops.values.startTime === null || fprops.values.endTime === null} >
+            <Form.Group className="mb-3" hidden={fprops.values.startTime === null || fprops.values.endTime === null} >
               <Form.Check
                 name="sessionNewPublic"
                 checked={fprops.values.sessionNewPublic}
@@ -417,9 +416,9 @@ const loadCourseData = async (props: AsyncProps<CourseData>) => {
     onlyRecent: true,
     apiKey: props.apiKey.key,
   })
-  .then(unwrap)
-  .then(x => getFirstOr(x, "NOT_FOUND")) // there's an invariant that there must always be one course data per valid course id
-  .then(unwrap);
+    .then(unwrap)
+    .then(x => getFirstOr(x, "NOT_FOUND")) // there's an invariant that there must always be one course data per valid course id
+    .then(unwrap);
 
   return courseData;
 }
@@ -430,7 +429,11 @@ function InstructorReviewSessionRequest(props: InstructorReviewSessionRequestPro
     apiKey={props.apiKey}
     courseId={props.sessionRequest.course.courseId}>
     {_ => <>
-      <Async.Pending><Loader /></Async.Pending>
+      <Async.Pending>
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </Spinner>
+      </Async.Pending>
       <Async.Rejected>
         <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
       </Async.Rejected>

@@ -1,5 +1,4 @@
 import { Button, Form, Table } from 'react-bootstrap';
-import { Loader } from '@innexgo/common-react-components';
 import { ViewCourse, ViewUser, } from '../components/ViewData';
 
 import { X as DeleteIcon, } from 'react-bootstrap-icons'
@@ -34,7 +33,11 @@ function InternalCourseViewStatsReport(props: InternalCourseViewStatsReportProps
   return <>
     <Async promiseFn={props.loadMemberships} minStartTime={0}>
       {({ reload }) => <>
-        <Async.Pending><Loader /></Async.Pending>
+        <Async.Pending>
+          <Spinner animation="border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </Spinner>
+        </Async.Pending>
         <Async.Rejected>
           <Form.Text className="text-danger">An unknown error has occured. </Form.Text>
         </Async.Rejected>

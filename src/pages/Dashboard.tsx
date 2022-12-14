@@ -1,9 +1,9 @@
 import React from 'react'
-import { Container, Card, Form, Tabs, Tab } from 'react-bootstrap';
+import { Container, Card, Form, Tabs, Tab, Spinner } from 'react-bootstrap';
 import { Async, AsyncProps } from 'react-async';
 
 import DashboardLayout from '../components/DashboardLayout';
-import { Loader, Section, AddButton , DisplayModal } from '@innexgo/common-react-components';
+import { Section, AddButton, DisplayModal } from '@innexgo/common-react-components';
 import UserCreateSchool from '../components/UserCreateSchool';
 import AdminCreateCourse from '../components/AdminCreateCourse';
 import CreateAdminship from '../components/CreateAdminship';
@@ -119,7 +119,11 @@ function Dashboard(props: AuthenticatedComponentProps) {
       <Container className="py-4 px-4">
         <Async promiseFn={loadDashboardData} apiKey={props.apiKey}>
           {({ reload: reloadDashboardData }) => <>
-            <Async.Pending><Loader /></Async.Pending>
+            <Async.Pending>
+              <Spinner animation="border" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </Spinner>
+            </Async.Pending>
             <Async.Rejected>
               <Form.Text className="text-danger">An unknown error has occured while loading data.</Form.Text>
             </Async.Rejected>

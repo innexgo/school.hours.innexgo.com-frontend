@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Form, Table } from 'react-bootstrap';
-import { Loader, Action , DisplayModal } from '@innexgo/common-react-components';
+import { Action, DisplayModal } from '@innexgo/common-react-components';
 import { ViewUser, } from '../components/ViewData';
 import update from 'immutability-helper';
 
@@ -17,7 +17,7 @@ import { ApiKey, User } from '@innexgo/frontend-auth-api';
 
 type CancelCourseMembershipProps = {
   courseMembership: CourseMembership,
-  setCourseMembership: (courseMembership:CourseMembership) => void
+  setCourseMembership: (courseMembership: CourseMembership) => void
   apiKey: ApiKey,
 };
 
@@ -82,13 +82,13 @@ function CancelCourseMembership(props: CancelCourseMembershipProps) {
     });
 
     // execute callback
-    props.setCourseMembership (maybeCourseMembership.Ok);
+    props.setCourseMembership(maybeCourseMembership.Ok);
   }
 
   return <>
     <Formik<CancelCourseMembershipValue>
       onSubmit={onSubmit}
-      initialValues={{ }}
+      initialValues={{}}
       initialStatus={{
         failureResult: "",
         successResult: ""

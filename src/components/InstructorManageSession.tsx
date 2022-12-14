@@ -1,7 +1,7 @@
 import { Async, AsyncProps } from 'react-async';
-import { Row, Col, Card, Tabs, Tab, Table, Form, Button, } from 'react-bootstrap';
+import { Row, Col, Card, Tabs, Tab, Table, Form, Button, Spinner, } from 'react-bootstrap';
 import { Formik, FormikHelpers, } from 'formik';
-import { Loader, Action } from '@innexgo/common-react-components';
+import { Action } from '@innexgo/common-react-components';
 import InstructorManageSessionData from '../components/InstructorManageSessionData';
 import { ViewSession, ViewUser, ViewSessionRequestResponse } from '../components/ViewData';
 import SearchMultiUser from '../components/SearchMultiUser';
@@ -49,7 +49,7 @@ function InstructorManageSession(props: InstructorManageSessionProps) {
   type CreateCommitmentResponseValues = {
     commitment: Commitment;
     // TODO
-    commitmentResponseKind:"default";
+    commitmentResponseKind: "default";
   }
 
   type CreateCommitmentValues = {
@@ -59,7 +59,11 @@ function InstructorManageSession(props: InstructorManageSessionProps) {
   return <>
     <Async promiseFn={loadData} apiKey={props.apiKey} session={props.session}>
       {({ reload }) => <>
-        <Async.Pending><Loader /></Async.Pending>
+        <Async.Pending>
+          <Spinner animation="border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </Spinner>
+        </Async.Pending>
         <Async.Rejected>
           <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
         </Async.Rejected>
@@ -91,7 +95,7 @@ function InstructorManageSession(props: InstructorManageSessionProps) {
           <h5>Students Attending</h5>
           <Tabs defaultActiveKey="manage">
             <Tab eventKey="manage" title="Current Students" className="pt-3">
-            
+
             </Tab>
             <Tab eventKey="create" title="Add Students">
               <br />

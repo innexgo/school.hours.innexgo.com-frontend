@@ -1,6 +1,6 @@
-import { Button, Card, Container, Form, Table } from 'react-bootstrap';
+import { Button, Card, Container, Form, Spinner, Table } from 'react-bootstrap';
 import DashboardLayout from '../components/DashboardLayout';
-import { Loader, WidgetWrapper, Link } from '@innexgo/common-react-components';
+import { WidgetWrapper, Link } from '@innexgo/common-react-components';
 import AdminManageAdminshipTable from '../components/AdminManageAdminshipTable';
 import AdminManageSchoolKeyTable from '../components/AdminManageSchoolKeyTable'
 import AdminManageCourseTable from '../components/AdminManageCourseTable'
@@ -16,7 +16,7 @@ import { unwrap, getFirstOr } from '@innexgo/frontend-common';
 import format from "date-fns/format";
 
 import { Async, AsyncProps } from 'react-async';
-import { CourseData, LocationData, SchoolData, SchoolKeyData, SchoolDurationData, schoolDurationDataView, schoolKeyDataView, schoolDataView, courseDataView, adminshipView, locationDataView,  Adminship } from '../utils/utils';
+import { CourseData, LocationData, SchoolData, SchoolKeyData, SchoolDurationData, schoolDurationDataView, schoolKeyDataView, schoolDataView, courseDataView, adminshipView, locationDataView, Adminship } from '../utils/utils';
 import { ApiKey } from '@innexgo/frontend-auth-api';
 import { AuthenticatedComponentProps } from '@innexgo/auth-react-components';
 
@@ -95,7 +95,11 @@ function AdminManageSchool(props: AuthenticatedComponentProps) {
       <Container fluid className="py-4 px-4">
         <Async promiseFn={loadManageSchoolData} schoolId={schoolId} apiKey={props.apiKey}>{
           ({ setData }) => <>
-            <Async.Pending><Loader /></Async.Pending>
+            <Async.Pending>
+              <Spinner animation="border" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </Spinner>
+            </Async.Pending>
             <Async.Rejected>{e => <ErrorMessage error={e} />}</Async.Rejected>
             <Async.Fulfilled<ManageSchoolData>>{data => <>
               <div className="mx-3 my-3">

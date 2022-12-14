@@ -1,5 +1,4 @@
-import { Form, Table } from 'react-bootstrap';
-import { Loader } from '@innexgo/common-react-components';
+import { Form, Spinner, Table } from 'react-bootstrap';
 import { ViewUser, } from '../components/ViewData';
 
 import format from "date-fns/format";
@@ -24,7 +23,11 @@ function InternalStudentManageCourseMemberships(props: InternalStudentManageCour
   return <>
     <Async promiseFn={props.loadMemberships}>
       {_ => <>
-        <Async.Pending><Loader /></Async.Pending>
+      <Async.Pending>
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </Spinner>
+      </Async.Pending>
         <Async.Rejected>
           <Form.Text className="text-danger">An unknown error has occured.</Form.Text>
         </Async.Rejected>

@@ -1,12 +1,9 @@
 import React from 'react';
 import { Button, Tabs, Tab, Form, Table } from 'react-bootstrap';
-import { Loader, Action , DisplayModal } from '@innexgo/common-react-components';
-//import { ViewUser, } from '../components/ViewData';
+import { Action , DisplayModal } from '@innexgo/common-react-components';
 
 import { X as DeleteIcon, } from 'react-bootstrap-icons'
 import { Formik, FormikHelpers, FormikErrors } from 'formik'
-
-//import SearchMultiUser from "../components/SearchMultiUser";
 
 import format from "date-fns/format";
 import addDays from "date-fns/addDays";

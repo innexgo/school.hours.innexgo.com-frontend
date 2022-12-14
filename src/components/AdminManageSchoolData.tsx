@@ -1,6 +1,6 @@
 import React from 'react';
 import { Form, Button, Table } from 'react-bootstrap';
-import { Loader, Action, DisplayModal} from '@innexgo/common-react-components';
+import { Action, DisplayModal } from '@innexgo/common-react-components';
 import { Async, AsyncProps } from 'react-async';
 import { schoolDataView, schoolDataNew, normalizeSchoolName, SchoolData, } from '../utils/utils';
 import { ViewUser } from '../components/ViewData';

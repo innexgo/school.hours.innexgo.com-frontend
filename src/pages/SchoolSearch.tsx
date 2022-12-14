@@ -1,8 +1,9 @@
-import { SimpleLayout, BrandedComponentProps } from '@innexgo/common-react-components';
+import {BrandedComponentProps } from '@innexgo/common-react-components';
+import { DefaultSidebarLayout } from '@innexgo/auth-react-components';
 import { Link } from 'react-router-dom';
 
 function SchoolSearch(props: BrandedComponentProps) {
-  return <SimpleLayout branding={props.branding}>
+  return <DefaultSidebarLayout branding={props.branding}>
     <div style={{
       display: "flex",
       height: "100vh",
@@ -14,7 +15,7 @@ function SchoolSearch(props: BrandedComponentProps) {
         <Link to="/">Return Home</Link>
       </div>
     </div>
-  </SimpleLayout>
+  </DefaultSidebarLayout>
 }
 
 export default SchoolSearch

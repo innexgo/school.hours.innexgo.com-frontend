@@ -311,13 +311,19 @@ export interface StayData {
   active: boolean,
 }
 
-async function fetchApiOrNetworkError<T>(url: string, props: object, server?: string): Promise<Result<T, InnexgoHoursErrorCode>> {
+async function fetchApiOrNetworkError<T>(url: string, props: object): Promise<Result<T, InnexgoHoursErrorCode>> {
   try {
-    return await fetchApi(url, props);
+    const [code, resp] = await fetchApi(url, props);
+    if (code >= 200 && code < 300) {
+      return { Ok: resp }
+    } else {
+      return { Err: resp }
+    }
   } catch (_) {
     return { Err: "NETWORK" };
   }
 }
+
 const undefToStr = (s: string | undefined) =>
   s === undefined ? apiUrl() : s
 
@@ -329,7 +335,7 @@ interface SubscriptionNewProps {
 }
 
 export function subscriptionNew(props: SubscriptionNewProps, server?: string): Promise<Result<Subscription, InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/subscription/new", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/subscription/new", props);
 }
 
 interface SchoolNewProps {
@@ -340,7 +346,7 @@ interface SchoolNewProps {
 }
 
 export function schoolNew(props: SchoolNewProps, server?: string): Promise<Result<SchoolData, InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/school/new", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/school/new", props);
 }
 
 interface SchoolDataNewProps {
@@ -352,7 +358,7 @@ interface SchoolDataNewProps {
 }
 
 export function schoolDataNew(props: SchoolDataNewProps, server?: string): Promise<Result<SchoolData, InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/school_data/new", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/school_data/new", props);
 }
 
 interface SchoolDurationNewProps {
@@ -364,7 +370,7 @@ interface SchoolDurationNewProps {
 }
 
 export function schoolDurationNew(props: SchoolDurationNewProps, server?: string): Promise<Result<SchoolDurationData, InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/school_duration/new", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/school_duration/new", props);
 }
 
 interface SchoolDurationDataNewProps {
@@ -377,7 +383,7 @@ interface SchoolDurationDataNewProps {
 }
 
 export function schoolDurationDataNew(props: SchoolDurationDataNewProps, server?: string): Promise<Result<SchoolDurationData, InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/school_duration_data/new", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/school_duration_data/new", props);
 }
 
 interface SchoolKeyNewProps {
@@ -389,7 +395,7 @@ interface SchoolKeyNewProps {
 }
 
 export function schoolKeyNew(props: SchoolKeyNewProps, server?: string): Promise<Result<SchoolKeyData, InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/school_key/new", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/school_key/new", props);
 }
 
 interface SchoolKeyDataNewProps {
@@ -399,7 +405,7 @@ interface SchoolKeyDataNewProps {
 }
 
 export function schoolKeyDataNew(props: SchoolKeyDataNewProps, server?: string): Promise<Result<SchoolKeyData, InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/school_key_data/new", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/school_key_data/new", props);
 }
 
 interface AdminshipNewCancelProps {
@@ -409,7 +415,7 @@ interface AdminshipNewCancelProps {
 }
 
 export function adminshipNewCancel(props: AdminshipNewCancelProps, server?: string): Promise<Result<Adminship, InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/adminship/new_cancel", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/adminship/new_cancel", props);
 }
 
 interface AdminshipNewKeyProps {
@@ -418,7 +424,7 @@ interface AdminshipNewKeyProps {
 }
 
 export function adminshipNewKey(props: AdminshipNewKeyProps, server?: string): Promise<Result<Adminship, InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/adminship/new_key", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/adminship/new_key", props);
 }
 
 
@@ -431,7 +437,7 @@ export interface LocationNewProps {
 }
 
 export function locationNew(props: LocationNewProps, server?: string): Promise<Result<LocationData, InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/location/new", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/location/new", props);
 }
 
 export interface LocationDataNewProps {
@@ -444,7 +450,7 @@ export interface LocationDataNewProps {
 }
 
 export function locationDataNew(props: LocationDataNewProps, server?: string): Promise<Result<LocationData, InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/location_data/new", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/location_data/new", props);
 }
 
 interface CourseNewProps {
@@ -457,7 +463,7 @@ interface CourseNewProps {
 }
 
 export function courseNew(props: CourseNewProps, server?: string): Promise<Result<CourseData, InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/course/new", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/course/new", props);
 }
 
 interface CourseDataNewProps {
@@ -471,7 +477,7 @@ interface CourseDataNewProps {
 }
 
 export function courseDataNew(props: CourseDataNewProps, server?: string): Promise<Result<CourseData, InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/course_data/new", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/course_data/new", props);
 }
 
 interface CourseKeyNewProps {
@@ -484,7 +490,7 @@ interface CourseKeyNewProps {
 }
 
 export function courseKeyNew(props: CourseKeyNewProps, server?: string): Promise<Result<CourseKeyData, InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/course_key/new", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/course_key/new", props);
 }
 
 interface CourseKeyDataNewProps {
@@ -494,7 +500,7 @@ interface CourseKeyDataNewProps {
 }
 
 export function courseKeyDataNew(props: CourseKeyDataNewProps, server?: string): Promise<Result<CourseKeyData, InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/course_key_data/new", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/course_key_data/new", props);
 }
 
 interface CourseMembershipNewCancelProps {
@@ -504,7 +510,7 @@ interface CourseMembershipNewCancelProps {
 }
 
 export function courseMembershipNewCancel(props: CourseMembershipNewCancelProps, server?: string): Promise<Result<CourseMembership, InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/course_membership/new_cancel", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/course_membership/new_cancel", props);
 }
 
 interface CourseMembershipNewKeyProps {
@@ -513,7 +519,7 @@ interface CourseMembershipNewKeyProps {
 }
 
 export function courseMembershipNewKey(props: CourseMembershipNewKeyProps, server?: string): Promise<Result<CourseMembership, InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/course_membership/new_key", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/course_membership/new_key", props);
 }
 
 interface SessionNewProps {
@@ -526,7 +532,7 @@ interface SessionNewProps {
 }
 
 export function sessionNew(props: SessionNewProps, server?: string): Promise<Result<SessionData, InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/session/new", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/session/new", props);
 }
 
 interface SessionDataNewProps {
@@ -539,7 +545,7 @@ interface SessionDataNewProps {
 }
 
 export function sessionDataNew(props: SessionDataNewProps, server?: string): Promise<Result<SessionData, InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/session_data/new", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/session_data/new", props);
 }
 
 interface SessionRequestNewProps {
@@ -551,7 +557,7 @@ interface SessionRequestNewProps {
 }
 
 export function sessionRequestNew(props: SessionRequestNewProps, server?: string): Promise<Result<SessionRequest, InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/session_request/new", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/session_request/new", props);
 }
 
 interface SessionRequestResponseNewProps {
@@ -562,7 +568,7 @@ interface SessionRequestResponseNewProps {
 }
 
 export function sessionRequestResponseNew(props: SessionRequestResponseNewProps, server?: string): Promise<Result<SessionRequestResponse, InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/session_request_response/new", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/session_request_response/new", props);
 }
 
 interface CommitmentNewProps {
@@ -573,7 +579,7 @@ interface CommitmentNewProps {
 }
 
 export function commitmentNew(props: CommitmentNewProps, server?: string): Promise<Result<Commitment[], InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/commitment/new", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/commitment/new", props);
 }
 
 interface EncounterNewProps {
@@ -584,12 +590,12 @@ interface EncounterNewProps {
 
 // strictly creates an encounter
 export function encounterNew(props: EncounterNewProps, server?: string): Promise<Result<Encounter, InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/encounter/new", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/encounter/new", props);
 }
 
 // creates an encounter and tries to pair it
 export function encounterNewAttends(props: EncounterNewProps, server?: string): Promise<Result<Encounter | Stay, InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/encounter/new_attends", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/encounter/new_attends", props);
 }
 
 export interface StayNewProps {
@@ -603,7 +609,7 @@ export interface StayNewProps {
 }
 
 export function stayNew(props: StayNewProps, server?: string): Promise<Result<StayData, InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/stay/new", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/stay/new", props);
 }
 
 export interface StayDataNewProps {
@@ -617,7 +623,7 @@ export interface StayDataNewProps {
 }
 
 export function stayDataNew(props: StayDataNewProps, server?: string): Promise<Result<StayData, InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/stay_data/new", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/stay_data/new", props);
 }
 
 interface SubscriptionViewProps {
@@ -631,7 +637,7 @@ interface SubscriptionViewProps {
 }
 
 export function subscriptionView(props: SubscriptionViewProps, server?: string): Promise<Result<Subscription[], InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/subscription/view", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/subscription/view", props);
 }
 
 interface SchoolViewProps {
@@ -644,7 +650,7 @@ interface SchoolViewProps {
 }
 
 export function schoolView(props: SchoolViewProps, server?: string): Promise<Result<School[], InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/school/view", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/school/view", props);
 }
 
 interface SchoolDataViewProps {
@@ -663,7 +669,7 @@ interface SchoolDataViewProps {
 }
 
 export function schoolDataView(props: SchoolDataViewProps, server?: string): Promise<Result<SchoolData[], InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/school_data/view", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/school_data/view", props);
 }
 
 interface SchoolDurationViewProps {
@@ -676,7 +682,7 @@ interface SchoolDurationViewProps {
 }
 
 export function schoolDurationView(props: SchoolDurationViewProps, server?: string): Promise<Result<SchoolDuration[], InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/school_duration/view", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/school_duration/view", props);
 }
 
 interface SchoolDurationDataViewProps {
@@ -697,7 +703,7 @@ interface SchoolDurationDataViewProps {
 }
 
 export function schoolDurationDataView(props: SchoolDurationDataViewProps, server?: string): Promise<Result<SchoolDurationData[], InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/school_duration_data/view", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/school_duration_data/view", props);
 }
 
 interface SchoolKeyViewProps {
@@ -715,7 +721,7 @@ interface SchoolKeyViewProps {
 }
 
 export function schoolKeyView(props: SchoolKeyViewProps, server?: string): Promise<Result<SchoolKey[], InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/school_key/view", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/school_key/view", props);
 }
 
 interface SchoolKeyDataViewProps {
@@ -736,7 +742,7 @@ interface SchoolKeyDataViewProps {
 }
 
 export function schoolKeyDataView(props: SchoolKeyDataViewProps, server?: string): Promise<Result<SchoolKeyData[], InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/school_key_data/view", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/school_key_data/view", props);
 }
 
 interface AdminshipViewProps {
@@ -754,7 +760,7 @@ interface AdminshipViewProps {
 }
 
 export function adminshipView(props: AdminshipViewProps, server?: string): Promise<Result<Adminship[], InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/adminship/view", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/adminship/view", props);
 }
 
 interface LocationViewProps {
@@ -767,7 +773,7 @@ interface LocationViewProps {
 }
 
 export function locationView(props: LocationViewProps, server?: string): Promise<Result<Location[], InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/location/view", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/location/view", props);
 }
 
 interface LocationDataViewProps {
@@ -788,7 +794,7 @@ interface LocationDataViewProps {
 }
 
 export function locationDataView(props: LocationDataViewProps, server?: string): Promise<Result<LocationData[], InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/location_data/view", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/location_data/view", props);
 }
 
 interface CourseViewProps {
@@ -801,7 +807,7 @@ interface CourseViewProps {
 }
 
 export function courseView(props: CourseViewProps, server?: string): Promise<Result<Course[], InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/course/view", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/course/view", props);
 }
 
 interface CourseDataViewProps {
@@ -823,7 +829,7 @@ interface CourseDataViewProps {
 }
 
 export function courseDataView(props: CourseDataViewProps, server?: string): Promise<Result<CourseData[], InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/course_data/view", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/course_data/view", props);
 }
 
 interface CourseKeyViewProps {
@@ -842,7 +848,7 @@ interface CourseKeyViewProps {
 }
 
 export function courseKeyView(props: CourseKeyViewProps, server?: string): Promise<Result<CourseKey[], InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/course_key/view", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/course_key/view", props);
 }
 
 interface CourseKeyDataViewProps {
@@ -864,7 +870,7 @@ interface CourseKeyDataViewProps {
 }
 
 export function courseKeyDataView(props: CourseKeyDataViewProps, server?: string): Promise<Result<CourseKeyData[], InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/course_key_data/view", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/course_key_data/view", props);
 }
 
 interface CourseMembershipViewProps {
@@ -882,7 +888,7 @@ interface CourseMembershipViewProps {
 }
 
 export function courseMembershipView(props: CourseMembershipViewProps, server?: string): Promise<Result<CourseMembership[], InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/course_membership/view", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/course_membership/view", props);
 }
 interface SessionViewProps {
   sessionId?: number[],
@@ -894,7 +900,7 @@ interface SessionViewProps {
 }
 
 export function sessionView(props: SessionViewProps, server?: string): Promise<Result<Session[], InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/session/view", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/session/view", props);
 }
 
 interface SessionDataViewProps {
@@ -916,7 +922,7 @@ interface SessionDataViewProps {
 }
 
 export function sessionDataView(props: SessionDataViewProps, server?: string): Promise<Result<SessionData[], InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/session_data/view", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/session_data/view", props);
 }
 
 interface SessionRequestViewProps {
@@ -936,7 +942,7 @@ interface SessionRequestViewProps {
 }
 
 export function sessionRequestView(props: SessionRequestViewProps, server?: string): Promise<Result<SessionRequest[], InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/session_request/view", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/session_request/view", props);
 }
 
 interface SessionRequestResponseViewProps {
@@ -959,7 +965,7 @@ interface SessionRequestResponseViewProps {
 }
 
 export function sessionRequestResponseView(props: SessionRequestResponseViewProps, server?: string): Promise<Result<SessionRequestResponse[], InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/session_request_response/view", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/session_request_response/view", props);
 }
 
 interface CommitmentViewProps {
@@ -981,7 +987,7 @@ interface CommitmentViewProps {
 }
 
 export function commitmentView(props: CommitmentViewProps, server?: string): Promise<Result<Commitment[], InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/commitment/view", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/commitment/view", props);
 }
 
 interface EncounterViewProps {
@@ -995,7 +1001,7 @@ interface EncounterViewProps {
 }
 
 export function encounterView(props: EncounterViewProps, server?: string): Promise<Result<Encounter[], InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/encounter/view", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/encounter/view", props);
 }
 
 interface StayViewProps {
@@ -1009,7 +1015,7 @@ interface StayViewProps {
 }
 
 export function stayView(props: StayViewProps, server?: string): Promise<Result<Stay[], InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/stay/view", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/stay/view", props);
 }
 
 
@@ -1033,7 +1039,7 @@ interface StayDataViewProps {
 }
 
 export function stayDataView(props: StayDataViewProps, server?: string): Promise<Result<StayData[], InnexgoHoursErrorCode>> {
-  return fetchApiOrNetworkError(undefToStr(server) + "/innexgo_hours/stay_data/view", props);
+  return fetchApiOrNetworkError(undefToStr(server) + "innexgo_hours/stay_data/view", props);
 }
 
 export const INT_MAX: number = 999999999999999;

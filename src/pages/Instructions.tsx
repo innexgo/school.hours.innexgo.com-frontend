@@ -1,4 +1,5 @@
-import { SimpleLayout, BrandedComponentProps } from '@innexgo/common-react-components';
+import { BrandedComponentProps } from '@innexgo/common-react-components';
+import { DefaultSidebarLayout } from '@innexgo/auth-react-components';
 
 import accept from '../img/accept.webm';
 import adjust from '../img/adjust.webm';
@@ -28,7 +29,7 @@ import studentsetuptwo from '../img/studentsetuptwo.png'
 import studentsetupthree from '../img/studentsetupthree.png'
 
 function Instructions(props: BrandedComponentProps) {
-  return <SimpleLayout branding={props.branding}>
+  return <DefaultSidebarLayout branding={props.branding}>
     <div className="px-3 py-3">
       <h5>Quick links</h5>
       <h6>Setup Instructions</h6>
@@ -222,7 +223,7 @@ function Instructions(props: BrandedComponentProps) {
         </p>
       </div>
     </div>
-  </SimpleLayout>
+  </DefaultSidebarLayout>
 }
 
 export default Instructions;

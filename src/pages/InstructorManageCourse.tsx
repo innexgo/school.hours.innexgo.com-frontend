@@ -1,9 +1,9 @@
-import { Container } from 'react-bootstrap';
+import { Container, Spinner } from 'react-bootstrap';
 import DashboardLayout from '../components/DashboardLayout';
 import InstructorManageCourseMembershipTable from '../components/InstructorManageCourseMembershipTable';
 import InstructorManageCourseKeyTable from '../components/InstructorManageCourseKeyTable';
 import InstructorManageCourseData from '../components/InstructorManageCourseData';
-import { Loader, WidgetWrapper } from '@innexgo/common-react-components';
+import { WidgetWrapper } from '@innexgo/common-react-components';
 import ErrorMessage from '../components/ErrorMessage';
 import update from 'immutability-helper';
 
@@ -70,7 +70,11 @@ function InstructorManageCourse(props: AuthenticatedComponentProps) {
       <Container fluid className="py-4 px-4">
         <Async promiseFn={loadManageCourseData} apiKey={props.apiKey} courseId={courseId}>{
           ({ setData }) => <>
-            <Async.Pending><Loader /></Async.Pending>
+            <Async.Pending>
+              <Spinner animation="border" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </Spinner>
+            </Async.Pending>
             <Async.Rejected>{e => <ErrorMessage error={e} />}</Async.Rejected>
             <Async.Fulfilled<ManageCourseData>>{data => <>
               <div className="mx-3 my-3">

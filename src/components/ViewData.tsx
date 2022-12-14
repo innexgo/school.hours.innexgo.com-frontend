@@ -1,8 +1,8 @@
 import React from 'react'
 import { Async, AsyncProps } from 'react-async';
-import { Table } from 'react-bootstrap';
+import { Spinner, Table } from 'react-bootstrap';
 import { Eye } from 'react-bootstrap-icons';
-import { Loader, Link } from '@innexgo/common-react-components';
+import { Link } from '@innexgo/common-react-components';
 import format from 'date-fns/format';
 import { Commitment, SessionRequest, SessionRequestResponse, CourseData, SchoolData, SessionData, schoolDataView, courseDataView, sessionDataView } from "../utils/utils";
 import { ApiKey, UserData, userDataView } from '@innexgo/frontend-auth-api';
@@ -138,7 +138,11 @@ export const ViewUser = (props: {
 }) => {
   const [expanded, setExpanded] = React.useState(props.expanded);
   return <Async promiseFn={loadUserData} apiKey={props.apiKey} userId={props.userId}>
-    <Async.Pending><Loader /></Async.Pending>
+    <Async.Pending>
+      <Spinner animation="border" role="status">
+        <span className="visually-hidden">Loading...</span>
+      </Spinner>
+    </Async.Pending>
     <Async.Rejected>
       <span className="text-danger">Unable to load user data.</span>
     </Async.Rejected>
@@ -215,7 +219,11 @@ export const ViewSession = (props: {
               <Async promiseFn={loadCourseData}
                 apiKey={props.apiKey}
                 courseId={props.sessionData.session.course.courseId}>
-                <Async.Pending><Loader /></Async.Pending>
+                <Async.Pending>
+                  <Spinner animation="border" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </Spinner>
+                </Async.Pending>
                 <Async.Rejected>
                   <span className="text-danger">Unable to load course.</span>
                 </Async.Rejected>
@@ -239,7 +247,11 @@ export const ViewSessionRequest = (props: {
   const [expanded, setExpanded] = React.useState(props.expanded);
   if (!expanded) {
     return <Async promiseFn={loadUserData} apiKey={props.apiKey} userId={props.sessionRequest.creatorUserId}>
-      <Async.Pending><Loader /></Async.Pending>
+      <Async.Pending>
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </Spinner>
+      </Async.Pending>
       <Async.Rejected>
         <span className="text-danger">Unable to load session.</span>
       </Async.Rejected>
@@ -283,7 +295,11 @@ export const ViewSessionRequest = (props: {
               <Async promiseFn={loadCourseData}
                 apiKey={props.apiKey}
                 courseId={props.sessionRequest.course.courseId}>
-                <Async.Pending><Loader /></Async.Pending>
+                <Async.Pending>
+                  <Spinner animation="border" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </Spinner>
+                </Async.Pending>
                 <Async.Rejected>
                   <span className="text-danger">Unable to load course.</span>
                 </Async.Rejected>
@@ -308,7 +324,11 @@ export const ViewSessionRequestResponse = (props: {
   const [expanded, setExpanded] = React.useState(props.expanded);
   if (!expanded) {
     return <Async promiseFn={loadUserData} apiKey={props.apiKey} userId={props.sessionRequestResponse.sessionRequest.creatorUserId}>
-      <Async.Pending><Loader /></Async.Pending>
+      <Async.Pending>
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </Spinner>
+      </Async.Pending>
       <Async.Rejected>
         <span className="text-danger">Unable to load session.</span>
       </Async.Rejected>
@@ -366,7 +386,11 @@ export const ViewCommitment = (props: {
     apiKey={props.apiKey}
     sessionId={props.commitment.session.sessionId}>
     {_ => <>
-      <Async.Pending><Loader /></Async.Pending>
+      <Async.Pending>
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </Spinner>
+      </Async.Pending>
       <Async.Rejected>
         <span className="text-danger">An unknown error has occured.</span>
       </Async.Rejected>
@@ -386,7 +410,11 @@ export const ViewCommitment = (props: {
                     <Async promiseFn={loadSessionData}
                       apiKey={props.apiKey}
                       sessionId={props.commitment.session.sessionId}>
-                      <Async.Pending><Loader /></Async.Pending>
+                      <Async.Pending>
+                        <Spinner animation="border" role="status">
+                          <span className="visually-hidden">Loading...</span>
+                        </Spinner>
+                      </Async.Pending>
                       <Async.Rejected>
                         <span className="text-danger">Unable to load session.</span>
                       </Async.Rejected>

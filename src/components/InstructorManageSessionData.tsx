@@ -1,6 +1,6 @@
 import React from 'react';
-import { Form, Button, Table} from 'react-bootstrap';
-import { Loader, DisplayModal} from '@innexgo/common-react-components';
+import { Form, Button, Table, Spinner } from 'react-bootstrap';
+import { DisplayModal } from '@innexgo/common-react-components';
 import { Async, AsyncProps } from 'react-async';
 import { sessionDataView, sessionDataNew, SessionData } from '../utils/utils';
 import { ViewUser } from '../components/ViewData';
@@ -141,7 +141,11 @@ const InstructorManageSessionData = (props: {
     apiKey={props.apiKey}
     sessionId={props.sessionId}>
     {({ reload }) => <>
-      <Async.Pending><Loader /></Async.Pending>
+      <Async.Pending>
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </Spinner>
+      </Async.Pending>
       <Async.Rejected>
         <span className="text-danger">An unknown error has occured.</span>
       </Async.Rejected>
